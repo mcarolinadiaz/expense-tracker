@@ -13,6 +13,7 @@ beforeEach(function () {
     $this->valid = [
         'category_id' => $this->category->id,
         'type' => 'expense',
+        'currency' => 'USD',
         'amount' => 25.50,
         'date' => '2026-11-05',
         'description' => 'Lunch',
@@ -24,6 +25,7 @@ test('you can create a transaction', function () {
         ->assertCreated()
         ->assertJsonPath('data.amount', '25.50')
         ->assertJsonPath('data.type', 'expense')
+        ->assertJsonPath('data.currency', 'USD')
         ->assertJsonPath('data.date', '2026-11-05')
         ->assertJsonPath('data.category.name', 'Food')
         ->assertJsonMissingPath('data.user_id');
@@ -48,6 +50,9 @@ test('invalid data is rejected', function (string $field, mixed $value) {
     'too many decimals' => ['amount', 1.234],
     'amount that is not a number' => ['amount', 'abc'],
     'unknown type' => ['type', 'gift'],
+    'unknown currency' => ['currency', 'EUR'],
+    'lowercase currency' => ['currency', 'usd'],
+    'missing currency' => ['currency', null],
     'wrong date format' => ['date', '05/11/2026'],
     'category that does not exist' => ['category_id', 999999],
 ]);

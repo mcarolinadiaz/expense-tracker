@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\TransactionType;
+use App\Enums\Currency;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
@@ -21,6 +22,7 @@ class TransactionFactory extends Factory
                 'user_id' => $attributes['user_id'],
             ]),
             'type' => fake()->randomElement(TransactionType::cases()),
+            'currency' => fake()->randomElement(Currency::cases()),
             'amount' => fake()->randomFloat(2, 1, 500),
             'date' => fake()->date(),
             'description' => fake()->optional()->sentence(3),
