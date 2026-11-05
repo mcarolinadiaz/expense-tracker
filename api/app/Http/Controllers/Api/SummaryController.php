@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use App\Enums\Currency;
 use Illuminate\Validation\Rule;
 
@@ -18,11 +17,9 @@ class SummaryController extends Controller
         ]);
 
         $month = $data['month'] ?? now()->format('Y-m');
-        $start = Carbon::parse($month.'-01');
-        $range = [$start->toDateString(), $start->copy()->endOfMonth()->toDateString()];
 
         $totals = $request->user()->transactions()
-            ->whereBetween('date', $range)
+            ->inMonth($month)
             ->where('currency', $data['currency'])
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount END), 0.00) AS income")
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount END), 0.00) AS expense")
@@ -33,7 +30,7 @@ class SummaryController extends Controller
             ->join('categories', 'categories.id', '=', 'transactions.category_id')
             ->where('transactions.type', 'expense')
             ->where('transactions.currency', $data['currency'])
-            ->whereBetween('transactions.date', $range)
+            ->inMonth($month)
             ->groupBy('categories.id', 'categories.name')
             ->selectRaw('categories.name, SUM(transactions.amount) AS total')
             ->orderByDesc('total')

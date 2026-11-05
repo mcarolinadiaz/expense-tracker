@@ -6,18 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TransactionRequest;
 use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
-use Illuminate\Http\Request;
+use App\Http\Requests\TransactionIndexRequest;
 use Illuminate\Support\Facades\Gate;
 
 class TransactionController extends Controller
 {
-    public function index(Request $request)
+    public function index(TransactionIndexRequest $request)
     {
         $transactions = $request->user()->transactions()
+            ->filter($request->validated())
             ->with('category')
             ->latest('date')
             ->latest('id')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return TransactionResource::collection($transactions);
     }

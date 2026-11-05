@@ -41,7 +41,7 @@ class CategoryController extends Controller
         abort_if(
             $category->transactions()->exists(),
             409,
-            'This category still has transactions.'
+            __('This category still has transactions.')
         );
 
         $category->delete();

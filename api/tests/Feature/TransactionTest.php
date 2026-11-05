@@ -112,3 +112,81 @@ test('you cannot see, change or delete another user\'s transaction', function ()
 
     $this->assertDatabaseHas('transactions', ['id' => $transaction->id]);
 });
+
+test('the list can be filtered', function (array $filter, int $expected) {
+    $other = Category::factory()->create(['user_id' => $this->user->id, 'name' => 'Other']);
+    $add = fn (array $attributes) => Transaction::factory()->create([
+        'user_id' => $this->user->id,
+        'category_id' => $this->category->id,
+        'type' => 'expense',
+        'currency' => 'ARS',
+        'date' => '2026-11-15',
+        'description' => null,
+        ...$attributes,
+    ]);
+
+    $add(['description' => 'Team lunch']);
+    $add(['type' => 'income', 'description' => 'Salary']);
+    $add(['currency' => 'USD', 'description' => 'Hosting']);
+    $add(['category_id' => $other->id]);
+    $add(['date' => '2026-10-31']);
+    $add(['date' => '2026-12-01']);
+    Transaction::factory()->create(['date' => '2026-11-15', 'currency' => 'ARS', 'type' => 'expense', 'description' => 'Team lunch']);
+
+    if (isset($filter['category_id'])) {
+        $filter['category_id'] = $other->id;
+    }
+
+    $this->getJson('/api/transactions?'.http_build_query($filter))
+        ->assertOk()
+        ->assertJsonCount($expected, 'data');
+})->with([
+    'no filters' => [[], 6],
+    'month' => [['month' => '2026-11'], 4],
+    'month with no results' => [['month' => '2020-01'], 0],
+    'currency' => [['currency' => 'USD'], 1],
+    'type' => [['type' => 'income'], 1],
+    'category' => [['category_id' => true], 1],
+    'search' => [['search' => 'LUNCH'], 1],
+    'combined' => [['month' => '2026-11', 'currency' => 'ARS', 'type' => 'expense'], 2],
+    'empty filter is ignored' => [['type' => ''], 6],
+]);
+
+test('search treats % and _ as normal characters', function () {
+    Transaction::factory()->create(['user_id' => $this->user->id, 'description' => '50% off']);
+    Transaction::factory()->create(['user_id' => $this->user->id, 'description' => 'Lunch']);
+
+    $this->getJson('/api/transactions?search=%25')->assertJsonCount(1, 'data');
+    $this->getJson('/api/transactions?search=_')->assertJsonCount(0, 'data');
+});
+
+test('pagination links keep the filters', function () {
+    Transaction::factory()->count(16)->create([
+        'user_id' => $this->user->id,
+        'category_id' => $this->category->id,
+        'currency' => 'USD',
+    ]);
+
+    $next = $this->getJson('/api/transactions?currency=USD')->json('links.next');
+
+    expect($next)->toContain('currency=USD')->toContain('page=2');
+});
+
+test('invalid filters are rejected', function (string $field, mixed $value) {
+    $this->getJson('/api/transactions?'.http_build_query([$field => $value]))
+        ->assertJsonValidationErrors($field);
+})->with([
+    'month format' => ['month', '2026-13'],
+    'unknown currency' => ['currency', 'EUR'],
+    'unknown type' => ['type', 'gift'],
+    'category that does not exist' => ['category_id', 999999],
+    'category that is not a number' => ['category_id', 'abc'],
+    'search that is too long' => ['search', str_repeat('a', 101)],
+]);
+
+test('you cannot filter by another user\'s category', function () {
+    $theirs = Transaction::factory()->create();
+
+    $this->getJson("/api/transactions?category_id={$theirs->category_id}")
+        ->assertJsonValidationErrors('category_id');
+});
