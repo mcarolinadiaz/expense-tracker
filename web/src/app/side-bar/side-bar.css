@@ -1,0 +1,21 @@
+@reference '../../styles.css';
+
+.side-bar {
+  @apply flex h-full flex-col gap-6 border-r border-line bg-surface px-4 py-6;
+}
+
+.brand {
+  @apply px-3 font-display text-lg font-semibold;
+}
+
+.nav-list {
+  @apply flex flex-col gap-1;
+}
+
+.nav-link {
+  @apply flex h-11 items-center rounded-lg px-3 font-medium transition-colors hover:bg-hover;
+}
+
+.nav-link-active {
+  @apply bg-accent-soft font-semibold text-accent;
+}

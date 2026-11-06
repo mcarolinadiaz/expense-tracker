@@ -1,0 +1,19 @@
+<nav [attr.aria-label]="text.mainNavigation" class="side-bar">
+  <p class="brand">{{ text.appName }}</p>
+
+  <ul class="nav-list">
+    @for (link of links; track link.path) {
+      <li>
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="nav-link-active"
+          [routerLinkActiveOptions]="{ exact: link.exact }"
+          ariaCurrentWhenActive="page"
+          class="nav-link"
+        >
+          {{ link.label }}
+        </a>
+      </li>
+    }
+  </ul>
+</nav>
