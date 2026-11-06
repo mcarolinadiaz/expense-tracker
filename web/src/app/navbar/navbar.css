@@ -1,0 +1,9 @@
+@reference '../../styles.css';
+
+.navbar {
+  @apply mb-6 flex flex-wrap items-center justify-between gap-4;
+}
+
+.navbar-actions {
+  @apply flex flex-wrap items-center gap-3;
+}
