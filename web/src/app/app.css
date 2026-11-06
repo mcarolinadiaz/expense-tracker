@@ -1,0 +1,13 @@
+@reference '../styles.css';
+
+.app-shell {
+  @apply flex min-h-screen flex-wrap;
+}
+
+.app-sidebar {
+  @apply max-w-full flex-[1_1_14.5rem];
+}
+
+.app-content {
+  @apply min-w-0 flex-[999_1_35rem] p-4 sm:p-8;
+}
