@@ -120,6 +120,7 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 
 - Never hardcode user-facing text in components or API responses. Add new text in both `es-AR` and `en-US`.
 - Frontend: keep shared text in `APP_TEXT` (`web/src/app/core/constants/app-text.ts`). It's English only until translations are set up.
+- Frontend: don't repeat fixed values such as `'ARS'` or `'income'` as string literals. Define them once in an `as const` object, such as `CURRENCY` or `STAT_CARD_TONE`, derive the type from it, and import it.
 - Frontend: add a page in `APP_PAGE_ROUTES` (`web/src/app/core/constants/app-page-routes.ts`) with a `title`. The side bar builds its links from those routes, so don't list them again.
 - API: wrap your own messages in `__()` and add them to `lang/es.json`, using the English text as the key.
 - API: `lang/es/validation.php` only covers the rules this project uses. When you add a validation rule or field, add its message and attribute name too, or they appear in English.
@@ -135,6 +136,11 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 - Move a class to the `components` layer of `web/src/styles.css` only once more than one component needs it. That layer already has shared classes such as `card`, `btn`, `field` and `amount`.
 - Name classes for what they are, such as `card`, not how they look, such as `white-box`.
 - Don't reuse the name of a Tailwind utility for your own class, such as `container`, `flex` or `hidden`, or Tailwind will apply its own styles too.
+
+### Frontend data
+
+- Components get their data from a shared service in `web/src/app/shared/services/`, never from values defined in the component. Create a service only when a component needs it.
+- Services return an `Observable` with the same shape as the API response, using the types in `web/src/app/core/api/`. Until the frontend connects to the API, they return sample data, so connecting one later only changes that service.
 
 ### Laravel conventions
 
