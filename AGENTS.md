@@ -11,13 +11,13 @@ The owner is an experienced Angular developer who is learning Laravel through th
 
 - **API (`api/`):** PHP 8.4, Laravel 13, Sanctum bearer tokens, Pest 4
 - **Database:** MariaDB
-- **Frontend (`web/`, not created yet):** Angular 22, Bootstrap 5
+- **Frontend (`web/`):** Angular 22, Tailwind CSS 4
 - **Development machine:** Debian 13. If an external APT repository is ever needed, keep its key in `/etc/apt/keyrings`, not `/usr/share/keyrings`.
 
 ## Product decisions
 
-- **Currencies:** USD and ARS. **Not implemented yet:** the API has no currency field.
-  - Each transaction will store its own currency.
+- **Currencies:** USD and ARS, through the `Currency` enum.
+  - Each transaction stores its own currency.
   - Never add USD and ARS together or convert between them. Totals are always per currency.
 - **Languages:** `es-AR` and `en-US`, for the interface and for number, date and currency formats. User-created content, such as category names, is not translated.
 - **Token storage:** the frontend starts with `localStorage`, kept behind `AuthService`. This is temporary and must be reviewed before production.
@@ -28,12 +28,13 @@ The owner is an experienced Angular developer who is learning Laravel through th
 expense-tracker/
 ├── README.md
 ├── AGENTS.md                   # This guide (CLAUDE.md imports it)
-├── web/                        # Angular app (planned)
+├── web/                        # Angular app (src/styles.css holds the theme)
 └── api/
     ├── app/
-    │   ├── Enums/              # TransactionType (income, expense)
+    │   ├── Enums/              # TransactionType, Currency
     │   ├── Http/
     │   │   ├── Controllers/Api/  # Auth, Category, Transaction, Summary
+    │   │   ├── Middleware/     # SetLocale (language from Accept-Language)
     │   │   ├── Requests/       # Form Requests (validation)
     │   │   └── Resources/      # API Resources (JSON output)
     │   ├── Models/             # User, Category, Transaction
@@ -41,11 +42,12 @@ expense-tracker/
     ├── database/
     │   ├── factories/          # Test data for every model
     │   └── migrations/
+    ├── lang/                   # es.json (own messages), es/validation.php
     ├── routes/api.php          # All endpoints (automatically prefixed with /api)
     └── tests/Feature/          # One test file per API area
 ```
 
-Run `php artisan`, `composer` and `./vendor/bin/*` from `api/`. Run `git` from anywhere in the repository. Run `npm` and `ng` from `web/` once it exists.
+Run `php artisan`, `composer` and `./vendor/bin/*` from `api/`. Run `git` from anywhere in the repository. Run `npm` and `ng` from `web/`.
 
 ## Data model
 
@@ -55,7 +57,7 @@ users ──< categories ──< transactions
 ```
 
 - `categories`: `name` is unique per user. Two users can each have "Food".
-- `transactions`: `type` is an enum, `amount` is `decimal(12, 2)`, and `date` has no time. Both `user_id` and `category_id` are required.
+- `transactions`: `type` and `currency` are enums, `amount` is `decimal(12, 2)`, and `date` has no time. Both `user_id` and `category_id` are required.
 - Deleting a user cascades to their data. A category with transactions can't be deleted.
 
 ## API
@@ -69,12 +71,13 @@ All endpoints use JSON. Anything except register and login needs `Authorization:
 | `GET /api/user` | Current user |
 | `GET, POST /api/categories` | List or create |
 | `PUT, DELETE /api/categories/{id}` | Rename or delete. Delete returns `409` while the category is in use |
-| `GET, POST /api/transactions` | List (15 per page, newest first, `?page=`) or create |
+| `GET, POST /api/transactions` | List (15 per page, newest first) or create. Optional filters: `month`, `currency`, `type`, `category_id`, `search`, `page` |
 | `GET, PUT, DELETE /api/transactions/{id}` | Read, update or delete |
-| `GET /api/summary?month=YYYY-MM` | Income, expense, balance and expenses by category |
+| `GET /api/summary?month=YYYY-MM&currency=ARS` | Income, expense, balance and expenses by category, for one required currency |
 
 Response conventions:
 
+- Send `Accept-Language` to choose the language of validation and error messages. `es-*` returns Spanish, and anything else returns English.
 - Successful bodies are wrapped in `data`, except the `{ token }` responses and the raw `GET /api/user` model. Paginated lists also include `links` and `meta`.
 - Money is a string with 2 decimals, such as `"25.50"`, and dates are `YYYY-MM-DD`.
 - Status codes: `401` no valid token, `403` another user's record, `404` not found, `409` conflict, `422` validation errors, `429` too many requests.
@@ -116,6 +119,22 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 ### Translations
 
 - Never hardcode user-facing text in components or API responses. Add new text in both `es-AR` and `en-US`.
+- Frontend: keep shared text in `APP_TEXT` (`web/src/app/core/constants/app-text.ts`). It's English only until translations are set up.
+- Frontend: add a page in `APP_PAGE_ROUTES` (`web/src/app/core/constants/app-page-routes.ts`) with a `title`. The side bar builds its links from those routes, so don't list them again.
+- API: wrap your own messages in `__()` and add them to `lang/es.json`, using the English text as the key.
+- API: `lang/es/validation.php` only covers the rules this project uses. When you add a validation rule or field, add its message and attribute name too, or they appear in English.
+- API: `401`, `403`, `404` and `429` messages stay in English and can expose internal names. The frontend must show its own translated text for these, based on the status code.
+
+### Styling
+
+- Use the theme tokens in `web/src/styles.css`, such as `bg-accent`, `text-muted` and `border-line`, rather than hex values or Tailwind's default colors. To change the look, change the token.
+- Income and expense amounts also need a `+` or `−` sign, so they don't rely on color alone.
+- Don't put lists of Tailwind utilities in templates. A template can use one specific class, such as `card`, `container` or `app-content`, plus a shared class's modifier, such as `btn btn-primary`.
+- When an element needs several styles, give it one descriptive class and build that class from Tailwind utilities with `@apply` in a CSS file. Only write plain CSS when no utility covers the style.
+- Define a class in the component's own CSS file by default, starting that file with `@reference` to `web/src/styles.css`.
+- Move a class to the `components` layer of `web/src/styles.css` only once more than one component needs it. That layer already has shared classes such as `card`, `btn`, `field` and `amount`.
+- Name classes for what they are, such as `card`, not how they look, such as `white-box`.
+- Don't reuse the name of a Tailwind utility for your own class, such as `container`, `flex` or `hidden`, or Tailwind will apply its own styles too.
 
 ### Laravel conventions
 
