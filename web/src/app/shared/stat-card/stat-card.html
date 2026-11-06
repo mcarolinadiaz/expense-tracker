@@ -1,0 +1,10 @@
+<article class="card">
+  <h2 class="stat-label">{{ label() }}</h2>
+  <p
+    class="stat-value"
+    [class.amount-income]="tone() === tones.income"
+    [class.amount-expense]="tone() === tones.expense"
+  >
+    {{ amount() | currency: currency() }}
+  </p>
+</article>
