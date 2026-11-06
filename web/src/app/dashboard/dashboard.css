@@ -1,0 +1,5 @@
+@reference '../../styles.css';
+
+.stat-cards {
+  @apply grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4;
+}

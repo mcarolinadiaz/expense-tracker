@@ -1,1 +1,27 @@
-<p>dashboard works!</p>
+<ng-template appNavbarActions>
+  <div class="segmented" role="group" [attr.aria-label]="text.currency">
+    @for (option of currencies; track option) {
+      <button
+        type="button"
+        class="segmented-item"
+        [attr.aria-pressed]="currency() === option"
+        (click)="currency.set(option)"
+      >
+        {{ option }}
+      </button>
+    }
+  </div>
+
+  <button type="button" class="btn btn-primary">{{ actionText.addTransaction }}</button>
+</ng-template>
+
+<section class="stat-cards" [attr.aria-label]="text.title">
+  @for (card of cards(); track card.label) {
+    <app-stat-card
+      [label]="card.label"
+      [amount]="card.amount"
+      [currency]="currency()"
+      [tone]="card.tone"
+    />
+  }
+</section>
