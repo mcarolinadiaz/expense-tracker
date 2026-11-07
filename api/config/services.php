@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    'series' => [
+        // Keys match the constructor of App\Services\SeriesSettings, which receives this array as named arguments.
+        'url' => env('SERIES_API_URL', 'https://apis.datos.gob.ar/series/api'),
+        'ipcId' => env('SERIES_IPC_ID', '148.3_INIVELNAL_DICI_M_26'),
+        'ipcSource' => 'INDEC',
+        'startDate' => env('SERIES_START_DATE', '2017-01-01'),
+        'timeoutSeconds' => (int) env('SERIES_TIMEOUT_SECONDS', 10),
+        'retries' => (int) env('SERIES_RETRIES', 2),
+        'retryDelayMs' => (int) env('SERIES_RETRY_DELAY_MS', 500),
+        'cacheHours' => (int) env('SERIES_CACHE_HOURS', 12),
+        'rateLimitPerMinute' => (int) env('SERIES_RATE_LIMIT_PER_MINUTE', 60),
+    ],
+
 ];

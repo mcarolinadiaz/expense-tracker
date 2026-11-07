@@ -1,6 +1,14 @@
 # Expense Tracker
 
-Personal finance app where each user records income and expenses by category and sees a monthly summary. See `README.md` for the product overview.
+Personal finance app where each person records income and expenses by category, sees a monthly summary, and projects how their fixed costs will increase. See `README.md` for the product overview.
+
+## Architecture
+
+The project is moving to this architecture. See the Roadmap at the end for what is done.
+
+- **Frontend (`web/`):** an installable PWA. All user data, such as transactions, categories and fixed costs, stays on the device in IndexedDB. There are no accounts, and backups are exported and imported as a file.
+- **API (`api/`):** a stateless Laravel API with no user data and no database. It serves public data: the monthly IPC from INDEC, cached, and IPC adjustment factors for projections. User amounts never reach the API.
+- **Hosting:** static hosting for the frontend, and a free or low-cost container for the API. The goal is to run at little or no cost.
 
 The owner is an experienced Angular developer who is learning Laravel through this project:
 
@@ -20,7 +28,8 @@ The owner is an experienced Angular developer who is learning Laravel through th
   - Each transaction stores its own currency.
   - Never add USD and ARS together or convert between them. Totals are always per currency.
 - **Languages:** `es-AR` and `en-US`, for the interface and for number, date and currency formats. User-created content, such as category names, is not translated.
-- **Token storage:** the frontend starts with `localStorage`, kept behind `AuthService`. This is temporary and must be reviewed before production.
+- **No accounts:** the app has no sign-up or login. Each device keeps its own data.
+- **Privacy:** never send user amounts, names or descriptions to the API. Projections combine IPC factors from the API with local amounts in the browser.
 
 ## Project structure
 
@@ -51,6 +60,8 @@ Run `php artisan`, `composer` and `./vendor/bin/*` from `api/`. Run `git` from a
 
 ## Data model
 
+> **Legacy:** these tables, the authentication and the endpoints below, except `/api/ipc`, belong to the first server-based version. They will be removed in stage 3 of the Roadmap, so don't build new features on them, and don't refactor them to follow newer rules such as "Constants and configuration".
+
 ```text
 users ──< categories ──< transactions
   └───────────────────────────^
@@ -62,10 +73,11 @@ users ──< categories ──< transactions
 
 ## API
 
-All endpoints use JSON. Anything except register and login needs `Authorization: Bearer <token>`.
+All endpoints use JSON. Anything except register, login and `/api/ipc` needs `Authorization: Bearer <token>`.
 
 | Method and path | Purpose |
 |---|---|
+| `GET /api/ipc?from=YYYY-MM&to=YYYY-MM` | Public. Monthly IPC variation from INDEC, cached for 12 hours. `meta.last_month` is the latest official month, which lags a few months. Returns `503` if the source is unavailable |
 | `POST /api/register`, `POST /api/login` | Return `{ token }`. Limited to 5 requests per minute |
 | `POST /api/logout` | Delete the current token |
 | `GET /api/user` | Current user |
@@ -97,6 +109,16 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 
 ## Best practices for future changes
 
+### Constants and configuration
+
+- Don't hardcode values such as timeouts, retry counts, limits, decimal places, cache durations, URLs or source names, for example `10`, `2`, `500` or `'INDEC'`. Name each value once and reuse it.
+- Choose where it lives by who may change it:
+  - **Values that can differ by environment** go in a config file with an `env()` default, such as `config/services.php`, and are read with `config()`.
+  - **Fixed values that belong to one class** go in a constant of that class, such as `IpcSeries::CACHE_KEY`.
+  - **Fixed values shared across the frontend** go in an `as const` object, such as `CURRENCY`.
+- Group the fixed parameters of an external API request in one constant, so the request is described in one place.
+- Exceptions: `0`, `1` and `-1` in plain arithmetic, array indexes, and expected values in tests, which should stay literal so the test shows what it checks.
+
 ### Security and ownership
 
 - Every record belongs to a user, so check ownership in all of these places:
@@ -111,7 +133,8 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 ### Money and dates
 
 - Never use `float` for money, in PHP or in calculations. Use `decimal` columns, the `decimal:2` cast, and SQL aggregates.
-- The API returns money as strings, so the frontend must not do arithmetic on them as floats. Use the totals from `/api/summary`.
+- The frontend calculates totals and projections from local data. Do all money math in integer cents or with a decimal library, never with `number` decimals.
+- In PHP, calculate with `bcmath` functions on numeric strings, such as `bcmul` and `bcround`, never with `float`.
 - The API runs on UTC, so the frontend should always send `month` to `/api/summary`.
 - Don't parse `YYYY-MM-DD` with `new Date(value)` in the frontend. It's read as UTC, so in Argentina it displays as the previous day.
 - Format money and dates using the active language, and show which currency a value is in. The language decides the format, and the currency decides the symbol.
@@ -140,7 +163,8 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 ### Frontend data
 
 - Components get their data from a shared service in `web/src/app/shared/services/`, never from values defined in the component. Create a service only when a component needs it.
-- Services return an `Observable` with the same shape as the API response, using the types in `web/src/app/core/api/`. Until the frontend connects to the API, they return sample data, so connecting one later only changes that service.
+- Services that own user data read and write local storage (IndexedDB). Only public data, such as the IPC, comes from the API.
+- Services return an `Observable`, using the types in `web/src/app/core/api/`. Until a service is connected to its real source, it returns sample data, so connecting it later only changes that service.
 
 ### Laravel conventions
 
@@ -169,6 +193,20 @@ These development defaults are not yet handled:
 
 - Set `APP_DEBUG=false`, because `true` exposes stack traces in error responses.
 - Restrict CORS to the frontend's domain. Publish the config with `php artisan config:publish cors`, because all origins are allowed at the moment.
-- **Review token storage (required):** `localStorage` exposes the token if the app ever has an XSS vulnerability. Compare it with Sanctum's cookie-based SPA authentication, and record the decision here.
-- Decide on token lifetime. `sanctum.expiration` is `null`, so tokens never expire.
-- Run behind HTTPS, because tokens and passwords travel in every request or login.
+- Use the `file` cache store, because the API will have no database. `CACHE_STORE` is `database` at the moment.
+- Never log request bodies, and configure any error-tracking tool not to send them.
+- Rate limit every public endpoint.
+- Run behind HTTPS.
+
+## Roadmap
+
+| Stage | Part | Work | Status |
+|---|---|---|---|
+| 0 | Git | Tag the server-based version as `v0-server-crud` before removing anything | Pending |
+| 1 | API | `GET /api/ipc`: monthly IPC from the datos.gob.ar series API (series `148.3_INIVELNAL_DICI_M_26`), cached, with `503` on failure | In progress |
+| 2 | API | `GET /api/ipc/factors`: adjustment factors for the next months for a cost that increases every N months, estimating future months from the average of recent months or a custom rate | Pending |
+| 3 | API | Remove users, authentication, the CRUD endpoints and MariaDB. Switch to the file cache, restrict CORS, add API docs and deploy a container | Pending |
+| 4 | Web | Store transactions, categories and fixed costs in IndexedDB behind the existing services, with money in cents, and add backup export and import | Pending |
+| 5 | Web | Build the Projections and Data pages from the mockup, make the app a PWA, add translations and deploy it | Pending |
+
+The REM series on datos.gob.ar appear to stop in 2025, so the REM estimate option is postponed until a current source is found.
