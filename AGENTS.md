@@ -40,7 +40,10 @@ expense-tracker/
 ├── web/                        # Angular app (src/styles.css holds the theme)
 └── api/
     ├── app/
-    │   ├── Enums/              # TransactionType, Currency
+    │   ├── Data/               # Readonly data objects, such as IpcMonth and IpcFactor
+    │   ├── Enums/              # IpcEstimate, and legacy TransactionType and Currency
+    │   ├── Exceptions/         # IpcUnavailableException (503)
+    │   ├── Services/           # IpcSeries (INDEC data), IpcFactors (projections), SeriesSettings
     │   ├── Http/
     │   │   ├── Controllers/Api/  # Auth, Category, Transaction, Summary
     │   │   ├── Middleware/     # SetLocale (language from Accept-Language)
@@ -73,11 +76,12 @@ users ──< categories ──< transactions
 
 ## API
 
-All endpoints use JSON. Anything except register, login and `/api/ipc` needs `Authorization: Bearer <token>`.
+All endpoints use JSON. Anything except register, login and the `/api/ipc` endpoints needs `Authorization: Bearer <token>`.
 
 | Method and path | Purpose |
 |---|---|
 | `GET /api/ipc?from=YYYY-MM&to=YYYY-MM` | Public. Monthly IPC variation from INDEC, cached for 12 hours. `meta.last_month` is the latest official month, which lags a few months. Returns `503` if the source is unavailable |
+| `GET /api/ipc/factors?from=YYYY-MM&months=13&every=4&estimate=average` | Public. Cumulative factors to multiply a cost's current amount by, month by month, for a cost that increases every `every` months by the IPC since its last increase (`last_increase`, default `from`). Months without official data use `estimate`: `average` of the last `average_months` (default 6) or `custom` with `rate`. Each month says whether it `increases` and whether its factor is `estimated` |
 | `POST /api/register`, `POST /api/login` | Return `{ token }`. Limited to 5 requests per minute |
 | `POST /api/logout` | Delete the current token |
 | `GET /api/user` | Current user |
@@ -202,9 +206,9 @@ These development defaults are not yet handled:
 
 | Stage | Part | Work | Status |
 |---|---|---|---|
-| 0 | Git | Tag the server-based version as `v0-server-crud` before removing anything | Pending |
-| 1 | API | `GET /api/ipc`: monthly IPC from the datos.gob.ar series API (series `148.3_INIVELNAL_DICI_M_26`), cached, with `503` on failure | In progress |
-| 2 | API | `GET /api/ipc/factors`: adjustment factors for the next months for a cost that increases every N months, estimating future months from the average of recent months or a custom rate | Pending |
+| 0 | Git | Tag the server-based version as `v0-server-crud` before removing anything | Done |
+| 1 | API | `GET /api/ipc`: monthly IPC from the datos.gob.ar series API (series `148.3_INIVELNAL_DICI_M_26`), cached, with `503` on failure | Done |
+| 2 | API | `GET /api/ipc/factors`: adjustment factors for the next months for a cost that increases every N months, estimating future months from the average of recent months or a custom rate | Done |
 | 3 | API | Remove users, authentication, the CRUD endpoints and MariaDB. Switch to the file cache, restrict CORS, add API docs and deploy a container | Pending |
 | 4 | Web | Store transactions, categories and fixed costs in IndexedDB behind the existing services, with money in cents, and add backup export and import | Pending |
 | 5 | Web | Build the Projections and Data pages from the mockup, make the app a PWA, add translations and deploy it | Pending |
