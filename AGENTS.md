@@ -18,7 +18,7 @@ The owner is an experienced Angular developer who is learning Laravel through th
 ## Stack
 
 - **API (`api/`):** PHP 8.4, Laravel 13, Pest 4. No database: the cache, sessions and queue use files or run in the request.
-- **Frontend (`web/`):** Angular 22, Tailwind CSS 4
+- **Frontend (`web/`):** Angular 22, Tailwind CSS 4, Dexie (IndexedDB), Vitest. Planned: Transloco for translations and `big.js` for decimal math.
 - **Development machine:** Debian 13. If an external APT repository is ever needed, keep its key in `/etc/apt/keyrings`, not `/usr/share/keyrings`.
 
 The first server-based version, with users, MariaDB and a CRUD API, is kept in the Git tag `v0-server-crud`.
@@ -145,6 +145,10 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 
 - Components get their data from a shared service in `web/src/app/shared/services/`, never from values defined in the component. Create a service only when a component needs it.
 - Services that own user data read and write local storage (IndexedDB). Only public data, such as the IPC, comes from the API.
+- The database is `AppDb` (`web/src/app/core/db/app-db.ts`). Read with `liveQuery()` wrapped in `from()`, so the view updates when the data changes. To change the schema, add a new `version()`, and never edit an existing one.
+- Store amounts as integer cents (`Cents`), dates as `YYYY-MM-DD` strings and months as `YYYY-MM`. Transactions point to their category by `categoryId`, so renaming a category doesn't touch them.
+- Services report broken rules with an error code, such as `CategoryError` with `CATEGORY_ERROR.taken`, and the interface shows its own translated message for it.
+- Tests use `fake-indexeddb` (`src/test-setup.ts`) and delete the database after each test.
 - Services return an `Observable`, using the types in `web/src/app/core/api/`. Until a service is connected to its real source, it returns sample data, so connecting it later only changes that service.
 
 ### Laravel conventions
