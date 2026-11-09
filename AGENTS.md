@@ -64,7 +64,7 @@ All endpoints are public, read-only and use JSON. They share one rate limit per 
 
 | Method and path | Purpose |
 |---|---|
-| `GET /api/ipc?from=YYYY-MM&to=YYYY-MM` | Monthly IPC variation from INDEC, cached for 12 hours. `meta.last_month` is the latest official month, which lags a few months. Returns `503` if the source is unavailable |
+| `GET /api/ipc?from=YYYY-MM&to=YYYY-MM` | Monthly IPC variation from INDEC, cached for 12 hours. `meta.last_month` is the latest official month, which lags a few months. If INDEC is down, it serves the last data it fetched and tries again after `SERIES_RETRY_AFTER_MINUTES`. Returns `503` only if it has never fetched any data |
 | `GET /api/ipc/factors?from=YYYY-MM&months=13&every=4&estimate=average` | Cumulative factors to multiply a cost's current amount by, month by month, for a cost that increases every `every` months by the IPC since its last increase (`last_increase`, default `from`). Months without official data use `estimate`: `average` of the last `average_months` (default 6) or `custom` with `rate`. Each month says whether it `increases` and whether its factor is `estimated` |
 
 Response conventions:

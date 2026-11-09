@@ -3,6 +3,7 @@
 use App\Services\IpcSeries;
 use App\Services\SeriesSettings;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
 
 function seriesUrl(): string
 {
@@ -18,6 +19,7 @@ function fakeIpcSeries(array $rows): void
 
 beforeEach(function () {
     Http::preventStrayRequests();
+    Sleep::fake();
 });
 
 test('it returns the monthly variation of the official index', function () {
@@ -78,6 +80,41 @@ test('it returns 503 when the official API fails, without caching the failure', 
         ->assertJsonPath('message', 'Los datos de inflación no están disponibles por el momento. Probá de nuevo más tarde.');
 
     expect(cache()->has(IpcSeries::CACHE_KEY))->toBeFalse();
+});
+
+test('it serves the last known data when the official API fails after the cache expires', function () {
+    Http::fake([seriesUrl() => Http::sequence()
+        ->push(['data' => [['2026-07-01', 100.0], ['2026-08-01', 102.0]]])
+        ->whenEmpty(Http::response('Server error', 500)),
+    ]);
+
+    $this->getJson('/api/ipc')->assertOk();
+    $this->travel(13)->hours();
+
+    $this->getJson('/api/ipc')
+        ->assertOk()
+        ->assertJsonPath('data.0.variation', '2.00')
+        ->assertJsonPath('meta.last_month', '2026-08');
+});
+
+test('after a failure it waits before asking the official API again', function () {
+    Http::fake([seriesUrl() => Http::sequence()
+        ->push(['data' => [['2026-07-01', 100.0], ['2026-08-01', 102.0]]])
+        ->whenEmpty(Http::response('Server error', 500)),
+    ]);
+
+    $this->getJson('/api/ipc')->assertOk();
+    $this->travel(13)->hours();
+    $this->getJson('/api/ipc')->assertOk();
+    $requests = Http::recorded()->count();
+
+    $this->travel(10)->minutes();
+    $this->getJson('/api/ipc')->assertOk();
+    expect(Http::recorded())->toHaveCount($requests);
+
+    $this->travel(10)->minutes();
+    $this->getJson('/api/ipc')->assertOk();
+    expect(Http::recorded()->count())->toBeGreaterThan($requests);
 });
 
 test('it is rate limited by IP', function () {

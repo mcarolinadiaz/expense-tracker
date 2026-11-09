@@ -45,6 +45,7 @@ return [
         'retries' => (int) env('SERIES_RETRIES', 2),
         'retryDelayMs' => (int) env('SERIES_RETRY_DELAY_MS', 500),
         'cacheHours' => (int) env('SERIES_CACHE_HOURS', 12),
+        'retryAfterMinutes' => (int) env('SERIES_RETRY_AFTER_MINUTES', 15),
         'rateLimitPerMinute' => (int) env('SERIES_RATE_LIMIT_PER_MINUTE', 60),
     ],
 

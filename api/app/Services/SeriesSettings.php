@@ -15,6 +15,7 @@ final readonly class SeriesSettings
         public int $retries,
         public int $retryDelayMs,
         public int $cacheHours,
+        public int $retryAfterMinutes,
         public int $rateLimitPerMinute,
     ) {}
 

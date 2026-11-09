@@ -14,6 +14,8 @@ class IpcSeries
 {
     public const CACHE_KEY = 'ipc.monthly';
 
+    public const LAST_KNOWN_CACHE_KEY = 'ipc.monthly.last_known';
+
     private const ENDPOINT = 'series/';
 
     private const SERIES_PARAMETER = 'ids';
@@ -37,19 +39,9 @@ class IpcSeries
 
     public function __construct(private readonly SeriesSettings $settings) {}
 
-    /**
-     * Monthly IPC variations, oldest first.
-     *
-     * @return array<int, IpcMonth>
-     */
     public function monthly(): array
     {
-        // The cache stores plain arrays, because it doesn't rebuild objects when it reads them.
-        $months = Cache::remember(
-            self::CACHE_KEY,
-            now()->addHours($this->settings->cacheHours),
-            fn () => array_map(fn (IpcMonth $month) => $month->toArray(), $this->fetch()),
-        );
+        $months = Cache::get(self::CACHE_KEY) ?? $this->refresh();
 
         return array_map(IpcMonth::fromArray(...), $months);
     }
@@ -57,6 +49,33 @@ class IpcSeries
     public function source(): string
     {
         return $this->settings->ipcSource;
+    }
+
+    /**
+     * Fetches the official data and caches it. If the source fails, it serves the last data it
+     * fetched, and waits a while before trying again, so every request doesn't wait for the timeout.
+     *
+     * The cache stores plain arrays, because it doesn't rebuild objects when it reads them.
+     *
+     * @return array<int, array{month: string, variation: string}>
+     */
+    private function refresh(): array
+    {
+        try {
+            $months = array_map(fn (IpcMonth $month) => $month->toArray(), $this->fetch());
+        } catch (IpcUnavailableException $e) {
+            $lastKnown = Cache::get(self::LAST_KNOWN_CACHE_KEY) ?? throw $e;
+
+            report($e);
+            Cache::put(self::CACHE_KEY, $lastKnown, now()->addMinutes($this->settings->retryAfterMinutes));
+
+            return $lastKnown;
+        }
+
+        Cache::put(self::CACHE_KEY, $months, now()->addHours($this->settings->cacheHours));
+        Cache::forever(self::LAST_KNOWN_CACHE_KEY, $months);
+
+        return $months;
     }
 
     /**
