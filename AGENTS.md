@@ -62,6 +62,8 @@ Run `php artisan`, `composer` and `./vendor/bin/*` from `api/`. Run `git` from a
 
 All endpoints are public, read-only and use JSON. They share one rate limit per IP, `SERIES_RATE_LIMIT_PER_MINUTE`.
 
+Scramble generates the docs from the routes, Form Requests and API Resources, so keep them accurate rather than writing docs by hand. The page is at `/docs/api` and the OpenAPI document at `/docs/api.json`. Both are public, use the same rate limit and start no session (`config/scramble.php`).
+
 | Method and path | Purpose |
 |---|---|
 | `GET /api/ipc?from=YYYY-MM&to=YYYY-MM` | Monthly IPC variation from INDEC, cached for 12 hours. `meta.last_month` is the latest official month, which lags a few months. If INDEC is down, it serves the last data it fetched and tries again after `SERIES_RETRY_AFTER_MINUTES`. Returns `503` only if it has never fetched any data |
@@ -82,6 +84,7 @@ php artisan serve                       # Run the API on http://127.0.0.1:8000
 php artisan test                        # Run all tests
 php artisan test --filter=IpcTest       # Run one test file
 php artisan route:list --path=api       # List the endpoints
+php artisan scramble:export             # Write the OpenAPI document to api.json
 php artisan cache:clear                 # Forget the cached IPC data
 ./vendor/bin/pint                       # Format the PHP code
 ```
