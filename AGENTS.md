@@ -7,7 +7,7 @@ Personal finance app where each person records income and expenses by category, 
 The project is moving to this architecture. See the Roadmap at the end for what is done.
 
 - **Frontend (`web/`):** an installable PWA. All user data, such as transactions, categories and fixed costs, stays on the device in IndexedDB. There are no accounts, and backups are exported and imported as a file.
-- **API (`api/`):** a stateless Laravel API with no user data and no database. It serves public data: the monthly IPC from INDEC, cached, and IPC adjustment factors for projections. User amounts never reach the API.
+- **API (`api/`):** a stateless Laravel API with no user data and no database. It serves public data: the monthly IPC from INDEC, cached in files, and IPC adjustment factors for projections. User amounts never reach the API.
 - **Hosting:** static hosting for the frontend, and a free or low-cost container for the API. The goal is to run at little or no cost.
 
 The owner is an experienced Angular developer who is learning Laravel through this project:
@@ -17,14 +17,15 @@ The owner is an experienced Angular developer who is learning Laravel through th
 
 ## Stack
 
-- **API (`api/`):** PHP 8.4, Laravel 13, Sanctum bearer tokens, Pest 4
-- **Database:** MariaDB
+- **API (`api/`):** PHP 8.4, Laravel 13, Pest 4. No database: the cache, sessions and queue use files or run in the request.
 - **Frontend (`web/`):** Angular 22, Tailwind CSS 4
 - **Development machine:** Debian 13. If an external APT repository is ever needed, keep its key in `/etc/apt/keyrings`, not `/usr/share/keyrings`.
 
+The first server-based version, with users, MariaDB and a CRUD API, is kept in the Git tag `v0-server-crud`.
+
 ## Product decisions
 
-- **Currencies:** USD and ARS, through the `Currency` enum.
+- **Currencies:** USD and ARS, through the frontend's `CURRENCY` constant.
   - Each transaction stores its own currency.
   - Never add USD and ARS together or convert between them. Totals are always per currency.
 - **Languages:** `es-AR` and `en-US`, for the interface and for number, date and currency formats. User-created content, such as category names, is not translated.
@@ -41,19 +42,15 @@ expense-tracker/
 └── api/
     ├── app/
     │   ├── Data/               # Readonly data objects, such as IpcMonth and IpcFactor
-    │   ├── Enums/              # IpcEstimate, and legacy TransactionType and Currency
+    │   ├── Enums/              # IpcEstimate
     │   ├── Exceptions/         # IpcUnavailableException (503)
-    │   ├── Services/           # IpcSeries (INDEC data), IpcFactors (projections), SeriesSettings
     │   ├── Http/
-    │   │   ├── Controllers/Api/  # Auth, Category, Transaction, Summary
+    │   │   ├── Controllers/Api/  # IpcController, IpcFactorsController
     │   │   ├── Middleware/     # SetLocale (language from Accept-Language)
     │   │   ├── Requests/       # Form Requests (validation)
     │   │   └── Resources/      # API Resources (JSON output)
-    │   ├── Models/             # User, Category, Transaction
-    │   └── Policies/           # Record ownership checks
-    ├── database/
-    │   ├── factories/          # Test data for every model
-    │   └── migrations/
+    │   └── Services/           # IpcSeries (INDEC data), IpcFactors (projections), SeriesSettings
+    ├── config/                 # services.php (series), cors.php, app.php (supported locales)
     ├── lang/                   # es.json (own messages), es/validation.php
     ├── routes/api.php          # All endpoints (automatically prefixed with /api)
     └── tests/Feature/          # One test file per API area
@@ -61,55 +58,35 @@ expense-tracker/
 
 Run `php artisan`, `composer` and `./vendor/bin/*` from `api/`. Run `git` from anywhere in the repository. Run `npm` and `ng` from `web/`.
 
-## Data model
-
-> **Legacy:** these tables, the authentication and the endpoints below, except `/api/ipc`, belong to the first server-based version. They will be removed in stage 3 of the Roadmap, so don't build new features on them, and don't refactor them to follow newer rules such as "Constants and configuration".
-
-```text
-users ──< categories ──< transactions
-  └───────────────────────────^
-```
-
-- `categories`: `name` is unique per user. Two users can each have "Food".
-- `transactions`: `type` and `currency` are enums, `amount` is `decimal(12, 2)`, and `date` has no time. Both `user_id` and `category_id` are required.
-- Deleting a user cascades to their data. A category with transactions can't be deleted.
-
 ## API
 
-All endpoints use JSON. Anything except register, login and the `/api/ipc` endpoints needs `Authorization: Bearer <token>`.
+All endpoints are public, read-only and use JSON. They share one rate limit per IP, `SERIES_RATE_LIMIT_PER_MINUTE`.
 
 | Method and path | Purpose |
 |---|---|
-| `GET /api/ipc?from=YYYY-MM&to=YYYY-MM` | Public. Monthly IPC variation from INDEC, cached for 12 hours. `meta.last_month` is the latest official month, which lags a few months. Returns `503` if the source is unavailable |
-| `GET /api/ipc/factors?from=YYYY-MM&months=13&every=4&estimate=average` | Public. Cumulative factors to multiply a cost's current amount by, month by month, for a cost that increases every `every` months by the IPC since its last increase (`last_increase`, default `from`). Months without official data use `estimate`: `average` of the last `average_months` (default 6) or `custom` with `rate`. Each month says whether it `increases` and whether its factor is `estimated` |
-| `POST /api/register`, `POST /api/login` | Return `{ token }`. Limited to 5 requests per minute |
-| `POST /api/logout` | Delete the current token |
-| `GET /api/user` | Current user |
-| `GET, POST /api/categories` | List or create |
-| `PUT, DELETE /api/categories/{id}` | Rename or delete. Delete returns `409` while the category is in use |
-| `GET, POST /api/transactions` | List (15 per page, newest first) or create. Optional filters: `month`, `currency`, `type`, `category_id`, `search`, `page` |
-| `GET, PUT, DELETE /api/transactions/{id}` | Read, update or delete |
-| `GET /api/summary?month=YYYY-MM&currency=ARS` | Income, expense, balance and expenses by category, for one required currency |
+| `GET /api/ipc?from=YYYY-MM&to=YYYY-MM` | Monthly IPC variation from INDEC, cached for 12 hours. `meta.last_month` is the latest official month, which lags a few months. Returns `503` if the source is unavailable |
+| `GET /api/ipc/factors?from=YYYY-MM&months=13&every=4&estimate=average` | Cumulative factors to multiply a cost's current amount by, month by month, for a cost that increases every `every` months by the IPC since its last increase (`last_increase`, default `from`). Months without official data use `estimate`: `average` of the last `average_months` (default 6) or `custom` with `rate`. Each month says whether it `increases` and whether its factor is `estimated` |
 
 Response conventions:
 
 - Send `Accept-Language` to choose the language of validation and error messages. `es-*` returns Spanish, and anything else returns English.
-- Successful bodies are wrapped in `data`, except the `{ token }` responses and the raw `GET /api/user` model. Paginated lists also include `links` and `meta`.
-- Money is a string with 2 decimals, such as `"25.50"`, and dates are `YYYY-MM-DD`.
-- Status codes: `401` no valid token, `403` another user's record, `404` not found, `409` conflict, `422` validation errors, `429` too many requests.
+- Successful bodies are wrapped in `data`, with a `meta` object for details such as `last_month` and `source`. Every error is JSON.
+- Numbers that need exact decimals, such as variations and factors, are strings, such as `"2.11"` or `"1.0952"`. Months are `YYYY-MM`.
+- Status codes: `404` not found, `422` validation errors, `429` too many requests, `503` official data unavailable.
+- Browsers may only call the API from the origins in `CORS_ALLOWED_ORIGINS`, and only with `GET`.
 
 ## Commands
 
 ```bash
 php artisan serve                       # Run the API on http://127.0.0.1:8000
 php artisan test                        # Run all tests
-php artisan test --filter=SummaryTest   # Run one test file
+php artisan test --filter=IpcTest       # Run one test file
 php artisan route:list --path=api       # List the endpoints
-php artisan migrate                     # Run pending migrations
+php artisan cache:clear                 # Forget the cached IPC data
 ./vendor/bin/pint                       # Format the PHP code
 ```
 
-Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml`. `RefreshDatabase` drops every table in the database it runs on, so never point tests at `expense_tracker`.
+Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and `Http::preventStrayRequests()` makes any real call fail.
 
 ## Best practices for future changes
 
@@ -123,23 +100,20 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 - Group the fixed parameters of an external API request in one constant, so the request is described in one place.
 - Exceptions: `0`, `1` and `-1` in plain arithmetic, array indexes, and expected values in tests, which should stay literal so the test shows what it checks.
 
-### Security and ownership
+### Security and privacy
 
-- Every record belongs to a user, so check ownership in all of these places:
-  - **Lists and creation:** go through the relationship, as in `$request->user()->transactions()`.
-  - **Single records:** call `Gate::authorize('manage', $record)`, backed by a Policy.
-  - **IDs in the request body:** validate ownership, as in `Rule::exists('categories', 'id')->where('user_id', ...)`.
-- Never accept `user_id` from a request, and keep it out of `#[Fillable]`.
-- Save only validated data: `$request->validated()` or the result of `$request->validate()`.
-- Never put request data directly into `selectRaw` or other raw SQL. Use bindings.
+- Never add endpoints that receive or store user data, such as amounts, names or descriptions.
+- Validate every query parameter with a Form Request, and use only `$request->validated()` data.
+- Never log request bodies, and configure any error-tracking tool not to send them.
+- Rate limit every endpoint.
 - Never commit `.env`, tokens or passwords.
 
 ### Money and dates
 
-- Never use `float` for money, in PHP or in calculations. Use `decimal` columns, the `decimal:2` cast, and SQL aggregates.
+- Never use `float` for money or rates, in PHP or in calculations.
 - The frontend calculates totals and projections from local data. Do all money math in integer cents or with a decimal library, never with `number` decimals.
 - In PHP, calculate with `bcmath` functions on numeric strings, such as `bcmul` and `bcround`, never with `float`.
-- The API runs on UTC, so the frontend should always send `month` to `/api/summary`.
+- The API runs on UTC, so the frontend should always send the months it means, such as `from`, rather than relying on the API's current month.
 - Don't parse `YYYY-MM-DD` with `new Date(value)` in the frontend. It's read as UTC, so in Argentina it displays as the previous day.
 - Format money and dates using the active language, and show which currency a value is in. The language decides the format, and the currency decides the symbol.
 
@@ -150,8 +124,8 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 - Frontend: don't repeat fixed values such as `'ARS'` or `'income'` as string literals. Define them once in an `as const` object, such as `CURRENCY` or `STAT_CARD_TONE`, derive the type from it, and import it.
 - Frontend: add a page in `APP_PAGE_ROUTES` (`web/src/app/core/constants/app-page-routes.ts`) with a `title`. The side bar builds its links from those routes, so don't list them again.
 - API: wrap your own messages in `__()` and add them to `lang/es.json`, using the English text as the key.
-- API: `lang/es/validation.php` only covers the rules this project uses. When you add a validation rule or field, add its message and attribute name too, or they appear in English.
-- API: `401`, `403`, `404` and `429` messages stay in English and can expose internal names. The frontend must show its own translated text for these, based on the status code.
+- API: `lang/es/validation.php` only covers the rules this project uses. When you add a validation rule or field, add its message and attribute name too, or they appear in English. `LocaleTest` checks each rule in use.
+- API: `404` and `429` messages stay in English. The frontend must show its own translated text for these, based on the status code.
 
 ### Styling
 
@@ -172,19 +146,18 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 
 ### Laravel conventions
 
-- Follow the existing request flow: Route → Middleware → Form Request or `validate()` → Controller → Policy → Model → API Resource.
-- Keep controllers thin. Add a service or Action class only when logic is shared or gets complex, not by default. Don't add repository classes on top of Eloquent.
-- Return API Resources rather than models, so new columns are never exposed by accident.
-- Load relationships with `with()` or `load()` to avoid N+1 queries.
-- Use `#[Fillable]` attributes on models, matching the existing ones.
-- Never edit a migration that has already been pushed or run elsewhere. Add a new migration instead.
-- Add a factory for each new model.
+- Follow the existing request flow: Route → Middleware → Form Request → Controller → Service → data objects → API Resource.
+- Keep controllers thin. Business logic and calls to external APIs go in a class in `app/Services/`.
+- Pass data between layers as readonly classes in `app/Data/`, not as arrays. Use the `SnakeCaseArray` trait for their JSON keys.
+- Return API Resources, using `DataCollection` for lists with a `meta` object.
+- The cache only stores plain arrays, because `cache.serializable_classes` is `false`. Convert data objects to arrays before caching them, as `IpcSeries` does.
 
 ### Tests
 
-- Every new or changed endpoint needs feature tests in `tests/Feature/`. Cover the successful case, validation, unauthenticated access, and another user's data.
+- Every new or changed endpoint needs feature tests in `tests/Feature/`. Cover the successful case, validation, translations, and failures of external sources.
+- Fake every external API with `Http::fake()`.
 - Run `php artisan test` before committing, and only commit when it passes.
-- A red underline on `$this->user` in Pest tests is an editor false alarm. The test run decides whether there's a real problem.
+- A red underline on `$this->...` properties in Pest tests is an editor false alarm. Prefer helper functions, such as `fakeIpcSeries()`, which the editor understands.
 
 ### Git
 
@@ -196,10 +169,8 @@ Tests run on the `expense_tracker_test` MariaDB database, as set in `phpunit.xml
 These development defaults are not yet handled:
 
 - Set `APP_DEBUG=false`, because `true` exposes stack traces in error responses.
-- Restrict CORS to the frontend's domain. Publish the config with `php artisan config:publish cors`, because all origins are allowed at the moment.
-- Use the `file` cache store, because the API will have no database. `CACHE_STORE` is `database` at the moment.
-- Never log request bodies, and configure any error-tracking tool not to send them.
-- Rate limit every public endpoint.
+- Set `CORS_ALLOWED_ORIGINS` to the frontend's real domain.
+- Make the cache folder, `storage/framework/cache`, writable in the container.
 - Run behind HTTPS.
 
 ## Roadmap
@@ -209,8 +180,9 @@ These development defaults are not yet handled:
 | 0 | Git | Tag the server-based version as `v0-server-crud` before removing anything | Done |
 | 1 | API | `GET /api/ipc`: monthly IPC from the datos.gob.ar series API (series `148.3_INIVELNAL_DICI_M_26`), cached, with `503` on failure | Done |
 | 2 | API | `GET /api/ipc/factors`: adjustment factors for the next months for a cost that increases every N months, estimating future months from the average of recent months or a custom rate | Done |
-| 3 | API | Remove users, authentication, the CRUD endpoints and MariaDB. Switch to the file cache, restrict CORS, add API docs and deploy a container | Pending |
-| 4 | Web | Store transactions, categories and fixed costs in IndexedDB behind the existing services, with money in cents, and add backup export and import | Pending |
-| 5 | Web | Build the Projections and Data pages from the mockup, make the app a PWA, add translations and deploy it | Pending |
+| 3 | API | Remove users, authentication, the CRUD endpoints and MariaDB. Switch to the file cache and restrict CORS | Done |
+| 4 | API | Add API docs, serve the last known IPC data when INDEC is down, and deploy a container | Pending |
+| 5 | Web | Store transactions, categories and fixed costs in IndexedDB behind the existing services, with money in cents, and add backup export and import | Pending |
+| 6 | Web | Build the Projections and Data pages from the mockup, make the app a PWA, add translations and deploy it | Pending |
 
 The REM series on datos.gob.ar appear to stop in 2025, so the REM estimate option is postponed until a current source is found.
