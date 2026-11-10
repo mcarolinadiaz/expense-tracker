@@ -1,0 +1,61 @@
+<button
+  #trigger
+  #origin="cdkOverlayOrigin"
+  cdkOverlayOrigin
+  type="button"
+  class="select-trigger"
+  aria-haspopup="listbox"
+  [id]="inputId()"
+  [attr.aria-expanded]="open()"
+  [attr.aria-invalid]="invalid() || null"
+  [disabled]="disabled()"
+  (click)="toggle()"
+  (keydown)="onTriggerKeydown($event)"
+>
+  <span class="select-value">{{ selectedLabel() }}</span>
+  <svg
+    class="select-chevron"
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+  >
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayWidth]="panelWidth()"
+  [cdkConnectedOverlayPositions]="positions"
+  (detach)="close()"
+  (overlayOutsideClick)="onOutsideClick($event)"
+  (overlayKeydown)="onPanelKeydown($event)"
+>
+  <ul
+    cdkListbox
+    class="select-panel"
+    [attr.aria-labelledby]="inputId()"
+    [cdkListboxValue]="selectedValues()"
+    (cdkListboxValueChange)="pick($event)"
+  >
+    @for (option of options(); track option.value) {
+      <li class="select-option" [cdkOption]="option.value">
+        <span>{{ option.label }}</span>
+        <svg
+          class="select-check"
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </li>
+    }
+  </ul>
+</ng-template>

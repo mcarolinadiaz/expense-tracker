@@ -1,13 +1,15 @@
 @reference '../styles.css';
 
+/* From md up, the shell is exactly as tall as the window: the side bar stays whole and only the content scrolls.
+   On narrower screens the side bar stacks above the content and the whole page scrolls. */
 .app-shell {
-  @apply flex min-h-screen flex-wrap;
+  @apply flex min-h-screen flex-wrap md:h-dvh md:min-h-0 md:flex-nowrap md:overflow-hidden;
 }
 
 .app-sidebar {
-  @apply max-w-full flex-[1_1_14.5rem];
+  @apply max-w-full flex-[1_1_14.5rem] md:flex-[0_0_14.5rem] md:overflow-y-auto;
 }
 
 .app-content {
-  @apply min-w-0 flex-[999_1_35rem] p-4 sm:p-8;
+  @apply min-w-0 flex-[999_1_35rem] p-4 sm:p-8 md:overflow-y-auto;
 }

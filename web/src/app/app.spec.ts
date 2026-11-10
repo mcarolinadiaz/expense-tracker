@@ -88,6 +88,19 @@ describe('App', () => {
     expect(compiled.querySelector('app-dashboard .stat-value')?.textContent).toContain('$1,200.00');
   });
 
+  it('should start each page at the top of the content area', async () => {
+    const fixture = TestBed.createComponent(App);
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/');
+    await fixture.whenStable();
+    const content = (fixture.nativeElement as HTMLElement).querySelector('main')!;
+    content.scrollTop = 500;
+
+    await router.navigateByUrl('/categories');
+
+    expect(content.scrollTop).toBe(0);
+  });
+
   it('should redirect unknown URLs to the dashboard', async () => {
     TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/does-not-exist');
