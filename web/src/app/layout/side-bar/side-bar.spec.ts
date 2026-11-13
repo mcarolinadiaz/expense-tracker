@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { APP_PAGE_ROUTES } from '../core/constants/app-page-routes';
+import { APP_PAGE_ROUTES } from '../../core/constants/app-page-routes';
 import { SideBar } from './side-bar';
 
 describe('SideBar', () => {

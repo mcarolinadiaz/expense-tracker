@@ -3,8 +3,8 @@ import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
-import { Navbar } from './navbar/navbar';
-import { SideBar } from './side-bar/side-bar';
+import { Navbar } from './layout/navbar/navbar';
+import { SideBar } from './layout/side-bar/side-bar';
 
 @Component({
   imports: [CdkScrollable, Navbar, RouterOutlet, SideBar],

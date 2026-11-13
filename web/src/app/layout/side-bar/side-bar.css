@@ -1,4 +1,4 @@
-@reference '../../styles.css';
+@reference '../../../styles.css';
 
 .side-bar {
   @apply flex h-full flex-col gap-6 border-r border-line bg-surface px-4 py-6;

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { APP_NAV_LINKS } from '../core/constants/app-page-routes';
-import { APP_TEXT } from '../core/constants/app-text';
+import { APP_NAV_LINKS } from '../../core/constants/app-page-routes';
+import { APP_TEXT } from '../../core/constants/app-text';
 
 @Component({
   imports: [RouterLink, RouterLinkActive],
