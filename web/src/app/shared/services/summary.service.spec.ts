@@ -10,11 +10,14 @@ describe('SummaryService', () => {
     service = TestBed.inject(SummaryService);
   });
 
-  it.each(CURRENCIES)('should return the summary for the requested month in %s', async (currency) => {
-    const summary = await firstValueFrom(service.getSummary('2026-11', currency));
+  it.each(CURRENCIES)(
+    'should return the summary for the requested month in %s',
+    async (currency) => {
+      const summary = await firstValueFrom(service.getSummary('2026-11', currency));
 
-    expect(summary.month).toBe('2026-11');
-    expect(summary.currency).toBe(currency);
-    expect(summary.by_category.length).toBeGreaterThan(0);
-  });
+      expect(summary.month).toBe('2026-11');
+      expect(summary.currency).toBe(currency);
+      expect(summary.by_category.length).toBeGreaterThan(0);
+    },
+  );
 });

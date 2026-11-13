@@ -46,10 +46,8 @@ describe('Dashboard', () => {
       APP_TEXT.summary.expenses,
       APP_TEXT.summary.balance,
     ]);
-    expect(text('app-stat-card .stat-value').map((value) => value?.replace(/[^\d.]/g, ''))).toEqual([
-      '30.00',
-      '10.00',
-      '20.00',
-    ]);
+    expect(text('app-stat-card .stat-value').map((value) => value?.replace(/[^\d.]/g, ''))).toEqual(
+      ['30.00', '10.00', '20.00'],
+    );
   });
 });
