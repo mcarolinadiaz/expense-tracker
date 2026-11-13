@@ -12,21 +12,20 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom, map } from 'rxjs';
-import { Category, CategoryError, CategoryErrorCode } from '../../core/api/category';
-import { CURRENCIES, Currency } from '../../core/api/money';
+import { Category, CategoryError, CategoryErrorCode } from '../../categories/category';
+import { CategoryService } from '../../categories/category.service';
+import { APP_TEXT } from '../../core/constants/app-text';
+import { IsoDate } from '../../core/dates';
+import { CURRENCIES, Currency, formatAmount, parseAmount } from '../../core/money';
+import { Select, SelectOption } from '../../shared/select/select';
 import {
-  IsoDate,
   NewTransaction,
   Transaction,
   TRANSACTION_DESCRIPTION_MAX_LENGTH,
   TRANSACTION_TYPE,
   TransactionType,
-} from '../../core/api/transaction';
-import { APP_TEXT } from '../../core/constants/app-text';
-import { formatAmount, parseAmount } from '../../core/money';
-import { Select, SelectOption } from '../select/select';
-import { CategoryService } from '../services/category.service';
-import { TransactionService } from '../services/transaction.service';
+} from '../transaction';
+import { TransactionService } from '../transaction.service';
 
 export const NEW_CATEGORY = 'new';
 type CategoryChoice = number | typeof NEW_CATEGORY;

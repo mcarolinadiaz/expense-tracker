@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { filter, firstValueFrom } from 'rxjs';
-import { CURRENCY } from '../../core/api/money';
-import { NewTransaction, TRANSACTION_TYPE } from '../../core/api/transaction';
-import { AppDb } from '../../core/db/app-db';
+import { CURRENCY } from '../core/money';
+import { NewTransaction, TRANSACTION_TYPE } from './transaction';
+import { AppDb } from '../core/db/app-db';
 import { TransactionService } from './transaction.service';
 
 function expense(date: string, description: string): NewTransaction {

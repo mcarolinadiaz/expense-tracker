@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { CURRENCY } from '../core/api/money';
-import { NewTransaction, TRANSACTION_TYPE } from '../core/api/transaction';
+import { CURRENCY } from '../core/money';
+import { NewTransaction, TRANSACTION_TYPE } from './transaction';
 import { APP_TEXT } from '../core/constants/app-text';
 import { AppDb } from '../core/db/app-db';
-import { CategoryService } from '../shared/services/category.service';
-import { provideFixedClock } from '../shared/services/clock.testing';
-import { TransactionService } from '../shared/services/transaction.service';
+import { CategoryService } from '../categories/category.service';
+import { provideFixedClock } from '../core/clock.testing';
+import { TransactionService } from './transaction.service';
 import { Transactions } from './transactions';
 
 describe('Transactions', () => {

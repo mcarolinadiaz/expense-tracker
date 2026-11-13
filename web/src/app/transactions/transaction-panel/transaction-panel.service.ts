@@ -2,10 +2,10 @@ import { Dialog } from '@angular/cdk/dialog';
 import { createGlobalPositionStrategy } from '@angular/cdk/overlay';
 import { inject, Injector, Service } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { CURRENCY } from '../../core/api/money';
-import { Transaction, TRANSACTION_TYPE } from '../../core/api/transaction';
-import { CategoryService } from '../services/category.service';
-import { Clock } from '../services/clock.service';
+import { CURRENCY } from '../../core/money';
+import { Transaction, TRANSACTION_TYPE } from '../transaction';
+import { CategoryService } from '../../categories/category.service';
+import { Clock } from '../../core/clock.service';
 import {
   TRANSACTION_PANEL_IDS,
   TransactionDefaults,
