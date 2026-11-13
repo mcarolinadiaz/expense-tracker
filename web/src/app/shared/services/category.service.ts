@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { liveQuery } from 'dexie';
 import { from, Observable } from 'rxjs';
 import {
@@ -9,7 +9,7 @@ import {
 } from '../../core/api/category';
 import { AppDb } from '../../core/db/app-db';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class CategoryService {
   private readonly db = inject(AppDb);
 

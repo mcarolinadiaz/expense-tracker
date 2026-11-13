@@ -1,6 +1,6 @@
-import { Directive, inject, Injectable, OnDestroy, OnInit, signal, TemplateRef } from '@angular/core';
+import { Directive, inject, OnDestroy, OnInit, Service, signal, TemplateRef } from '@angular/core';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class NavbarActionsService {
   readonly template = signal<TemplateRef<unknown> | null>(null);
 }

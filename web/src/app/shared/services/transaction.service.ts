@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { liveQuery } from 'dexie';
 import { from, Observable } from 'rxjs';
 import { NewTransaction, Transaction, YearMonth } from '../../core/api/transaction';
@@ -8,7 +8,7 @@ import { AppDb } from '../../core/db/app-db';
 const MONTH_FIRST_DAY = '01';
 const MONTH_LAST_DAY = '31';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class TransactionService {
   private readonly db = inject(AppDb);
 

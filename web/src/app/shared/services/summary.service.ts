@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { CURRENCY, Currency } from '../../core/api/money';
 import { MonthlySummary } from '../../core/api/summary';
@@ -27,7 +27,7 @@ const SAMPLE_SUMMARIES: Record<Currency, Omit<MonthlySummary, 'month' | 'currenc
   },
 };
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class SummaryService {
   getSummary(month: string, currency: Currency): Observable<MonthlySummary> {
     return of({ month, currency, ...SAMPLE_SUMMARIES[currency] });
