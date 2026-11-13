@@ -1,6 +1,6 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, input } from '@angular/core';
-import { Currency, Money } from '../../core/api/money';
+import { Currency, Money } from '../../core/money';
 
 export const STAT_CARD_TONE = {
   neutral: 'neutral',

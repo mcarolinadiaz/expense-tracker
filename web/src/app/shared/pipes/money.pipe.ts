@@ -1,7 +1,6 @@
 import { inject, LOCALE_ID, Pipe, PipeTransform } from '@angular/core';
-import { Cents, Currency } from '../../core/api/money';
-import { TRANSACTION_TYPE, TransactionType } from '../../core/api/transaction';
-import { CENTS_PER_UNIT } from '../../core/money';
+import { Cents, CENTS_PER_UNIT, Currency } from '../../core/money';
+import { TRANSACTION_TYPE, TransactionType } from '../../transactions/transaction';
 
 // A real minus sign, not a hyphen, so it lines up with the plus sign.
 const SIGN: Record<TransactionType, string> = {

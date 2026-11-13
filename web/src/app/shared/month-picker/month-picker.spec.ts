@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { APP_TEXT } from '../../core/constants/app-text';
-import { SelectedMonthService } from '../services/selected-month.service';
+import { SelectedMonthService } from './selected-month.service';
 import { MonthPicker } from './month-picker';
 
 describe('MonthPicker', () => {

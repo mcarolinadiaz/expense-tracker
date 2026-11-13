@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CURRENCY } from '../../core/api/money';
+import { CURRENCY } from '../../core/money';
 import { STAT_CARD_TONE, StatCard } from './stat-card';
 
 describe('StatCard', () => {

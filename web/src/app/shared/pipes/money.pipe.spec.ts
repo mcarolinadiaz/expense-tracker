@@ -1,7 +1,7 @@
 import { LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CURRENCY } from '../../core/api/money';
-import { TRANSACTION_TYPE } from '../../core/api/transaction';
+import { CURRENCY } from '../../core/money';
+import { TRANSACTION_TYPE } from '../../transactions/transaction';
 import { MoneyPipe } from './money.pipe';
 
 describe('MoneyPipe', () => {

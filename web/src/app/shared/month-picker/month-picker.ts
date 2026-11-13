@@ -1,7 +1,7 @@
 import { Component, computed, inject, LOCALE_ID } from '@angular/core';
 import { APP_TEXT } from '../../core/constants/app-text';
 import { fromIsoDate } from '../../core/dates';
-import { SelectedMonthService } from '../services/selected-month.service';
+import { SelectedMonthService } from './selected-month.service';
 
 @Component({
   selector: 'app-month-picker',

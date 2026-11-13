@@ -1,7 +1,6 @@
 import { inject, Service, signal } from '@angular/core';
-import { YearMonth } from '../../core/api/transaction';
-import { shiftMonth } from '../../core/dates';
-import { Clock } from './clock.service';
+import { Clock } from '../../core/clock.service';
+import { shiftMonth, YearMonth } from '../../core/dates';
 
 /** The month the user is looking at. It starts at the current month, and Overview and Activity share it. */
 @Service()
