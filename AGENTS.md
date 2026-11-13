@@ -151,6 +151,64 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Tests use `fake-indexeddb` (`src/test-setup.ts`) and delete the database after each test.
 - Services return an `Observable`, using the types in `web/src/app/core/api/`. Until a service is connected to its real source, it returns sample data, so connecting it later only changes that service.
 
+### TypeScript
+
+- TypeScript 6 and Angular 22 enable `strict` and `strictTemplates` by default. Never turn them off.
+- Let TypeScript infer types when they are obvious, and write them when they document an API, such as a function's return type.
+- Never use `any`. Use `unknown` when the type is uncertain, and narrow it before use.
+
+### Angular conventions
+
+**Structure and loading**
+
+- Use standalone components, never NgModules. Don't write `standalone: true`, which is the default.
+- Lazy load every page with `loadComponent` in `APP_PAGE_ROUTES`.
+- Load heavy, non-critical services with `injectAsync()`, and heavy UI below the fold with `@defer`.
+- Use `NgOptimizedImage` (`ngSrc`) for static images. It doesn't work with inline base64 images.
+
+**Components**
+
+- Keep components small, with one responsibility, and only presentation logic. Business rules and data access go in services.
+- Components are `OnPush` and zoneless by default. Don't write `changeDetection: ChangeDetectionStrategy.OnPush`.
+- Use `input()`, `output()` and `model()`, never `@Input()` or `@Output()`. Use `model()` for two-way binding with `[(prop)]`, rather than an `input()` and `output()` pair.
+- Use `viewChild()` and `contentChild()` rather than their decorators.
+- Put host bindings and listeners in the `host` object of `@Component` or `@Directive`, never in `@HostBinding` or `@HostListener`.
+- Mark members used only by the template `protected`, and inputs, queries and injected dependencies `readonly`.
+- Prefer inline templates for small components. External templates and styles use paths relative to the component file.
+
+**State**
+
+- Keep state in `signal()`, derived values in `computed()`, and state that follows other signals but can also be set in `linkedSignal()`. Prefer signals to RxJS subjects.
+- Update signals with `set()` or `update()` and new objects or arrays, never by mutating them. Keep these transformations pure.
+
+**Templates**
+
+- Use built-in control flow (`@if`, `@for`, `@switch`), never `*ngIf`, `*ngFor` or `*ngSwitch`. Give every `@for` a unique `track`.
+- Use `[class.name]` and `[style.prop]` bindings, never `ngClass` or `ngStyle`.
+- Import only the directives and pipes a template uses, such as `AsyncPipe`, never `CommonModule`.
+- Keep templates simple: compute values in the class with `computed()`. Read observables with `toSignal()` or `rxResource()`, or with the `async` pipe.
+- Don't call globals such as `new Date()` from components or templates. Get the current date from `Clock` (`web/src/app/shared/services/clock.service.ts`), the only code that reads the system clock. Tests fix the date with `provideFixedClock('2026-11-06')`.
+
+**Forms**
+
+- Use Signal Forms (`@angular/forms/signals`) for new forms. They are stable in Angular 22.
+- When a form can't use Signal Forms yet, use reactive forms, never template-driven forms.
+
+**Services**
+
+- Design each service around one responsibility.
+- Use `@Service()` for app-wide singleton services. Keep `@Injectable()` only for custom provider setups, such as `useClass` or `useFactory`.
+- Use `inject()`, never constructor parameters.
+
+**Accessibility**
+
+- Every page must pass all axe checks and meet WCAG AA, including focus management, color contrast and ARIA attributes.
+- Prefer native elements, such as `<button>` and `<nav>`, to `role` attributes. Use `role` only for widgets with no native element, and implement their keyboard behavior, or use the Angular CDK, which already does.
+
+**Tests**
+
+- Write unit tests with Vitest, the default runner.
+
 ### Laravel conventions
 
 - Follow the existing request flow: Route → Middleware → Form Request → Controller → Service → data objects → API Resource.
