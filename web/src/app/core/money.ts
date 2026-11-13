@@ -13,6 +13,15 @@ export type Money = string;
 /** An amount in integer cents, such as `125050` for 1,250.50. Stored amounts are always cents. */
 export type Cents = number;
 
+/** The sign shown before an amount, so income and expense don't rely on color alone. */
+export const AMOUNT_SIGN = {
+  plus: '+',
+  // A real minus sign, not a hyphen, so it lines up with the plus sign.
+  minus: '−',
+} as const;
+
+export type AmountSign = (typeof AMOUNT_SIGN)[keyof typeof AMOUNT_SIGN];
+
 export const CENTS_PER_UNIT = 100;
 const DECIMALS = 2;
 const MAX_AMOUNT_CENTS: Cents = 999_999_999_999;
