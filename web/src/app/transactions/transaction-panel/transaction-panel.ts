@@ -1,14 +1,6 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
-import {
-  Component,
-  computed,
-  ElementRef,
-  inject,
-  LOCALE_ID,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom, map } from 'rxjs';
@@ -16,7 +8,8 @@ import { Category, CategoryError, CategoryErrorCode } from '../../categories/cat
 import { CategoryService } from '../../categories/category.service';
 import { APP_TEXT } from '../../core/constants/app-text';
 import { IsoDate } from '../../core/dates';
-import { CURRENCIES, Currency, formatAmount, parseAmount } from '../../core/money';
+import { LocaleFormat } from '../../core/locale-format.service';
+import { CURRENCIES, Currency } from '../../core/money';
 import { Select, SelectOption } from '../../shared/select/select';
 import {
   NewTransaction,
@@ -65,7 +58,7 @@ export interface TransactionPanelData {
 export class TransactionPanel {
   private readonly dialogRef = inject(DialogRef);
   private readonly data = inject<TransactionPanelData>(DIALOG_DATA);
-  private readonly locale = inject(LOCALE_ID);
+  private readonly format = inject(LocaleFormat);
   private readonly transactionService = inject(TransactionService);
   private readonly categoryService = inject(CategoryService);
   private readonly announcer = inject(LiveAnnouncer);
@@ -76,10 +69,10 @@ export class TransactionPanel {
   protected readonly currencies = CURRENCIES;
   protected readonly descriptionMaxLength = TRANSACTION_DESCRIPTION_MAX_LENGTH;
   protected readonly editing = this.data.transaction !== undefined;
-  protected readonly amountHint = formatAmount(AMOUNT_HINT_CENTS, this.locale);
+  protected readonly amountHint = computed(() => this.format.formatAmount(AMOUNT_HINT_CENTS));
 
   protected readonly form = inject(NonNullableFormBuilder).group({
-    amount: [this.data.transaction ? formatAmount(this.data.transaction.amount, this.locale) : ''],
+    amount: [this.data.transaction ? this.format.formatAmount(this.data.transaction.amount) : ''],
     type: [this.data.transaction?.type ?? this.data.defaults.type],
     currency: [this.data.transaction?.currency ?? this.data.defaults.currency],
     categoryId: [
@@ -119,7 +112,7 @@ export class TransactionPanel {
 
   protected async save(addAnother = false): Promise<void> {
     const value = this.form.getRawValue();
-    const amount = parseAmount(value.amount, this.locale);
+    const amount = this.format.parseAmount(value.amount);
     this.amountError.set(amount === null);
     this.categoryError.set(null);
 

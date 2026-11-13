@@ -4,6 +4,7 @@ import { CURRENCY } from '../core/money';
 import { NewTransaction, TRANSACTION_TYPE } from './transaction';
 import { APP_TEXT } from '../core/constants/app-text';
 import { AppDb } from '../core/db/app-db';
+import { APP_LOCALE, LocaleFormat } from '../core/locale-format.service';
 import { CategoryService } from '../categories/category.service';
 import { provideFixedClock } from '../core/clock.testing';
 import { TransactionService } from './transaction.service';
@@ -97,6 +98,17 @@ describe('Transactions', () => {
       'Nov 1 Sueldo de noviembre Sueldo + ARS 1,850,000.00',
     ]);
     expect(element.textContent).toContain(APP_TEXT.activity.count(3));
+  });
+
+  it('should show dates and amounts in the new language without reloading', async () => {
+    await seed();
+    await render();
+    await settle();
+
+    TestBed.inject(LocaleFormat).use(APP_LOCALE.esAR);
+    await settle();
+
+    expect(rowTexts()[0]).toBe('6 nov Supermercado Comida − $ 184.350,50');
   });
 
   it('should filter by currency and by text', async () => {

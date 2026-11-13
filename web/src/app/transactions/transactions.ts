@@ -1,20 +1,19 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { Component, computed, inject, LOCALE_ID, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { firstValueFrom, map } from 'rxjs';
-import { CURRENCIES, Currency } from '../core/money';
-import { Transaction, TRANSACTION_TYPE, TransactionType } from './transaction';
+import { CategoryService } from '../categories/category.service';
 import { APP_TEXT } from '../core/constants/app-text';
-import { fromIsoDate } from '../core/dates';
+import { LocaleFormat } from '../core/locale-format.service';
+import { CURRENCIES, Currency } from '../core/money';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
 import { MonthPicker } from '../shared/month-picker/month-picker';
-import { MoneyPipe } from '../shared/pipes/money.pipe';
-import { Select, SelectOption } from '../shared/select/select';
-import { CategoryService } from '../categories/category.service';
 import { SelectedMonthService } from '../shared/month-picker/selected-month.service';
-import { TransactionService } from './transaction.service';
+import { Select, SelectOption } from '../shared/select/select';
+import { Transaction, TRANSACTION_SIGN, TRANSACTION_TYPE, TransactionType } from './transaction';
 import { TransactionPanelService } from './transaction-panel/transaction-panel.service';
+import { TransactionService } from './transaction.service';
 
 export const FILTER_ALL = 'all';
 type Filter<T> = T | typeof FILTER_ALL;
@@ -26,16 +25,17 @@ interface TransactionRow {
   date: string;
   description: string;
   category: string;
+  amount: string;
 }
 
 @Component({
-  imports: [MoneyPipe, MonthPicker, NavbarActions, ReactiveFormsModule, Select],
+  imports: [MonthPicker, NavbarActions, ReactiveFormsModule, Select],
   selector: 'app-transactions',
   styleUrl: './transactions.css',
   templateUrl: './transactions.html',
 })
 export class Transactions {
-  private readonly locale = inject(LOCALE_ID);
+  private readonly format = inject(LocaleFormat);
   private readonly transactionService = inject(TransactionService);
   private readonly categoryService = inject(CategoryService);
   private readonly panel = inject(TransactionPanelService);
@@ -87,9 +87,8 @@ export class Transactions {
     }
 
     const { search, type, categoryId, currency } = this.filterValues();
-    const query = search.trim().toLocaleLowerCase(this.locale);
+    const query = this.format.lowerCase(search.trim());
     const names = new Map(this.categories().map((category) => [category.id, category.name]));
-    const dateFormat = new Intl.DateTimeFormat(this.locale, { day: 'numeric', month: 'short' });
 
     return this.transactions
       .value()
@@ -98,13 +97,18 @@ export class Transactions {
           (type === FILTER_ALL || transaction.type === type) &&
           (categoryId === FILTER_ALL || transaction.categoryId === categoryId) &&
           (currency === FILTER_ALL || transaction.currency === currency) &&
-          (!query || transaction.description.toLocaleLowerCase(this.locale).includes(query)),
+          (!query || this.format.lowerCase(transaction.description).includes(query)),
       )
       .map((transaction) => ({
         transaction,
-        date: dateFormat.format(fromIsoDate(transaction.date)),
+        date: this.format.shortDate(transaction.date),
         description: transaction.description || EMPTY_DESCRIPTION,
         category: names.get(transaction.categoryId) ?? EMPTY_DESCRIPTION,
+        amount: this.format.money(
+          transaction.amount,
+          transaction.currency,
+          TRANSACTION_SIGN[transaction.type],
+        ),
       }));
   });
 

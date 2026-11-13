@@ -69,9 +69,7 @@
                 [class.amount-income]="row.transaction.type === types.income"
                 [class.amount-expense]="row.transaction.type === types.expense"
               >
-                {{
-                  row.transaction.amount | money: row.transaction.currency : row.transaction.type
-                }}
+                {{ row.amount }}
               </td>
               <td class="cell-end">
                 @if (confirmingId() === row.transaction.id) {
