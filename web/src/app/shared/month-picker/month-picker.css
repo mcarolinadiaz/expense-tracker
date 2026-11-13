@@ -1,0 +1,13 @@
+@reference '../../../styles.css';
+
+.month-picker {
+  @apply flex items-center rounded-lg border border-control bg-surface;
+}
+
+.month-label {
+  @apply min-w-38 text-center font-medium;
+}
+
+.month-arrow {
+  @apply size-4;
+}
