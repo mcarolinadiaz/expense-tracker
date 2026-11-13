@@ -1,0 +1,137 @@
+<form class="panel-form" [formGroup]="form" (ngSubmit)="save()">
+  <header class="panel-header">
+    <h2 class="panel-title" [id]="ids.title">
+      {{ editing ? text.transaction.editTitle : text.transaction.addTitle }}
+    </h2>
+    <button
+      type="button"
+      class="btn btn-ghost btn-icon"
+      [attr.aria-label]="text.actions.close"
+      (click)="close()"
+    >
+      <svg
+        class="panel-close-icon"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+  </header>
+
+  <div>
+    <label class="field-label" [for]="ids.amount">{{ text.transaction.amount }}</label>
+    <input
+      #amount
+      class="amount-field"
+      type="text"
+      inputmode="decimal"
+      autocomplete="off"
+      formControlName="amount"
+      [id]="ids.amount"
+      [placeholder]="amountHint"
+      [attr.aria-invalid]="amountError() || null"
+      [attr.aria-describedby]="amountError() ? ids.amountError : null"
+    />
+    @if (amountError()) {
+      <p class="field-error" role="alert" [id]="ids.amountError">
+        {{ text.transaction.amountError }}
+      </p>
+    }
+  </div>
+
+  <div class="panel-row">
+    <div class="panel-row-wide">
+      <p class="field-label" id="transaction-type-label">{{ text.transaction.type }}</p>
+      <div class="segmented" role="group" aria-labelledby="transaction-type-label">
+        @for (type of types; track type) {
+          <button
+            type="button"
+            class="segmented-item"
+            [attr.aria-pressed]="form.controls.type.value === type"
+            (click)="form.controls.type.setValue(type)"
+          >
+            {{ text.transactionTypes[type] }}
+          </button>
+        }
+      </div>
+    </div>
+    <div class="panel-row-narrow">
+      <p class="field-label" id="transaction-currency-label">{{ text.transaction.currency }}</p>
+      <div class="segmented" role="group" aria-labelledby="transaction-currency-label">
+        @for (currency of currencies; track currency) {
+          <button
+            type="button"
+            class="segmented-item"
+            [attr.aria-pressed]="form.controls.currency.value === currency"
+            (click)="form.controls.currency.setValue(currency)"
+          >
+            {{ currency }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <label class="field-label" for="transaction-category">{{ text.transaction.category }}</label>
+    <app-select
+      inputId="transaction-category"
+      formControlName="categoryId"
+      [options]="categoryOptions()"
+    />
+    @if (isNewCategory()) {
+      <div class="panel-nested">
+        <label class="field-label" for="transaction-new-category">
+          {{ text.transaction.newCategoryName }}
+        </label>
+        <input
+          id="transaction-new-category"
+          class="field"
+          formControlName="newCategory"
+          autocomplete="off"
+          [attr.aria-invalid]="categoryError() ? true : null"
+        />
+      </div>
+    }
+    @if (categoryError(); as code) {
+      <p class="field-error" role="alert">{{ text.categoryErrors[code] }}</p>
+    }
+  </div>
+
+  <div>
+    <label class="field-label" for="transaction-date">{{ text.transaction.date }}</label>
+    <input id="transaction-date" class="field" type="date" formControlName="date" />
+  </div>
+
+  <div>
+    <label class="field-label" for="transaction-description">
+      {{ text.transaction.descriptionOptional }}
+    </label>
+    <input
+      id="transaction-description"
+      class="field"
+      formControlName="description"
+      [maxlength]="descriptionMaxLength"
+    />
+  </div>
+
+  <div class="panel-actions">
+    <button type="submit" class="btn btn-primary panel-action" [disabled]="saving()">
+      {{ text.actions.save }}
+    </button>
+    @if (!editing) {
+      <button
+        type="button"
+        class="btn btn-secondary panel-action"
+        [disabled]="saving()"
+        (click)="save(true)"
+      >
+        {{ text.actions.saveAndAddAnother }}
+      </button>
+    }
+  </div>
+</form>

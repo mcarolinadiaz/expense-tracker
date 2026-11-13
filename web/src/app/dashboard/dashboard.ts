@@ -5,11 +5,8 @@ import { APP_TEXT } from '../core/constants/app-text';
 import { NavbarActions } from '../navbar/navbar-actions';
 import { SummaryService } from '../shared/services/summary.service';
 import { STAT_CARD_TONE, StatCard, StatCardTone } from '../shared/stat-card/stat-card';
-
-function currentMonth(): string {
-  const today = new Date();
-  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-}
+import { Clock } from '../shared/services/clock.service';
+import { TransactionPanelService } from '../shared/transaction-panel/transaction-panel.service';
 
 @Component({
   imports: [NavbarActions, StatCard],
@@ -19,13 +16,18 @@ function currentMonth(): string {
 })
 export class Dashboard {
   private readonly summaryService = inject(SummaryService);
+  private readonly panel = inject(TransactionPanelService);
 
   protected readonly actionText = APP_TEXT.actions;
   protected readonly text = APP_TEXT.summary;
   protected readonly currencies = CURRENCIES;
   protected readonly currency = signal<Currency>(CURRENCY.ARS);
 
-  private readonly month = currentMonth();
+  protected addTransaction(): void {
+    void this.panel.open();
+  }
+
+  private readonly month = inject(Clock).currentMonth();
   private readonly summary = rxResource({
     params: () => ({ month: this.month, currency: this.currency() }),
     stream: ({ params }) => this.summaryService.getSummary(params.month, params.currency),

@@ -148,4 +148,9 @@
   .segmented-item {
     @apply h-11 flex-1 px-3 font-medium transition-colors not-aria-pressed:hover:bg-hover focus-visible:-outline-offset-2 aria-pressed:bg-accent aria-pressed:text-surface;
   }
+
+  /* The dimmed layer behind side panels. The CDK adds it outside any component, so it lives here. */
+  .panel-backdrop {
+    @apply bg-ink/40;
+  }
 }

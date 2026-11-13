@@ -12,7 +12,9 @@
     }
   </div>
 
-  <button type="button" class="btn btn-primary">{{ actionText.addTransaction }}</button>
+  <button type="button" class="btn btn-primary" (click)="addTransaction()">
+    {{ actionText.addTransaction }}
+  </button>
 </ng-template>
 
 <section class="stat-cards" [attr.aria-label]="text.title">
