@@ -127,6 +127,8 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - The API runs on UTC, so the frontend should always send the months it means, such as `from`, rather than relying on the API's current month.
 - Don't parse `YYYY-MM-DD` with `new Date(value)` in the frontend. It's read as UTC, so in Argentina it displays as the previous day.
 - Format money and dates using the active language, and show which currency a value is in. The language decides the format, and the currency decides the symbol.
+- In the frontend, format and read money and dates only through `LocaleFormat` (`web/src/app/core/locale-format.service.ts`), or the `money` pipe that uses it. Never inject `LOCALE_ID` or call `Intl` in components: the language is a signal in `LocaleFormat`, so it can change without reloading.
+- Show a `+` or `−` before income and expense amounts with `TRANSACTION_SIGN`, never a hyphen.
 
 ### Translations
 
