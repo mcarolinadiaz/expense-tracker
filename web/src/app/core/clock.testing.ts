@@ -1,7 +1,6 @@
 import { Provider } from '@angular/core';
-import { IsoDate } from '../../core/api/transaction';
-import { fromIsoDate } from '../../core/dates';
 import { Clock } from './clock.service';
+import { fromIsoDate, IsoDate } from './dates';
 
 /** A clock that is always at the start of one day. */
 class FixedClock extends Clock {

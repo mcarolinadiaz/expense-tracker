@@ -1,4 +1,8 @@
-import { IsoDate, YearMonth } from './api/transaction';
+/** A month as `YYYY-MM`. */
+export type YearMonth = string;
+
+/** A day as `YYYY-MM-DD`. Never parse it with `new Date(value)`, which reads it as UTC. */
+export type IsoDate = string;
 
 const MONTHS_PER_YEAR = 12;
 const DATE_PART_LENGTH = 2;

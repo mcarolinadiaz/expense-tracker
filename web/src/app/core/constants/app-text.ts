@@ -1,5 +1,9 @@
-import { CATEGORY_ERROR, CATEGORY_NAME_MAX_LENGTH, CategoryErrorCode } from '../api/category';
-import { TRANSACTION_TYPE, TransactionType } from '../api/transaction';
+import {
+  CATEGORY_ERROR,
+  CATEGORY_NAME_MAX_LENGTH,
+  CategoryErrorCode,
+} from '../../categories/category';
+import { TRANSACTION_TYPE, TransactionType } from '../../transactions/transaction';
 
 export const APP_TEXT = {
   appName: 'Expense Tracker',

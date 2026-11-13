@@ -1,4 +1,17 @@
-import { Cents } from './api/money';
+export const CURRENCY = {
+  ARS: 'ARS',
+  USD: 'USD',
+} as const;
+
+export const CURRENCIES = Object.values(CURRENCY);
+
+export type Currency = (typeof CURRENCY)[keyof typeof CURRENCY];
+
+/** An amount as a decimal string, such as `'1250.50'`. Only the sample summary still uses it. */
+export type Money = string;
+
+/** An amount in integer cents, such as `125050` for 1,250.50. Stored amounts are always cents. */
+export type Cents = number;
 
 export const CENTS_PER_UNIT = 100;
 const DECIMALS = 2;

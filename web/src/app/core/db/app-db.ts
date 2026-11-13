@@ -1,7 +1,7 @@
 import { Service } from '@angular/core';
 import { Dexie, EntityTable } from 'dexie';
-import { Category } from '../api/category';
-import { Transaction } from '../api/transaction';
+import { Category } from '../../categories/category';
+import { Transaction } from '../../transactions/transaction';
 
 const DB_NAME = 'expense-tracker';
 

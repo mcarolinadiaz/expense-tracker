@@ -6,7 +6,7 @@ export const APP_PAGE_ROUTES = [
     path: '',
     pathMatch: 'full',
     title: APP_TEXT.pages.overview,
-    loadComponent: () => import('../../dashboard/dashboard').then((m) => m.Dashboard),
+    loadComponent: () => import('../../overview/overview').then((m) => m.Overview),
   },
   {
     path: 'transactions',
