@@ -38,7 +38,15 @@ The first server-based version, with users, MariaDB and a CRUD API, is kept in t
 expense-tracker/
 ├── README.md
 ├── AGENTS.md                   # This guide (CLAUDE.md imports it)
-├── web/                        # Angular app (src/styles.css holds the theme)
+├── web/src/
+│   ├── styles.css              # Theme tokens and shared component classes
+│   └── app/
+│       ├── core/               # App-wide code: AppDb, Clock, dates, money, APP_TEXT, page routes
+│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, pipes
+│       ├── layout/             # side-bar and navbar
+│       ├── overview/           # Overview page and its summary service
+│       ├── transactions/       # Activity page, transaction model and service, side panel
+│       └── categories/         # Categories page, category model and service
 └── api/
     ├── app/
     │   ├── Data/               # Readonly data objects, such as IpcMonth and IpcFactor
@@ -143,13 +151,15 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 
 ### Frontend data
 
-- Components get their data from a shared service in `web/src/app/shared/services/`, never from values defined in the component. Create a service only when a component needs it.
+- Organize the frontend by feature: each feature folder, such as `transactions/`, holds its page, model, service, sub-components and tests. A feature may use another feature's service, as the side panel uses `CategoryService`.
+- `core/` holds code the whole app needs and never imports a feature, except `AppDb` for its schema, `APP_TEXT` and the page routes. `shared/` only holds reusable UI with no feature logic.
+- Components get their data from a service, never from values defined in the component. Create a service only when a component needs it.
 - Services that own user data read and write local storage (IndexedDB). Only public data, such as the IPC, comes from the API.
 - The database is `AppDb` (`web/src/app/core/db/app-db.ts`). Read with `liveQuery()` wrapped in `from()`, so the view updates when the data changes. To change the schema, add a new `version()`, and never edit an existing one.
 - Store amounts as integer cents (`Cents`), dates as `YYYY-MM-DD` strings and months as `YYYY-MM`. Transactions point to their category by `categoryId`, so renaming a category doesn't touch them.
 - Services report broken rules with an error code, such as `CategoryError` with `CATEGORY_ERROR.taken`, and the interface shows its own translated message for it.
 - Tests use `fake-indexeddb` (`src/test-setup.ts`) and delete the database after each test.
-- Services return an `Observable`, using the types in `web/src/app/core/api/`. Until a service is connected to its real source, it returns sample data, so connecting it later only changes that service.
+- Services return an `Observable`, using the model types of their feature, such as `transactions/transaction.ts`. Until a service is connected to its real source, it returns sample data, so connecting it later only changes that service.
 
 ### TypeScript
 
@@ -187,7 +197,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Use `[class.name]` and `[style.prop]` bindings, never `ngClass` or `ngStyle`.
 - Import only the directives and pipes a template uses, such as `AsyncPipe`, never `CommonModule`.
 - Keep templates simple: compute values in the class with `computed()`. Read observables with `toSignal()` or `rxResource()`, or with the `async` pipe.
-- Don't call globals such as `new Date()` from components or templates. Get the current date from `Clock` (`web/src/app/shared/services/clock.service.ts`), the only code that reads the system clock. Tests fix the date with `provideFixedClock('2026-11-06')`.
+- Don't call globals such as `new Date()` from components or templates. Get the current date from `Clock` (`web/src/app/core/clock.service.ts`), the only code that reads the system clock. Tests fix the date with `provideFixedClock('2026-11-06')`.
 
 **Forms**
 
