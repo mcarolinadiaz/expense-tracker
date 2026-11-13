@@ -50,8 +50,11 @@ describe('App', () => {
     const navbar = (fixture.nativeElement as HTMLElement).querySelector('main app-navbar')!;
 
     expect(navbar.querySelector('h1')?.textContent).toBe(title);
+    // Icon buttons, such as the month arrows, have no text.
     expect(
-      Array.from(navbar.querySelectorAll('button')).map((button) => button.textContent?.trim()),
+      Array.from(navbar.querySelectorAll('button'))
+        .map((button) => button.textContent?.trim())
+        .filter(Boolean),
     ).toEqual(actions);
   });
 

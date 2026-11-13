@@ -1,0 +1,66 @@
+@reference '../../styles.css';
+
+.filters {
+  @apply flex flex-wrap items-end gap-3;
+}
+
+.filter-search {
+  @apply flex-[2_1_14rem];
+}
+
+.filter {
+  @apply flex-[1_1_9.5rem];
+}
+
+/* Wide tables scroll inside their own box on narrow screens. */
+.table-scroll {
+  @apply mt-5 overflow-x-auto;
+}
+
+.transactions-table {
+  @apply w-full min-w-160 border-collapse;
+
+  & th {
+    @apply px-2 py-2 text-left text-sm font-medium text-muted;
+  }
+
+  & td {
+    @apply border-t border-line-soft px-2 py-1.5;
+  }
+
+  & tbody tr {
+    @apply hover:bg-canvas;
+  }
+}
+
+.transactions-table .cell-end {
+  @apply text-right whitespace-nowrap;
+}
+
+.cell-date {
+  @apply whitespace-nowrap text-muted;
+}
+
+.cell-description {
+  @apply font-medium;
+}
+
+.row-icon {
+  @apply size-4;
+}
+
+.row-confirm {
+  @apply inline-flex items-center gap-1.5 text-sm;
+}
+
+.table-footer {
+  @apply mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted;
+}
+
+.empty-state {
+  @apply px-4 py-12 text-center;
+}
+
+.empty-body {
+  @apply mx-auto mt-2 mb-4 max-w-md text-muted;
+}
