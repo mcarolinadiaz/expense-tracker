@@ -1,13 +1,8 @@
 import { inject, Service } from '@angular/core';
 import { liveQuery } from 'dexie';
 import { from, Observable } from 'rxjs';
-import {
-  Category,
-  CATEGORY_ERROR,
-  CATEGORY_NAME_MAX_LENGTH,
-  CategoryError,
-} from '../../core/api/category';
-import { AppDb } from '../../core/db/app-db';
+import { Category, CATEGORY_ERROR, CATEGORY_NAME_MAX_LENGTH, CategoryError } from './category';
+import { AppDb } from '../core/db/app-db';
 
 @Service()
 export class CategoryService {

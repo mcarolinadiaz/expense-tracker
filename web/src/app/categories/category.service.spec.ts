@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { filter, firstValueFrom } from 'rxjs';
-import { CATEGORY_ERROR, CATEGORY_NAME_MAX_LENGTH, CategoryError } from '../../core/api/category';
-import { CURRENCY } from '../../core/api/money';
-import { TRANSACTION_TYPE } from '../../core/api/transaction';
-import { AppDb } from '../../core/db/app-db';
+import { CATEGORY_ERROR, CATEGORY_NAME_MAX_LENGTH, CategoryError } from './category';
+import { CURRENCY } from '../core/money';
+import { TRANSACTION_TYPE } from '../transactions/transaction';
+import { AppDb } from '../core/db/app-db';
 import { CategoryService } from './category.service';
-import { TransactionService } from './transaction.service';
+import { TransactionService } from '../transactions/transaction.service';
 
 describe('CategoryService', () => {
   let service: CategoryService;

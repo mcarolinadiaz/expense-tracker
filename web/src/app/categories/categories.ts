@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { APP_TEXT } from '../core/constants/app-text';
-import { NavbarActions } from '../navbar/navbar-actions';
+import { NavbarActions } from '../layout/navbar/navbar-actions';
 
 @Component({
   imports: [NavbarActions],
