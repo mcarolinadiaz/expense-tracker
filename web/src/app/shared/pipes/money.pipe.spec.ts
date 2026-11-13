@@ -1,25 +1,30 @@
-import { LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CURRENCY } from '../../core/money';
-import { TRANSACTION_TYPE } from '../../transactions/transaction';
+import { APP_LOCALE, LocaleFormat } from '../../core/locale-format.service';
+import { AMOUNT_SIGN, CURRENCY } from '../../core/money';
 import { MoneyPipe } from './money.pipe';
 
 describe('MoneyPipe', () => {
-  function pipe(locale: string): MoneyPipe {
-    TestBed.configureTestingModule({
-      providers: [MoneyPipe, { provide: LOCALE_ID, useValue: locale }],
-    });
+  function pipe(): MoneyPipe {
+    TestBed.configureTestingModule({ providers: [MoneyPipe] });
     return TestBed.inject(MoneyPipe);
   }
 
   it('should format cents with the currency symbol of the language', () => {
-    expect(pipe('en-US').transform(125050, CURRENCY.USD)).toBe('$1,250.50');
+    expect(pipe().transform(125050, CURRENCY.USD)).toBe('$1,250.50');
   });
 
-  it('should add the sign of the transaction type', () => {
-    const money = pipe('en-US');
+  it('should add the sign', () => {
+    const money = pipe();
 
-    expect(money.transform(125050, CURRENCY.USD, TRANSACTION_TYPE.income)).toBe('+ $1,250.50');
-    expect(money.transform(125050, CURRENCY.USD, TRANSACTION_TYPE.expense)).toBe('− $1,250.50');
+    expect(money.transform(125050, CURRENCY.USD, AMOUNT_SIGN.plus)).toBe('+ $1,250.50');
+    expect(money.transform(125050, CURRENCY.USD, AMOUNT_SIGN.minus)).toBe('− $1,250.50');
+  });
+
+  it('should follow the active language', () => {
+    const money = pipe();
+
+    TestBed.inject(LocaleFormat).use(APP_LOCALE.esAR);
+
+    expect(money.transform(125050, CURRENCY.USD).replace(/\s/g, ' ')).toBe('US$ 1.250,50');
   });
 });

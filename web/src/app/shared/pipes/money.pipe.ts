@@ -1,26 +1,18 @@
-import { inject, LOCALE_ID, Pipe, PipeTransform } from '@angular/core';
-import { Cents, CENTS_PER_UNIT, Currency } from '../../core/money';
-import { TRANSACTION_TYPE, TransactionType } from '../../transactions/transaction';
-
-// A real minus sign, not a hyphen, so it lines up with the plus sign.
-const SIGN: Record<TransactionType, string> = {
-  [TRANSACTION_TYPE.income]: '+',
-  [TRANSACTION_TYPE.expense]: '−',
-};
+import { inject, Pipe, PipeTransform } from '@angular/core';
+import { LocaleFormat } from '../../core/locale-format.service';
+import { AmountSign, Cents, Currency } from '../../core/money';
 
 /**
  * Formats cents in the active language with the currency's symbol, as in
- * `{{ amount | money: currency }}`. Pass the transaction type to add its `+` or `−` sign, so
- * the amount doesn't rely on color alone: `{{ amount | money: currency : type }}`.
+ * `{{ amount | money: currency }}`, or with a sign, as in `{{ amount | money: currency : sign }}`.
+ *
+ * It's impure so it runs again when the language changes. It only formats, so that is cheap.
  */
-@Pipe({ name: 'money' })
+@Pipe({ name: 'money', pure: false })
 export class MoneyPipe implements PipeTransform {
-  private readonly locale = inject(LOCALE_ID);
+  private readonly format = inject(LocaleFormat);
 
-  transform(cents: Cents, currency: Currency, type?: TransactionType): string {
-    const text = new Intl.NumberFormat(this.locale, { style: 'currency', currency }).format(
-      cents / CENTS_PER_UNIT,
-    );
-    return type ? `${SIGN[type]} ${text}` : text;
+  transform(cents: Cents, currency: Currency, sign?: AmountSign): string {
+    return this.format.money(cents, currency, sign);
   }
 }
