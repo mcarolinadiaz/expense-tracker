@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
-import { CURRENCY, Currency } from '../core/api/money';
 import { APP_TEXT } from '../core/constants/app-text';
-import { SummaryService } from '../shared/services/summary.service';
-import { Dashboard } from './dashboard';
+import { CURRENCY, Currency } from '../core/money';
+import { Overview } from './overview';
+import { SummaryService } from './summary.service';
 
-describe('Dashboard', () => {
-  let component: Dashboard;
-  let fixture: ComponentFixture<Dashboard>;
+describe('Overview', () => {
+  let component: Overview;
+  let fixture: ComponentFixture<Overview>;
 
   const getSummary = vi.fn((month: string, currency: Currency) =>
     of({ month, currency, income: '30.00', expense: '10.00', balance: '20.00', by_category: [] }),
@@ -23,11 +23,11 @@ describe('Dashboard', () => {
     getSummary.mockClear();
 
     await TestBed.configureTestingModule({
-      imports: [Dashboard],
+      imports: [Overview],
       providers: [{ provide: SummaryService, useValue: { getSummary } }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Dashboard);
+    fixture = TestBed.createComponent(Overview);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

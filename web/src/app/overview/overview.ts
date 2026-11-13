@@ -1,20 +1,20 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { CURRENCIES, CURRENCY, Currency, Money } from '../core/api/money';
+import { Clock } from '../core/clock.service';
 import { APP_TEXT } from '../core/constants/app-text';
-import { NavbarActions } from '../navbar/navbar-actions';
-import { SummaryService } from '../shared/services/summary.service';
+import { CURRENCIES, CURRENCY, Currency, Money } from '../core/money';
+import { NavbarActions } from '../layout/navbar/navbar-actions';
 import { STAT_CARD_TONE, StatCard, StatCardTone } from '../shared/stat-card/stat-card';
-import { Clock } from '../shared/services/clock.service';
-import { TransactionPanelService } from '../shared/transaction-panel/transaction-panel.service';
+import { TransactionPanelService } from '../transactions/transaction-panel/transaction-panel.service';
+import { SummaryService } from './summary.service';
 
 @Component({
   imports: [NavbarActions, StatCard],
-  selector: 'app-dashboard',
-  styleUrl: './dashboard.css',
-  templateUrl: './dashboard.html',
+  selector: 'app-overview',
+  styleUrl: './overview.css',
+  templateUrl: './overview.html',
 })
-export class Dashboard {
+export class Overview {
   private readonly summaryService = inject(SummaryService);
   private readonly panel = inject(TransactionPanelService);
 

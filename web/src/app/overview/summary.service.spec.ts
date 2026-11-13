@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { CURRENCIES } from '../../core/api/money';
+import { CURRENCIES } from '../core/money';
 import { SummaryService } from './summary.service';
 
 describe('SummaryService', () => {

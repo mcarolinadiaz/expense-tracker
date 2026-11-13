@@ -1,4 +1,4 @@
-import { Currency, Money } from './money';
+import { Currency, Money } from '../core/money';
 
 export interface CategoryTotal {
   name: string;

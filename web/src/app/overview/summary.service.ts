@@ -1,7 +1,7 @@
 import { Service } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { CURRENCY, Currency } from '../../core/api/money';
-import { MonthlySummary } from '../../core/api/summary';
+import { CURRENCY, Currency } from '../core/money';
+import { MonthlySummary } from './summary';
 
 const SAMPLE_SUMMARIES: Record<Currency, Omit<MonthlySummary, 'month' | 'currency'>> = {
   [CURRENCY.ARS]: {

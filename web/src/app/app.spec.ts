@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
 import { routes } from './app.routes';
-import { CURRENCIES, CURRENCY } from './core/api/money';
+import { CURRENCIES, CURRENCY } from './core/money';
 import { APP_TEXT } from './core/constants/app-text';
 
 describe('App', () => {
@@ -28,7 +28,7 @@ describe('App', () => {
   });
 
   it.each([
-    ['/', 'app-dashboard'],
+    ['/', 'app-overview'],
     ['/transactions', 'app-transactions'],
     ['/categories', 'app-categories'],
   ])('should render the page for %s', async (url, selector) => {
@@ -75,7 +75,7 @@ describe('App', () => {
     ]);
   });
 
-  it('should update the dashboard from its navbar actions', async () => {
+  it('should update the overview from its navbar actions', async () => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/');
     await fixture.whenStable();
@@ -88,7 +88,7 @@ describe('App', () => {
     await fixture.whenStable();
 
     expect(usd.getAttribute('aria-pressed')).toBe('true');
-    expect(compiled.querySelector('app-dashboard .stat-value')?.textContent).toContain('$1,200.00');
+    expect(compiled.querySelector('app-overview .stat-value')?.textContent).toContain('$1,200.00');
   });
 
   it('should start each page at the top of the content area', async () => {
@@ -104,7 +104,7 @@ describe('App', () => {
     expect(content.scrollTop).toBe(0);
   });
 
-  it('should redirect unknown URLs to the dashboard', async () => {
+  it('should redirect unknown URLs to the overview', async () => {
     TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/does-not-exist');
     expect(TestBed.inject(Location).path()).toBe('');
