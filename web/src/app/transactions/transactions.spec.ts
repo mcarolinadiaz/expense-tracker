@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { CURRENCY } from '../core/money';
 import { NewTransaction, TRANSACTION_TYPE } from './transaction';
 import { APP_TEXT } from '../core/constants/app-text';
+import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../core/axe.testing';
 import { AppDb } from '../core/db/app-db';
 import { APP_LOCALE, LocaleFormat } from '../core/locale-format.service';
 import { CategoryService } from '../categories/category.service';
@@ -59,7 +60,6 @@ describe('Transactions', () => {
   function rowTexts(): string[] {
     return Array.from(element.querySelectorAll('tbody tr')).map((row) =>
       Array.from(row.querySelectorAll('td'))
-        // Intl joins "ARS" and the number with a non-breaking space, which \s also matches.
         .map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim())
         .filter(Boolean)
         .join(' '),
@@ -73,13 +73,11 @@ describe('Transactions', () => {
   }
 
   async function settle(): Promise<void> {
-    // IndexedDB answers outside Angular, so wait for it before checking the view again.
     await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
   }
 
   beforeEach(() => {
-    // The page opens on the current month.
     TestBed.configureTestingModule({ providers: [provideFixedClock('2026-11-15')] });
   });
 
@@ -167,6 +165,25 @@ describe('Transactions', () => {
     await settle();
     expect(rowTexts()).toHaveLength(2);
   });
+
+  it(
+    'should have no accessibility problems with rows, and while confirming a delete',
+    async () => {
+      await seed();
+      await render();
+      await settle();
+      await expectNoAxeViolations(element);
+
+      element
+        .querySelector<HTMLButtonElement>(
+          `[aria-label="${APP_TEXT.actions.delete}: Supermercado"]`,
+        )!
+        .click();
+      await settle();
+      await expectNoAxeViolations(element);
+    },
+    AXE_TEST_TIMEOUT_MS,
+  );
 
   it('should invite to add the first transaction of an empty month', async () => {
     await render();

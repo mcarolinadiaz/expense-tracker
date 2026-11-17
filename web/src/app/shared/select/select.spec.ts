@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { disabled, form, FormField } from '@angular/forms/signals';
+import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../../core/axe.testing';
 import { Select, SelectOption } from './select';
 
 @Component({
-  imports: [ReactiveFormsModule, Select],
+  imports: [FormField, Select],
   template: `
     <label for="category">Category</label>
-    <app-select inputId="category" [options]="options" [formControl]="control" />
+    <app-select inputId="category" [options]="options" [formField]="expense.categoryId" />
   `,
 })
 class Host {
@@ -15,7 +16,11 @@ class Host {
     { value: 1, label: 'Comida' },
     { value: 2, label: 'Transporte' },
   ];
-  readonly control = new FormControl<number | null>(1);
+  readonly locked = signal(false);
+  readonly model = signal({ categoryId: 1 });
+  readonly expense = form(this.model, (path) => {
+    disabled(path.categoryId, () => this.locked());
+  });
 }
 
 describe('Select', () => {
@@ -54,16 +59,27 @@ describe('Select', () => {
     ]);
   });
 
-  it('should update the form control and close when an option is chosen', async () => {
+  it(
+    'should have no accessibility problems when closed and open',
+    async () => {
+      await expectNoAxeViolations();
+
+      await open();
+
+      await expectNoAxeViolations();
+    },
+    AXE_TEST_TIMEOUT_MS,
+  );
+
+  it('should update the form field and close when an option is chosen', async () => {
     await open();
 
     options()[1].click();
     await fixture.whenStable();
 
-    expect(fixture.componentInstance.control.value).toBe(2);
+    expect(fixture.componentInstance.model().categoryId).toBe(2);
     expect(trigger().textContent?.trim()).toBe('Transporte');
     expect(options()).toHaveLength(0);
-    expect(fixture.componentInstance.control.touched).toBe(true);
   });
 
   it('should close with Escape without changing the value', async () => {
@@ -73,18 +89,18 @@ describe('Select', () => {
     await fixture.whenStable();
 
     expect(options()).toHaveLength(0);
-    expect(fixture.componentInstance.control.value).toBe(1);
+    expect(fixture.componentInstance.model().categoryId).toBe(1);
   });
 
-  it('should show values set from the form control', async () => {
-    fixture.componentInstance.control.setValue(2);
+  it('should show values set from the model', async () => {
+    fixture.componentInstance.model.set({ categoryId: 2 });
     await fixture.whenStable();
 
     expect(trigger().textContent?.trim()).toBe('Transporte');
   });
 
-  it('should not open while the form control is disabled', async () => {
-    fixture.componentInstance.control.disable();
+  it('should not open while the field is disabled', async () => {
+    fixture.componentInstance.locked.set(true);
     await fixture.whenStable();
 
     expect(trigger().disabled).toBe(true);

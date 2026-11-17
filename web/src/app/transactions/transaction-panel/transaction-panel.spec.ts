@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { CURRENCY } from '../../core/money';
 import { TRANSACTION_TYPE } from '../transaction';
 import { APP_TEXT } from '../../core/constants/app-text';
+import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../../core/axe.testing';
 import { AppDb } from '../../core/db/app-db';
 import { CategoryService } from '../../categories/category.service';
 import { provideFixedClock } from '../../core/clock.testing';
@@ -12,7 +13,6 @@ import { TransactionPanelService } from './transaction-panel.service';
 
 describe('TransactionPanel', () => {
   beforeEach(() => {
-    // New transactions start on today's date.
     TestBed.configureTestingModule({ providers: [provideFixedClock('2026-11-06')] });
   });
 
@@ -21,7 +21,6 @@ describe('TransactionPanel', () => {
   });
 
   async function settle(): Promise<void> {
-    // The panel and IndexedDB answer asynchronously.
     for (let i = 0; i < 3; i++) {
       await new Promise((resolve) => setTimeout(resolve));
     }
@@ -76,7 +75,6 @@ describe('TransactionPanel', () => {
     await TestBed.inject(TransactionPanelService).open();
     await settle();
 
-    // With no categories yet, the panel starts on "+ New category".
     type('#transaction-new-category', 'Viajes');
     type(`#${TRANSACTION_PANEL_IDS.amount}`, '310.50');
     button(CURRENCY.USD).click();
@@ -105,6 +103,41 @@ describe('TransactionPanel', () => {
     expect(panel().textContent).toContain(APP_TEXT.transaction.amountError);
     expect(await savedTransactions()).toEqual([]);
   });
+
+  it('should show the category rule that a new category breaks, and save nothing', async () => {
+    await firstValueFrom(TestBed.inject(CategoryService).add('Comida'));
+    await TestBed.inject(TransactionPanelService).open();
+    await settle();
+
+    panel().querySelector<HTMLButtonElement>('#transaction-category')!.click();
+    await settle();
+    Array.from(document.querySelectorAll<HTMLElement>('[role="option"]'))
+      .find((option) => option.textContent?.trim() === APP_TEXT.transaction.newCategoryOption)!
+      .click();
+    await settle();
+    type('#transaction-new-category', 'comida');
+    type(`#${TRANSACTION_PANEL_IDS.amount}`, '100');
+    button(APP_TEXT.actions.save).click();
+    await settle();
+
+    expect(panel().textContent).toContain(APP_TEXT.categoryErrors.taken);
+    expect(await savedTransactions()).toEqual([]);
+  });
+
+  it(
+    'should have no accessibility problems, also while showing errors',
+    async () => {
+      await TestBed.inject(TransactionPanelService).open();
+      await settle();
+      await expectNoAxeViolations();
+
+      type(`#${TRANSACTION_PANEL_IDS.amount}`, '12.345');
+      button(APP_TEXT.actions.save).click();
+      await settle();
+      await expectNoAxeViolations();
+    },
+    AXE_TEST_TIMEOUT_MS,
+  );
 
   it('should keep the panel open and clear the amount to add another', async () => {
     await firstValueFrom(TestBed.inject(CategoryService).add('Comida'));

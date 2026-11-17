@@ -3,8 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
 import { routes } from './app.routes';
-import { CURRENCIES, CURRENCY } from './core/money';
+import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from './core/axe.testing';
 import { APP_TEXT } from './core/constants/app-text';
+import { CURRENCIES, CURRENCY } from './core/money';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -39,6 +40,20 @@ describe('App', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector(selector)).toBeTruthy();
   });
 
+  it.each(['/', '/transactions', '/categories'])(
+    'should have no accessibility problems on %s',
+    async (url) => {
+      const fixture = TestBed.createComponent(App);
+      await TestBed.inject(Router).navigateByUrl(url);
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
+      await fixture.whenStable();
+
+      await expectNoAxeViolations(fixture.nativeElement, { page: true });
+    },
+    AXE_TEST_TIMEOUT_MS,
+  );
+
   it.each([
     ['/', APP_TEXT.pages.overview, [...CURRENCIES, APP_TEXT.actions.addTransaction]],
     ['/transactions', APP_TEXT.pages.activity, [APP_TEXT.actions.addTransaction]],
@@ -50,7 +65,6 @@ describe('App', () => {
     const navbar = (fixture.nativeElement as HTMLElement).querySelector('main app-navbar')!;
 
     expect(navbar.querySelector('h1')?.textContent).toBe(title);
-    // Icon buttons, such as the month arrows, have no text.
     expect(
       Array.from(navbar.querySelectorAll('button'))
         .map((button) => button.textContent?.trim())
