@@ -163,6 +163,57 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Tests use `fake-indexeddb` (`src/test-setup.ts`) and delete the database after each test.
 - Services return an `Observable`, using the model types of their feature, such as `transactions/transaction.ts`. Until a service is connected to its real source, it returns sample data, so connecting it later only changes that service.
 
+### Frontend comments
+
+- Don't write comments in frontend code: no `//` in TypeScript, including tests, no `<!-- -->` in templates and no `/* */` in CSS. Name things so the code explains itself.
+- Keep `/** */` doc comments on exported functions, classes, services and constants, which the editor shows on hover.
+- When code needs a clarification that its names can't give, add it to "Frontend implementation notes" below, under its feature.
+
+### Frontend implementation notes
+
+**App shell**
+
+- From `md` up, the shell is exactly as tall as the window: the side bar stays whole and only the content area scrolls. On narrower screens the side bar stacks above the content and the whole page scrolls.
+- The content area scrolls on its own, and the router only resets the window's scroll, so `App` sets the content area's `scrollTop` to `0` after each navigation.
+- The content area has `cdkScrollable`, so overlays such as an open dropdown follow it when it scrolls.
+
+**Shared styles (`styles.css`)**
+
+- `@theme` holds the design tokens from the mockup. Each token creates Tailwind utilities, such as `bg-accent` and `text-muted`.
+- Classes in the `components` layer can still be overridden by a utility, as in `class="card p-8"`.
+- Buttons combine `btn` with one variant, such as `btn btn-primary`. `btn-icon` makes a square button for a single icon, which needs an `aria-label`.
+- The segmented control (`segmented` and `segmented-item`) is a group of buttons where `aria-pressed` marks the active one.
+- `panel-backdrop` is global because the CDK adds the backdrop behind side panels outside any component.
+
+**Dates and money (`core/`)**
+
+- `LocaleFormat.monthName()` capitalizes the first letter, because Spanish writes month names in lower case but the name may start a line.
+- `parseAmount()` only accepts thousands separators in the whole part and one decimal separator, so `1.250,5.0` is rejected rather than read as `1.250,50`.
+- `Intl` separates a currency symbol and its number with a non-breaking space. Tests that compare formatted amounts replace `\s` with a plain space first.
+
+**Database (`core/db/`)**
+
+- Dexie's `stores()` only lists the primary key and the indexed fields. Other fields are stored too, but can't be queried with `where()`.
+- `TransactionService.listMonth()` reads the month as the text range from `YYYY-MM-01` to `YYYY-MM-31`, which works for every month because dates are `YYYY-MM-DD` strings.
+
+**Select (`shared/select/`)**
+
+- The field looks like `.field`, plus a chevron. The CDK marks the chosen option with `aria-selected` and the keyboard or mouse position with `.cdk-option-active`, and `select.css` styles both.
+- The panel opens below the field, or above it when there is no room below.
+- A click outside the panel closes it, except a click on the field itself, which already toggles it.
+- The list only exists once the panel renders, so `openPanel()` focuses it in `afterNextRender()`. Focusing the list moves to the selected option.
+
+**Transactions (`transactions/`)**
+
+- `TransactionPanelService` remembers the type, currency and category of the last saved transaction and starts the next one with them. "Save and add another" also keeps the date.
+- The panel's form keeps the amount as text. When saving, the amount validator has already checked that it parses, so `persist()` can parse it without checking again.
+- The Activity filters need no validation, so their form only binds the fields to the `filterValues` signal.
+- The Activity table scrolls sideways inside its own box on narrow screens. The side panel's buttons stay at its bottom when the form is short.
+
+**Tests**
+
+- IndexedDB answers outside Angular. After a change that reads or writes the database, wait a macrotask with `setTimeout` before `fixture.whenStable()`, or the view still shows the old data.
+
 ### TypeScript
 
 - TypeScript 6 and Angular 22 enable `strict` and `strictTemplates` by default. Never turn them off.
@@ -205,6 +256,10 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 
 - Use Signal Forms (`@angular/forms/signals`) for new forms. They are stable in Angular 22.
 - When a form can't use Signal Forms yet, use reactive forms, never template-driven forms.
+- Keep the form's data in a `signal()` model, create the form with `form()` and its validators, and bind each control with `[formField]`. Keep amounts as text in the model and parse them with `LocaleFormat` when saving.
+- Submit with `submit()`, which marks every field as touched and only runs the action when the form is valid. A rule a service rejects, such as `CategoryError`, comes back from the action as an error on its field.
+- Show a field's errors once it is touched, not while the user types it the first time.
+- Custom controls, such as `app-select`, implement `FormValueControl` with a `value = model()`, rather than `ControlValueAccessor`.
 
 **Services**
 
@@ -216,6 +271,8 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 
 - Every page must pass all axe checks and meet WCAG AA, including focus management, color contrast and ARIA attributes.
 - Prefer native elements, such as `<button>` and `<nav>`, to `role` attributes. Use `role` only for widgets with no native element, and implement their keyboard behavior, or use the Angular CDK, which already does.
+- Every page and every component with an overlay, such as a dialog or a dropdown, has a test that calls `expectNoAxeViolations()` (`web/src/app/core/axe.testing.ts`), in each state that changes its markup, such as open, empty or showing errors. Pass `{ page: true }` when checking the whole app shell, and give the test `AXE_TEST_TIMEOUT_MS`.
+- jsdom can't compute colors, so the axe tests skip color contrast. Check contrast in a real browser, with Lighthouse or the end-to-end tests.
 
 **Tests**
 
