@@ -16,7 +16,6 @@ export type Cents = number;
 /** The sign shown before an amount, so income and expense don't rely on color alone. */
 export const AMOUNT_SIGN = {
   plus: '+',
-  // A real minus sign, not a hyphen, so it lines up with the plus sign.
   minus: '−',
 } as const;
 
@@ -26,7 +25,6 @@ export const CENTS_PER_UNIT = 100;
 const DECIMALS = 2;
 const MAX_AMOUNT_CENTS: Cents = 999_999_999_999;
 
-// A whole number with up to 2 decimals, once the local separators are replaced.
 const PLAIN_AMOUNT = /^\d+(\.\d{1,2})?$/;
 const SEPARATOR_SAMPLE = 12345.6;
 
@@ -47,7 +45,6 @@ export function parseAmount(text: string, locale: string): Cents | null {
   const { group, decimal } = separators(locale);
   const parts = text.replace(/\s/g, '').split(decimal);
 
-  // Thousands separators are only valid in the whole part, and there is at most one decimal separator.
   if (parts.length > 2) {
     return null;
   }

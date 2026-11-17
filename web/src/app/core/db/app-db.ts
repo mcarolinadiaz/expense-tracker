@@ -19,7 +19,6 @@ export class AppDb extends Dexie {
   constructor() {
     super(DB_NAME);
 
-    // Only the first key and the listed indexes are declared. Other fields are stored but not indexed.
     this.version(1).stores({
       transactions: '++id, date, categoryId',
       categories: '++id, name',

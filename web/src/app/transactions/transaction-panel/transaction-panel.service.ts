@@ -23,7 +23,6 @@ export class TransactionPanelService {
   private readonly categoryService = inject(CategoryService);
   private readonly clock = inject(Clock);
 
-  // The last saved choices, so adding several similar transactions takes fewer clicks.
   private lastSaved: Omit<TransactionDefaults, 'date'> | null = null;
 
   /** Opens the side panel to add a transaction, or to edit the one passed. */

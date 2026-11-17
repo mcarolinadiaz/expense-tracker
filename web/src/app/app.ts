@@ -16,7 +16,6 @@ export class App {
   private readonly content = viewChild.required<ElementRef<HTMLElement>>('content');
 
   constructor() {
-    // The router only resets the window's scroll, but the content area scrolls on its own, so each page starts at the top.
     inject(Router)
       .events.pipe(
         filter((event) => event instanceof NavigationEnd),

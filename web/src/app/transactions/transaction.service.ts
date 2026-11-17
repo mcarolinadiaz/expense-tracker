@@ -5,7 +5,6 @@ import { YearMonth } from '../core/dates';
 import { AppDb } from '../core/db/app-db';
 import { NewTransaction, Transaction } from './transaction';
 
-// Dates are `YYYY-MM-DD` strings, so a month is the text range from its day 01 to day 31, even in shorter months.
 const MONTH_FIRST_DAY = '01';
 const MONTH_LAST_DAY = '31';
 

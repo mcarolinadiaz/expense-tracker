@@ -3,7 +3,6 @@ import { TestBed } from '@angular/core/testing';
 import { APP_LOCALE, LocaleFormat } from './locale-format.service';
 import { AMOUNT_SIGN, CURRENCY } from './money';
 
-// Intl separates the symbol and the number with a non-breaking space, which \s also matches.
 const plain = (text: string) => text.replace(/\s/g, ' ');
 
 describe('LocaleFormat', () => {

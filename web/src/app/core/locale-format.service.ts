@@ -56,7 +56,6 @@ export class LocaleFormat {
     const name = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
       fromIsoDate(month),
     );
-    // Spanish writes month names in lower case, but the name may start a line.
     return name.charAt(0).toLocaleUpperCase(locale) + name.slice(1);
   }
 
