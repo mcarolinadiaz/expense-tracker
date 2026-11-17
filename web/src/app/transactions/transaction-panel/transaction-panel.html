@@ -1,4 +1,4 @@
-<form class="panel-form" [formGroup]="form" (ngSubmit)="save()">
+<form class="panel-form" novalidate (submit)="save(false, $event)">
   <header class="panel-header">
     <h2 class="panel-title" [id]="ids.title">
       {{ editing ? text.transaction.editTitle : text.transaction.addTitle }}
@@ -25,12 +25,11 @@
   <div>
     <label class="field-label" [for]="ids.amount">{{ text.transaction.amount }}</label>
     <input
-      #amount
       class="amount-field"
       type="text"
       inputmode="decimal"
       autocomplete="off"
-      formControlName="amount"
+      [formField]="form.amount"
       [id]="ids.amount"
       [placeholder]="amountHint()"
       [attr.aria-invalid]="amountError() || null"
@@ -51,8 +50,8 @@
           <button
             type="button"
             class="segmented-item"
-            [attr.aria-pressed]="form.controls.type.value === type"
-            (click)="form.controls.type.setValue(type)"
+            [attr.aria-pressed]="model().type === type"
+            (click)="form.type().value.set(type)"
           >
             {{ text.transactionTypes[type] }}
           </button>
@@ -66,8 +65,8 @@
           <button
             type="button"
             class="segmented-item"
-            [attr.aria-pressed]="form.controls.currency.value === currency"
-            (click)="form.controls.currency.setValue(currency)"
+            [attr.aria-pressed]="model().currency === currency"
+            (click)="form.currency().value.set(currency)"
           >
             {{ currency }}
           </button>
@@ -80,7 +79,7 @@
     <label class="field-label" for="transaction-category">{{ text.transaction.category }}</label>
     <app-select
       inputId="transaction-category"
-      formControlName="categoryId"
+      [formField]="form.categoryId"
       [options]="categoryOptions()"
     />
     @if (isNewCategory()) {
@@ -91,8 +90,8 @@
         <input
           id="transaction-new-category"
           class="field"
-          formControlName="newCategory"
           autocomplete="off"
+          [formField]="form.newCategory"
           [attr.aria-invalid]="categoryError() ? true : null"
         />
       </div>
@@ -104,30 +103,25 @@
 
   <div>
     <label class="field-label" for="transaction-date">{{ text.transaction.date }}</label>
-    <input id="transaction-date" class="field" type="date" formControlName="date" />
+    <input id="transaction-date" class="field" type="date" [formField]="form.date" />
   </div>
 
   <div>
     <label class="field-label" for="transaction-description">
       {{ text.transaction.descriptionOptional }}
     </label>
-    <input
-      id="transaction-description"
-      class="field"
-      formControlName="description"
-      [maxlength]="descriptionMaxLength"
-    />
+    <input id="transaction-description" class="field" [formField]="form.description" />
   </div>
 
   <div class="panel-actions">
-    <button type="submit" class="btn btn-primary panel-action" [disabled]="saving()">
+    <button type="submit" class="btn btn-primary panel-action" [disabled]="form().submitting()">
       {{ text.actions.save }}
     </button>
     @if (!editing) {
       <button
         type="button"
         class="btn btn-secondary panel-action"
-        [disabled]="saving()"
+        [disabled]="form().submitting()"
         (click)="save(true)"
       >
         {{ text.actions.saveAndAddAnother }}

@@ -1,9 +1,17 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
-import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { firstValueFrom, map } from 'rxjs';
+import {
+  form,
+  FormField,
+  maxLength,
+  required,
+  submit,
+  TreeValidationResult,
+  validate,
+} from '@angular/forms/signals';
+import { firstValueFrom } from 'rxjs';
 import { Category, CategoryError, CategoryErrorCode } from '../../categories/category';
 import { CategoryService } from '../../categories/category.service';
 import { APP_TEXT } from '../../core/constants/app-text';
@@ -29,8 +37,8 @@ export const TRANSACTION_PANEL_IDS = {
   amountError: 'transaction-amount-error',
 } as const;
 
-// The amount shown as a format example in the empty field: 1,250.50 or 1.250,50.
 const AMOUNT_HINT_CENTS = 125050;
+const INVALID_AMOUNT = 'invalidAmount';
 
 /** The choices the panel starts with when adding, taken from the last saved transaction. */
 export interface TransactionDefaults {
@@ -48,9 +56,20 @@ export interface TransactionPanelData {
   onSaved: (saved: Pick<NewTransaction, 'type' | 'currency' | 'categoryId'>) => void;
 }
 
+/** What the user types, before it becomes a transaction: the amount is still text. */
+interface TransactionFormModel {
+  amount: string;
+  type: TransactionType;
+  currency: Currency;
+  categoryId: CategoryChoice;
+  newCategory: string;
+  date: IsoDate;
+  description: string;
+}
+
 /** The side panel to add or edit a transaction. Open it with `TransactionPanelService`. */
 @Component({
-  imports: [ReactiveFormsModule, Select],
+  imports: [FormField, Select],
   selector: 'app-transaction-panel',
   styleUrl: './transaction-panel.css',
   templateUrl: './transaction-panel.html',
@@ -67,25 +86,25 @@ export class TransactionPanel {
   protected readonly ids = TRANSACTION_PANEL_IDS;
   protected readonly types = [TRANSACTION_TYPE.expense, TRANSACTION_TYPE.income];
   protected readonly currencies = CURRENCIES;
-  protected readonly descriptionMaxLength = TRANSACTION_DESCRIPTION_MAX_LENGTH;
   protected readonly editing = this.data.transaction !== undefined;
   protected readonly amountHint = computed(() => this.format.formatAmount(AMOUNT_HINT_CENTS));
 
-  protected readonly form = inject(NonNullableFormBuilder).group({
-    amount: [this.data.transaction ? this.format.formatAmount(this.data.transaction.amount) : ''],
-    type: [this.data.transaction?.type ?? this.data.defaults.type],
-    currency: [this.data.transaction?.currency ?? this.data.defaults.currency],
-    categoryId: [
-      (this.data.transaction?.categoryId ??
-        this.data.defaults.categoryId ??
-        NEW_CATEGORY) as CategoryChoice,
-    ],
-    newCategory: [''],
-    date: [this.data.transaction?.date ?? this.data.defaults.date, Validators.required],
-    description: [
-      this.data.transaction?.description ?? '',
-      Validators.maxLength(TRANSACTION_DESCRIPTION_MAX_LENGTH),
-    ],
+  protected readonly model = signal<TransactionFormModel>({
+    amount: this.data.transaction ? this.format.formatAmount(this.data.transaction.amount) : '',
+    type: this.data.transaction?.type ?? this.data.defaults.type,
+    currency: this.data.transaction?.currency ?? this.data.defaults.currency,
+    categoryId: this.data.transaction?.categoryId ?? this.data.defaults.categoryId ?? NEW_CATEGORY,
+    newCategory: '',
+    date: this.data.transaction?.date ?? this.data.defaults.date,
+    description: this.data.transaction?.description ?? '',
+  });
+
+  protected readonly form = form(this.model, (path) => {
+    validate(path.amount, ({ value }) =>
+      this.format.parseAmount(value()) === null ? { kind: INVALID_AMOUNT } : undefined,
+    );
+    required(path.date);
+    maxLength(path.description, TRANSACTION_DESCRIPTION_MAX_LENGTH);
   });
 
   private readonly categories = toSignal(this.categoryService.list(), {
@@ -95,71 +114,68 @@ export class TransactionPanel {
     ...this.categories().map((category) => ({ value: category.id, label: category.name })),
     { value: NEW_CATEGORY, label: APP_TEXT.transaction.newCategoryOption },
   ]);
-  protected readonly isNewCategory = toSignal(
-    this.form.controls.categoryId.valueChanges.pipe(map((id) => id === NEW_CATEGORY)),
-    { initialValue: this.form.controls.categoryId.value === NEW_CATEGORY },
+  protected readonly isNewCategory = computed(() => this.model().categoryId === NEW_CATEGORY);
+
+  protected readonly amountError = computed(
+    () => this.form.amount().invalid() && this.form.amount().touched(),
   );
-
-  protected readonly amountError = signal(false);
-  protected readonly categoryError = signal<CategoryErrorCode | null>(null);
-  protected readonly saving = signal(false);
-
-  private readonly amountInput = viewChild.required<ElementRef<HTMLInputElement>>('amount');
+  protected readonly categoryError = computed(
+    () => this.form.newCategory().errors()[0]?.kind as CategoryErrorCode | undefined,
+  );
 
   protected close(): void {
     this.dialogRef.close();
   }
 
-  protected async save(addAnother = false): Promise<void> {
-    const value = this.form.getRawValue();
-    const amount = this.format.parseAmount(value.amount);
-    this.amountError.set(amount === null);
-    this.categoryError.set(null);
+  protected async save(addAnother = false, event?: Event): Promise<void> {
+    event?.preventDefault();
+    await submit(this.form, () => this.persist(addAnother));
+  }
 
-    if (amount === null || this.form.invalid || this.saving()) {
-      return;
-    }
+  /** Saves the valid form. A broken category rule comes back as an error on the new category field. */
+  private async persist(addAnother: boolean): Promise<TreeValidationResult> {
+    const value = this.model();
+    const amount = this.format.parseAmount(value.amount)!;
 
-    this.saving.set(true);
+    let categoryId: number;
     try {
-      const categoryId =
+      categoryId =
         value.categoryId === NEW_CATEGORY
           ? await firstValueFrom(this.categoryService.add(value.newCategory))
           : value.categoryId;
-      const record: NewTransaction = {
-        date: value.date,
-        type: value.type,
-        currency: value.currency,
-        amount,
-        categoryId,
-        description: value.description.trim(),
-      };
-
-      if (this.data.transaction) {
-        await firstValueFrom(
-          this.transactionService.update({ ...record, id: this.data.transaction.id }),
-        );
-      } else {
-        await firstValueFrom(this.transactionService.add(record));
-      }
-
-      this.data.onSaved({ type: record.type, currency: record.currency, categoryId });
-      this.announcer.announce(APP_TEXT.transaction.saved);
-
-      if (addAnother) {
-        // Keep the type, currency, category and date, which usually repeat.
-        this.form.patchValue({ amount: '', description: '', categoryId, newCategory: '' });
-        this.amountInput().nativeElement.focus();
-      } else {
-        this.close();
-      }
     } catch (error) {
-      if (!(error instanceof CategoryError)) {
-        throw error;
+      if (error instanceof CategoryError) {
+        return { kind: error.code, fieldTree: this.form.newCategory };
       }
-      this.categoryError.set(error.code);
-    } finally {
-      this.saving.set(false);
+      throw error;
     }
+
+    const record: NewTransaction = {
+      date: value.date,
+      type: value.type,
+      currency: value.currency,
+      amount,
+      categoryId,
+      description: value.description.trim(),
+    };
+
+    if (this.data.transaction) {
+      await firstValueFrom(
+        this.transactionService.update({ ...record, id: this.data.transaction.id }),
+      );
+    } else {
+      await firstValueFrom(this.transactionService.add(record));
+    }
+
+    this.data.onSaved({ type: record.type, currency: record.currency, categoryId });
+    void this.announcer.announce(APP_TEXT.transaction.saved);
+
+    if (addAnother) {
+      this.form().reset({ ...value, amount: '', description: '', categoryId, newCategory: '' });
+      this.form.amount().focusBoundControl();
+    } else {
+      this.close();
+    }
+    return undefined;
   }
 }
