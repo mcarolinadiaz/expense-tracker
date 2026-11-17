@@ -6,26 +6,31 @@
 </ng-template>
 
 <section class="card" [attr.aria-label]="text.pages.activity">
-  <form class="filters" [formGroup]="filters" [attr.aria-label]="text.activity.filters">
+  <form
+    class="filters"
+    role="search"
+    [attr.aria-label]="text.activity.filters"
+    (submit)="$event.preventDefault()"
+  >
     <div class="filter-search">
       <label class="field-label" for="activity-search">{{ text.activity.search }}</label>
       <input
         id="activity-search"
         class="field"
         type="search"
-        formControlName="search"
+        [formField]="filters.search"
         [placeholder]="text.activity.searchHint"
       />
     </div>
     <div class="filter">
       <label class="field-label" for="activity-type">{{ text.transaction.type }}</label>
-      <app-select inputId="activity-type" formControlName="type" [options]="typeOptions" />
+      <app-select inputId="activity-type" [formField]="filters.type" [options]="typeOptions" />
     </div>
     <div class="filter">
       <label class="field-label" for="activity-category">{{ text.transaction.category }}</label>
       <app-select
         inputId="activity-category"
-        formControlName="categoryId"
+        [formField]="filters.categoryId"
         [options]="categoryOptions()"
       />
     </div>
@@ -36,8 +41,8 @@
           <button
             type="button"
             class="segmented-item"
-            [attr.aria-pressed]="filters.controls.currency.value === currency"
-            (click)="filters.controls.currency.setValue(currency)"
+            [attr.aria-pressed]="filterValues().currency === currency"
+            (click)="filters.currency().value.set(currency)"
           >
             {{ currency === all ? text.activity.allCurrencies : currency }}
           </button>

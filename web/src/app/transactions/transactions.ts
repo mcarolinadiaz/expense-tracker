@@ -1,8 +1,8 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
-import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { firstValueFrom, map } from 'rxjs';
+import { form, FormField } from '@angular/forms/signals';
+import { firstValueFrom } from 'rxjs';
 import { CategoryService } from '../categories/category.service';
 import { APP_TEXT } from '../core/constants/app-text';
 import { LocaleFormat } from '../core/locale-format.service';
@@ -18,6 +18,20 @@ import { TransactionService } from './transaction.service';
 export const FILTER_ALL = 'all';
 type Filter<T> = T | typeof FILTER_ALL;
 
+interface ActivityFilters {
+  search: string;
+  type: Filter<TransactionType>;
+  categoryId: Filter<number>;
+  currency: Filter<Currency>;
+}
+
+const NO_FILTERS: ActivityFilters = {
+  search: '',
+  type: FILTER_ALL,
+  categoryId: FILTER_ALL,
+  currency: FILTER_ALL,
+};
+
 const EMPTY_DESCRIPTION = '—';
 
 interface TransactionRow {
@@ -29,7 +43,7 @@ interface TransactionRow {
 }
 
 @Component({
-  imports: [MonthPicker, NavbarActions, ReactiveFormsModule, Select],
+  imports: [FormField, MonthPicker, NavbarActions, Select],
   selector: 'app-transactions',
   styleUrl: './transactions.css',
   templateUrl: './transactions.html',
@@ -48,16 +62,8 @@ export class Transactions {
   protected readonly currencyFilters: Filter<Currency>[] = [FILTER_ALL, ...CURRENCIES];
   protected readonly confirmingId = signal<number | null>(null);
 
-  protected readonly filters = inject(NonNullableFormBuilder).group({
-    search: [''],
-    type: [FILTER_ALL as Filter<TransactionType>],
-    categoryId: [FILTER_ALL as Filter<number>],
-    currency: [FILTER_ALL as Filter<Currency>],
-  });
-  private readonly filterValues = toSignal(
-    this.filters.valueChanges.pipe(map(() => this.filters.getRawValue())),
-    { initialValue: this.filters.getRawValue() },
-  );
+  protected readonly filterValues = signal<ActivityFilters>(NO_FILTERS);
+  protected readonly filters = form(this.filterValues);
 
   protected readonly typeOptions: SelectOption<Filter<TransactionType>>[] = [
     { value: FILTER_ALL, label: APP_TEXT.activity.allTypes },
@@ -131,7 +137,7 @@ export class Transactions {
   }
 
   protected clearFilters(): void {
-    this.filters.reset();
+    this.filters().reset(NO_FILTERS);
   }
 
   /** The accessible name of a row's buttons, such as "Edit: Taxi". */
