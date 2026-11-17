@@ -40,7 +40,6 @@
   @apply mt-3;
 }
 
-/* The buttons stay at the bottom of the panel when the form is short. */
 .panel-actions {
   @apply mt-auto flex flex-wrap gap-3;
 }

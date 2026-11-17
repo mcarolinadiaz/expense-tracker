@@ -4,7 +4,6 @@
   @apply block;
 }
 
-/* Same look as .field, plus the chevron. */
 .select-trigger {
   @apply flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-control bg-surface px-3 text-left transition-colors enabled:hover:border-muted disabled:cursor-not-allowed disabled:opacity-50 aria-expanded:border-accent aria-invalid:border-expense;
 }
@@ -25,7 +24,6 @@
   @apply flex max-h-72 flex-col gap-0.5 overflow-y-auto rounded-lg border border-line bg-surface p-1 shadow-lg outline-none;
 }
 
-/* The CDK marks the chosen option with aria-selected and the keyboard or mouse position with .cdk-option-active. */
 .select-option {
   @apply flex min-h-10 cursor-pointer items-center justify-between gap-2 rounded-md px-3 font-medium outline-none hover:bg-hover aria-selected:bg-accent-soft aria-selected:font-semibold aria-selected:text-accent;
 }

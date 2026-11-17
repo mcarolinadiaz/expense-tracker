@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 
-/* Design tokens from the Expense Tracker mockup. Each one creates Tailwind utilities, such as bg-accent and text-muted. */
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -56,9 +55,7 @@
   }
 }
 
-/* Reusable UI classes. In this layer, a Tailwind utility can still override them, as in class="card p-8". */
 @layer components {
-  /* Text */
   .page-title {
     @apply font-display text-title font-semibold;
   }
@@ -67,7 +64,6 @@
     @apply font-display text-lg font-semibold;
   }
 
-  /* Cards */
   .card {
     @apply rounded-xl border border-line bg-surface p-5;
   }
@@ -88,7 +84,6 @@
     @apply mt-2 text-figure font-semibold tabular-nums;
   }
 
-  /* Money: combine with a sign, as color alone doesn't tell income from expense */
   .amount {
     @apply font-medium whitespace-nowrap tabular-nums;
   }
@@ -101,7 +96,6 @@
     @apply text-expense;
   }
 
-  /* Buttons: use .btn with one variant, as in class="btn btn-primary" */
   .btn {
     @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg px-4 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
   }
@@ -122,12 +116,10 @@
     @apply bg-expense font-semibold text-surface enabled:hover:bg-expense-hover;
   }
 
-  /* Square button for a single icon, as in class="btn btn-ghost btn-icon". Needs an aria-label. */
   .btn-icon {
     @apply w-11 px-0;
   }
 
-  /* Forms */
   .field-label {
     @apply mb-1.5 block text-sm font-medium;
   }
@@ -140,7 +132,6 @@
     @apply mt-1.5 text-sm text-expense;
   }
 
-  /* Segmented control: a group of buttons where aria-pressed marks the active one */
   .segmented {
     @apply flex overflow-hidden rounded-lg border border-control bg-surface;
   }
@@ -149,7 +140,6 @@
     @apply h-11 flex-1 px-3 font-medium transition-colors not-aria-pressed:hover:bg-hover focus-visible:-outline-offset-2 aria-pressed:bg-accent aria-pressed:text-surface;
   }
 
-  /* The dimmed layer behind side panels. The CDK adds it outside any component, so it lives here. */
   .panel-backdrop {
     @apply bg-ink/40;
   }

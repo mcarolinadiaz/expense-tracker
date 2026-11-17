@@ -12,7 +12,6 @@
   @apply flex-[1_1_9.5rem];
 }
 
-/* Wide tables scroll inside their own box on narrow screens. */
 .table-scroll {
   @apply mt-5 overflow-x-auto;
 }
