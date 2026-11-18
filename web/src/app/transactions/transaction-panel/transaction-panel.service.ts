@@ -34,7 +34,9 @@ export class TransactionPanelService {
       defaults: {
         type: this.lastSaved?.type ?? TRANSACTION_TYPE.expense,
         currency: this.lastSaved?.currency ?? CURRENCY.ARS,
-        categoryId: this.lastSaved?.categoryId ?? categories[0]?.id ?? null,
+        categoryId: categories.some((category) => category.id === this.lastSaved?.categoryId)
+          ? this.lastSaved!.categoryId
+          : (categories[0]?.id ?? null),
         date: this.clock.today(),
       },
       onSaved: (saved) => (this.lastSaved = saved),

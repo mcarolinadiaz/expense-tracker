@@ -1,0 +1,65 @@
+@reference '../../styles.css';
+
+.data-page {
+  @apply flex max-w-180 flex-col gap-6;
+}
+
+.data-section {
+  @apply relative p-6;
+}
+
+.data-muted {
+  @apply mt-2 text-muted;
+}
+
+.data-counts {
+  @apply mt-5 grid grid-cols-3 gap-3;
+}
+
+.data-count {
+  @apply rounded-lg bg-canvas p-3;
+}
+
+.data-count-label {
+  @apply text-sm text-muted;
+}
+
+.data-count-value {
+  @apply text-[1.375rem] font-semibold tabular-nums;
+}
+
+.data-last-backup {
+  @apply mt-3 text-sm;
+}
+
+.data-actions {
+  @apply mt-4 flex flex-wrap gap-3;
+}
+
+.data-file-input {
+  @apply hidden;
+}
+
+.data-confirm {
+  @apply mt-4 flex flex-wrap items-center gap-3 rounded-lg bg-expense-soft p-3;
+}
+
+.data-confirm-text {
+  @apply flex-[1_1_13.75rem];
+}
+
+.data-link-row {
+  @apply mt-3;
+}
+
+.data-link {
+  @apply font-medium text-accent underline underline-offset-2 hover:text-accent-hover;
+}
+
+.data-danger {
+  @apply border-expense/40;
+}
+
+.data-danger-button {
+  @apply mt-4 border-expense font-semibold text-expense-hover;
+}

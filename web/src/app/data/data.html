@@ -1,0 +1,92 @@
+<div class="data-page">
+  <section class="card data-section" aria-labelledby="data-title">
+    <h2 id="data-title" class="section-title">{{ text.data.title }}</h2>
+    <p class="data-muted">{{ text.data.body }}</p>
+    <dl class="data-counts">
+      @for (item of countItems(); track item.label) {
+        <div class="data-count">
+          <dt class="data-count-label">{{ item.label }}</dt>
+          <dd class="data-count-value">{{ item.count }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  <section class="card data-section" aria-labelledby="data-backup-title">
+    <h2 id="data-backup-title" class="section-title">{{ text.data.backupTitle }}</h2>
+    <p class="data-muted">{{ text.data.backupBody }}</p>
+    <p class="data-last-backup">
+      {{ text.data.lastBackup }}: <strong>{{ lastBackup() }}</strong>
+    </p>
+    <div class="data-actions">
+      <button
+        type="button"
+        class="btn btn-primary"
+        [id]="ids.exportButton"
+        (click)="exportBackup()"
+      >
+        {{ text.data.exportBackup }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [id]="ids.importButton"
+        [disabled]="busy()"
+        (click)="askImport()"
+      >
+        {{ text.data.importBackup }}
+      </button>
+    </div>
+    <input
+      #fileInput
+      class="data-file-input"
+      type="file"
+      tabindex="-1"
+      aria-hidden="true"
+      [accept]="fileType"
+      (change)="importFile($event)"
+    />
+
+    @if (confirmingImport()) {
+      <div class="data-confirm" role="alert">
+        <span class="data-confirm-text">{{ text.data.confirmImport }}</span>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [id]="ids.chooseFile"
+          [disabled]="busy()"
+          (click)="chooseFile()"
+        >
+          {{ text.data.chooseFile }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancelImport()">
+          {{ text.actions.cancel }}
+        </button>
+      </div>
+    }
+    @if (importError(); as code) {
+      <p class="field-error" role="alert" [id]="ids.importError">
+        {{ text.backupErrors[code] }}
+      </p>
+    }
+  </section>
+
+  <section class="card data-section" aria-labelledby="data-about-title">
+    <h2 id="data-about-title" class="section-title">{{ text.data.aboutTitle }}</h2>
+    <p class="data-muted">{{ text.data.aboutBody }}</p>
+    <p class="data-link-row">
+      <a class="data-link" [href]="apiDocsUrl" target="_blank" rel="noopener">
+        {{ text.data.apiDocs }}
+        <span class="sr-only">{{ text.data.opensInNewTab }}</span>
+      </a>
+    </p>
+  </section>
+
+  <section class="card data-section data-danger" aria-labelledby="data-danger-title">
+    <h2 id="data-danger-title" class="section-title">{{ text.data.dangerTitle }}</h2>
+    <p class="data-muted">{{ text.data.dangerBody }}</p>
+    <button type="button" class="btn btn-secondary data-danger-button" (click)="wipe()">
+      {{ text.data.deleteAll }}
+    </button>
+  </section>
+</div>

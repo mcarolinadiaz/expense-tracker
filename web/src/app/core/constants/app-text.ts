@@ -11,6 +11,7 @@ import {
   INCREASE_RULE,
   IncreaseRule,
 } from '../../projections/fixed-cost';
+import { BACKUP_ERROR, BACKUP_MAX_BYTES, BackupErrorCode } from '../../data/backup';
 import { IPC_ESTIMATE, IPC_MAX_CUSTOM_RATE, IpcEstimate } from '../../projections/ipc-factors';
 import { TRANSACTION_TYPE, TransactionType } from '../../transactions/transaction';
 
@@ -18,6 +19,7 @@ const transactionCount = (count: number) =>
   count === 1 ? '1 transaction' : `${count} transactions`;
 
 const AMOUNT_ERROR = 'Enter an amount above 0, with up to 2 decimals.';
+const BYTES_PER_MEGABYTE = 1024 * 1024;
 
 export const APP_TEXT = {
   appName: 'Expense Tracker',
@@ -27,6 +29,7 @@ export const APP_TEXT = {
     activity: 'Activity',
     categories: 'Categories',
     projections: 'Projections',
+    data: 'Data',
   },
   actions: {
     addTransaction: 'Add transaction',
@@ -184,4 +187,42 @@ export const APP_TEXT = {
     [FIXED_COST_ERROR.invalidIncreaseAmount]: AMOUNT_ERROR,
     [FIXED_COST_ERROR.futureLastIncrease]: 'Choose this month or an earlier one.',
   } satisfies Record<FixedCostErrorCode, string>,
+  data: {
+    title: 'Your data',
+    body: 'Everything is stored in this browser. There are no accounts or servers holding your data.',
+    transactions: 'Transactions',
+    categories: 'Categories',
+    fixedCosts: 'Fixed costs',
+    backupTitle: 'Backup',
+    backupBody:
+      'If you clear your browser data or change devices, you lose anything you have not exported. Use a backup to move your data to another device.',
+    lastBackup: 'Last backup',
+    never: 'never',
+    today: 'today',
+    exportBackup: 'Export backup',
+    importBackup: 'Import backup',
+    confirmImport: 'Importing replaces all the data on this device with the data in the file.',
+    chooseFile: 'Choose file',
+    exported: 'Backup exported',
+    imported: 'Backup imported',
+    aboutTitle: 'About',
+    aboutBody:
+      'Inflation (IPC) data comes from INDEC, through a public API that never receives your amounts.',
+    apiDocs: 'API documentation',
+    opensInNewTab: '(opens in a new tab)',
+    dangerTitle: 'Delete everything',
+    dangerBody: 'Deletes all your data from this device. This cannot be undone.',
+    deleteAll: 'Delete all data',
+    confirmWipeTitle: 'Delete all data?',
+    confirmWipe:
+      'This deletes every transaction, category and fixed cost on this device. Export a backup first if you may need them.',
+    wiped: 'All data deleted',
+  },
+  backupErrors: {
+    [BACKUP_ERROR.invalid]:
+      'This file is not an Expense Tracker backup, or it is damaged. Nothing was changed.',
+    [BACKUP_ERROR.newerVersion]:
+      'This backup comes from a newer version of the app. Update the app and try again. Nothing was changed.',
+    [BACKUP_ERROR.tooLarge]: `This file is larger than ${BACKUP_MAX_BYTES / BYTES_PER_MEGABYTE} MB, so it can't be a backup. Nothing was changed.`,
+  } satisfies Record<BackupErrorCode, string>,
 } as const;
