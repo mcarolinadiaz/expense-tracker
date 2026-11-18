@@ -43,12 +43,13 @@ expense-tracker/
 │   ├── environments/           # apiUrl per build (environment.development.ts for ng serve)
 │   └── app/
 │       ├── core/               # App-wide code: AppDb, Clock, dates, money, decimal, API_URL, APP_TEXT, page routes
-│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, spinner, pipes
+│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, spinner, confirm-dialog, pipes
 │       ├── layout/             # side-bar and navbar
 │       ├── overview/           # Overview page and its summary service
 │       ├── transactions/       # Activity page, transaction model and service, side panel
 │       ├── categories/         # Categories page, category model and service
-│       └── projections/        # Projections page, fixed costs and their panel, the IPC factors client and the projection
+│       ├── projections/        # Projections page, fixed costs and their panel, the IPC factors client and the projection
+│       └── data/               # Data page: backup format, export, import and deleting all data
 └── api/
     ├── app/
     │   ├── Data/               # Readonly data objects, such as IpcMonth and IpcFactor
@@ -186,7 +187,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Buttons combine `btn` with one variant, such as `btn btn-primary`. `btn-icon` makes a square button for a single icon, which needs an `aria-label`.
 - The segmented control (`segmented` and `segmented-item`) is a group of buttons where `aria-pressed` marks the active one.
 - `panel-backdrop` is global because the CDK adds the backdrop behind side panels outside any component.
-- Side panels share the `panel-*` classes and `amount-field`. Each panel component sets `side-panel` on its host through `host: { class }`, since `:host` styles can't be shared.
+- Side panels share the `panel-*` classes and `amount-field`. Each panel component sets `side-panel` on its host through `host: { class }`, since `:host` styles can't be shared. A class set on the host only works from `styles.css`: the component's own CSS scopes each selector to its template, which doesn't include the host, so style the host there with `:host`.
 
 **Dates and money (`core/`)**
 
@@ -202,6 +203,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Dexie's `stores()` only lists the primary key and the indexed fields. Other fields are stored too, but can't be queried with `where()`.
 - `TransactionService.listMonth()` reads the month as the text range from `YYYY-MM-01` to `YYYY-MM-31`, which works for every month because dates are `YYYY-MM-DD` strings.
 - `version(2)` adds `fixedCosts`, indexed by `currency`. A later version only lists the stores it adds or changes, and Dexie keeps the others.
+- `version(3)` adds `settings`, keyed by `key`, for settings of the device such as the day of the last backup. They are never part of a backup.
 
 **Select (`shared/select/`)**
 
@@ -241,6 +243,16 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Deleting a fixed cost asks for no confirmation, as in the mockup. The page announces it with `LiveAnnouncer`.
 - The table scrolls sideways in a focusable `region`, so it can be scrolled with the keyboard, and its first column stays in place. The region is `relative`: `sr-only` text is `position: absolute`, and without a positioned ancestor it is placed against the whole page, so the cells of the last months would widen the page. Increase months are tinted and bold, and say "increase" to screen readers, so they don't rely on color. The bar chart is `aria-hidden` because the table holds the same totals.
 - The fixed cost panel asks for `lastIncrease` with `type="month"` for every rule, and rejects a month after the current one, which the API also rejects.
+- The currency selector only shows the costs stored in that currency. Projections never convert between USD and ARS, as the product decisions say.
+
+**Data (`data/`)**
+
+- A backup is a JSON file with `format`, `version`, `exportedOn` and every category, transaction and fixed cost, with their ids, so transactions keep pointing to their categories after an import.
+- `parseBackup()` never trusts the file: it checks every field of every record, that ids and category names are unique, and that each transaction's category is in the file, and keeps only the known fields. Any problem fails with a `BackupError` code before anything is written.
+- Importing replaces all data in one IndexedDB transaction, so a failure leaves the old data. A file from a newer `version` asks to update the app. Raise `BACKUP_VERSION` and read older versions when the stored records change.
+- Exporting saves the day in `settings`, shown as "Last backup". `FileDownload` (`core/`) saves the file, so tests replace it instead of the browser download.
+- Importing asks first in an inline alert, as in the mockup, then opens the file picker of a hidden `input`. Deleting everything asks in a modal (`ConfirmDialogService`, `shared/confirm-dialog/`), which starts on Cancel so Enter never deletes by mistake, and gives the focus back to the button.
+- The API docs link comes from `API_DOCS_URL`, built from `API_URL`.
 
 **Tests**
 
@@ -351,7 +363,7 @@ These development defaults are not yet handled:
 | 2 | API | `GET /api/ipc/factors`: adjustment factors for the next months for a cost that increases every N months, estimating future months from the average of recent months or a custom rate | Done |
 | 3 | API | Remove users, authentication, the CRUD endpoints and MariaDB. Switch to the file cache and restrict CORS | Done |
 | 4 | API | Add API docs, serve the last known IPC data when INDEC is down, and deploy a container | Pending |
-| 5 | Web | Store transactions, categories and fixed costs in IndexedDB behind the existing services, with money in cents, and add backup export and import | Pending |
+| 5 | Web | Store transactions, categories and fixed costs in IndexedDB behind the existing services, with money in cents, and add backup export and import | Done |
 | 6 | Web | Build the Projections and Data pages from the mockup, make the app a PWA, add translations and deploy it | Pending |
 
 The REM series on datos.gob.ar appear to stop in 2025, so the REM estimate option is postponed until a current source is found.
