@@ -1,5 +1,5 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
@@ -17,6 +17,16 @@ import { TransactionService } from './transaction.service';
 
 export const FILTER_ALL = 'all';
 type Filter<T> = T | typeof FILTER_ALL;
+
+/** The query parameters Activity reads, such as `/transactions?category=3`. */
+export const ACTIVITY_QUERY_PARAM = {
+  category: 'category',
+} as const;
+
+function categoryFilter(param: string | undefined): Filter<number> {
+  const id = Number(param);
+  return Number.isInteger(id) && id > 0 ? id : FILTER_ALL;
+}
 
 interface ActivityFilters {
   search: string;
@@ -62,7 +72,13 @@ export class Transactions {
   protected readonly currencyFilters: Filter<Currency>[] = [FILTER_ALL, ...CURRENCIES];
   protected readonly confirmingId = signal<number | null>(null);
 
-  protected readonly filterValues = signal<ActivityFilters>(NO_FILTERS);
+  /** The category id from `ACTIVITY_QUERY_PARAM.category`, bound by the router. */
+  readonly category = input<string>();
+
+  protected readonly filterValues = linkedSignal<ActivityFilters>(() => ({
+    ...NO_FILTERS,
+    categoryId: categoryFilter(this.category()),
+  }));
   protected readonly filters = form(this.filterValues);
 
   protected readonly typeOptions: SelectOption<Filter<TransactionType>>[] = [

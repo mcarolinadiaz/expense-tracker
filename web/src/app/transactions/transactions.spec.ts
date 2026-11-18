@@ -130,6 +130,20 @@ describe('Transactions', () => {
     expect(rowTexts()).toEqual(['Nov 6 Supermercado Comida − ARS 184,350.50']);
   });
 
+  it('should start filtered by the category in the query parameter', async () => {
+    await seed();
+    fixture = TestBed.createComponent(Transactions);
+    element = fixture.nativeElement;
+    const categories = await firstValueFrom(TestBed.inject(CategoryService).list());
+    fixture.componentRef.setInput(
+      'category',
+      String(categories.find((category) => category.name === 'Sueldo')!.id),
+    );
+    await settle();
+
+    expect(rowTexts()).toEqual(['Nov 1 Sueldo de noviembre Sueldo + ARS 1,850,000.00']);
+  });
+
   it('should offer to clear the filters when nothing matches', async () => {
     await seed();
     await render();
