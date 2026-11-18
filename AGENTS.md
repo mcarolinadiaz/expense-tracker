@@ -189,6 +189,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 
 - `LocaleFormat.monthName()` capitalizes the first letter, because Spanish writes month names in lower case but the name may start a line.
 - `parseAmount()` only accepts thousands separators in the whole part and one decimal separator, so `1.250,5.0` is rejected rather than read as `1.250,50`.
+- `LocaleFormat.money()` writes `−` before a negative amount, such as a negative balance, rather than the hyphen `Intl` uses.
 - `Intl` separates a currency symbol and its number with a non-breaking space. Tests that compare formatted amounts replace `\s` with a plain space first.
 
 **Database (`core/db/`)**
@@ -209,7 +210,12 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - The panel's form keeps the amount as text. When saving, the amount validator has already checked that it parses, so `persist()` can parse it without checking again.
 - The Activity filters need no validation, so their form only binds the fields to the `filterValues` signal.
 - The Activity table scrolls sideways inside its own box on narrow screens. The side panel's buttons stay at its bottom when the form is short.
-- Activity reads `?category=<id>` (`ACTIVITY_QUERY_PARAM`) as its `category` input, through `withComponentInputBinding()`. Its filters are a `linkedSignal` that starts from that category, and the filter only covers the selected month.
+- Activity reads `?category=<id>` and `?currency=<code>` (`ACTIVITY_QUERY_PARAM`) as its `category` and `currency` inputs, through `withComponentInputBinding()`. Its filters are a `linkedSignal` that starts from them, and they only cover the selected month.
+
+**Overview (`overview/`)**
+
+- `SummaryService` combines the month's transactions with the categories, keeps one currency and adds up in integer cents. Each category's `share` is its percentage of the largest category, used only for the width of its bar.
+- Overview and Activity share the month through `SelectedMonthService`, but each page keeps its own currency. The category bars and "View all" are links to Activity with the same currency, and the bar's category.
 
 **Categories (`categories/`)**
 
