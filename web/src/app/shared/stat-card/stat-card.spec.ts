@@ -5,7 +5,8 @@ import { STAT_CARD_TONE, StatCard } from './stat-card';
 describe('StatCard', () => {
   let fixture: ComponentFixture<StatCard>;
 
-  const value = () => (fixture.nativeElement as HTMLElement).querySelector('.stat-value')!;
+  const element = () => fixture.nativeElement as HTMLElement;
+  const value = () => element().querySelector('.stat-value')!;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -14,22 +15,23 @@ describe('StatCard', () => {
 
     fixture = TestBed.createComponent(StatCard);
     fixture.componentRef.setInput('label', 'Income');
-    fixture.componentRef.setInput('amount', '1250.50');
+    fixture.componentRef.setInput('amount', 125050);
     fixture.componentRef.setInput('currency', CURRENCY.USD);
+    fixture.componentRef.setInput('tone', STAT_CARD_TONE.income);
   });
 
   it('should show the label and the formatted amount', async () => {
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.querySelector('.stat-label').textContent).toContain('Income');
-    expect(value().textContent).toContain('$1,250.50');
+    expect(element().querySelector('.stat-label')!.textContent).toContain('Income');
+    expect(value().textContent?.trim()).toBe('$1,250.50');
   });
 
-  it('should not color a neutral amount', async () => {
+  it('should write a negative amount with a minus sign', async () => {
+    fixture.componentRef.setInput('amount', -125050);
     await fixture.whenStable();
 
-    expect(value().classList).not.toContain('amount-income');
-    expect(value().classList).not.toContain('amount-expense');
+    expect(value().textContent?.trim()).toBe('− $1,250.50');
   });
 
   it.each([
@@ -40,5 +42,14 @@ describe('StatCard', () => {
     await fixture.whenStable();
 
     expect(value().classList).toContain(cssClass);
+  });
+
+  it('should show a highlighted amount on a dark card, without color', async () => {
+    fixture.componentRef.setInput('tone', STAT_CARD_TONE.highlight);
+    await fixture.whenStable();
+
+    expect(element().querySelector('article')!.classList).toContain('card-inverse');
+    expect(value().classList).not.toContain('amount-income');
+    expect(value().classList).not.toContain('amount-expense');
   });
 });
