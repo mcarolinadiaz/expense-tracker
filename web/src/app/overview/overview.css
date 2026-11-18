@@ -1,5 +1,73 @@
 @reference '../../styles.css';
 
+.overview {
+  @apply flex flex-col gap-6;
+}
+
 .stat-cards {
   @apply grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4;
+}
+
+.overview-details {
+  @apply flex flex-wrap items-start gap-6;
+}
+
+.overview-panel {
+  @apply min-w-0 flex-[1_1_24rem] p-6;
+}
+
+.overview-panel-title {
+  @apply mb-5;
+}
+
+.overview-panel-header {
+  @apply mb-3 flex items-center justify-between gap-3;
+}
+
+.overview-muted {
+  @apply text-muted;
+}
+
+.category-bars {
+  @apply flex flex-col gap-2;
+}
+
+.category-bar {
+  @apply -mx-2 block rounded-lg p-2 hover:bg-hover;
+}
+
+.category-bar-heading {
+  @apply flex justify-between gap-3;
+}
+
+.category-bar-name {
+  @apply font-medium;
+}
+
+.category-bar-track {
+  @apply mt-1.5 block h-2 overflow-hidden rounded bg-line-soft;
+}
+
+.category-bar-fill {
+  @apply block h-2 rounded bg-accent;
+}
+
+.view-all {
+  @apply px-2.5 text-accent;
+}
+
+.recent-row {
+  @apply flex items-center justify-between gap-3 border-t border-line-soft py-3;
+}
+
+.recent-text {
+  @apply min-w-0;
+}
+
+.recent-title {
+  @apply font-medium;
+}
+
+.recent-details {
+  @apply text-sm text-muted;
 }

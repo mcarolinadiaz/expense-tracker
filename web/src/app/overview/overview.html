@@ -1,5 +1,6 @@
 <ng-template appNavbarActions>
-  <div class="segmented" role="group" [attr.aria-label]="text.currency">
+  <app-month-picker />
+  <div class="segmented" role="group" [attr.aria-label]="text.summary.currency">
     @for (option of currencies; track option) {
       <button
         type="button"
@@ -13,17 +14,91 @@
   </div>
 
   <button type="button" class="btn btn-primary" (click)="addTransaction()">
-    {{ actionText.addTransaction }}
+    {{ text.actions.addTransaction }}
   </button>
 </ng-template>
 
-<section class="stat-cards" [attr.aria-label]="text.title">
-  @for (card of cards(); track card.label) {
-    <app-stat-card
-      [label]="card.label"
-      [amount]="card.amount"
-      [currency]="currency()"
-      [tone]="card.tone"
-    />
+<div class="overview">
+  <section class="stat-cards" [attr.aria-label]="text.summary.title">
+    @for (card of cards(); track card.label) {
+      <app-stat-card
+        [label]="card.label"
+        [amount]="card.amount"
+        [currency]="currency()"
+        [tone]="card.tone"
+      />
+    }
+  </section>
+
+  @if (hasData()) {
+    <div class="overview-details">
+      <section class="card overview-panel" aria-labelledby="overview-by-category">
+        <h2 id="overview-by-category" class="section-title overview-panel-title">
+          {{ text.summary.byCategory }}
+        </h2>
+        @if (categoryBars().length > 0) {
+          <ul class="category-bars">
+            @for (bar of categoryBars(); track bar.categoryId) {
+              <li>
+                <a
+                  class="category-bar"
+                  [routerLink]="activityPath"
+                  [queryParams]="activityParams(bar.categoryId)"
+                  [attr.aria-label]="bar.label"
+                >
+                  <span class="category-bar-heading">
+                    <span class="category-bar-name">{{ bar.name }}</span>
+                    <span class="amount">{{ bar.total }}</span>
+                  </span>
+                  <span class="category-bar-track">
+                    <span class="category-bar-fill" [style.width.%]="bar.share"></span>
+                  </span>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="overview-muted">{{ text.summary.noExpenses }}</p>
+        }
+      </section>
+
+      <section class="card overview-panel" aria-labelledby="overview-recent">
+        <div class="overview-panel-header">
+          <h2 id="overview-recent" class="section-title">{{ text.summary.recent }}</h2>
+          <a
+            class="btn btn-ghost view-all"
+            [routerLink]="activityPath"
+            [queryParams]="activityParams()"
+          >
+            {{ text.summary.viewAll }}
+          </a>
+        </div>
+        <ul>
+          @for (row of recentRows(); track row.id) {
+            <li class="recent-row">
+              <div class="recent-text">
+                <p class="recent-title">{{ row.title }}</p>
+                <p class="recent-details">{{ row.details }}</p>
+              </div>
+              <span
+                class="amount"
+                [class.amount-income]="row.isIncome"
+                [class.amount-expense]="!row.isIncome"
+              >
+                {{ row.amount }}
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  } @else if (isEmpty()) {
+    <section class="card empty-state" aria-labelledby="overview-empty">
+      <h2 id="overview-empty" class="section-title">{{ text.summary.emptyTitle }}</h2>
+      <p class="empty-body">{{ text.summary.emptyBody }}</p>
+      <button type="button" class="btn btn-primary" (click)="addTransaction()">
+        {{ text.actions.addTransaction }}
+      </button>
+    </section>
   }
-</section>
+</div>

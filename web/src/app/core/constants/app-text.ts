@@ -37,6 +37,13 @@ export const APP_TEXT = {
     income: 'Income',
     expenses: 'Expenses',
     balance: 'Balance',
+    byCategory: 'Spending by category',
+    noExpenses: 'No expenses this month.',
+    viewCategory: (name: string, total: string) => `View transactions in ${name}: ${total}`,
+    recent: 'Recent transactions',
+    viewAll: 'View all',
+    emptyTitle: 'No transactions this month yet',
+    emptyBody: 'Add your first income or expense and your totals will appear here.',
   },
   transactionTypes: {
     [TRANSACTION_TYPE.expense]: 'Expense',

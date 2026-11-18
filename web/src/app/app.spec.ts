@@ -80,7 +80,9 @@ describe('App', () => {
 
     await router.navigateByUrl('/');
     await fixture.whenStable();
-    expect(buttons()).toHaveLength(3);
+    expect(buttons().map((button) => button.textContent?.trim())).toContain(
+      APP_TEXT.actions.addTransaction,
+    );
 
     await router.navigateByUrl('/categories');
     await fixture.whenStable();
@@ -99,10 +101,12 @@ describe('App', () => {
     )!;
 
     usd.click();
-    await fixture.whenStable();
 
-    expect(usd.getAttribute('aria-pressed')).toBe('true');
-    expect(compiled.querySelector('app-overview .stat-value')?.textContent).toContain('$1,200.00');
+    await vi.waitFor(async () => {
+      await fixture.whenStable();
+      expect(usd.getAttribute('aria-pressed')).toBe('true');
+      expect(compiled.querySelector('app-overview .stat-value')?.textContent?.trim()).toBe('$0.00');
+    });
   });
 
   it('should start each page at the top of the content area', async () => {
