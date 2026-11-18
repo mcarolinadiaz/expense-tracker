@@ -1,0 +1,17 @@
+@reference '../../../styles.css';
+
+:host {
+  @apply block rounded-xl border border-line bg-surface p-6 shadow-xl;
+}
+
+.confirm-dialog-title {
+  @apply text-xl;
+}
+
+.confirm-dialog-message {
+  @apply mt-2 text-muted;
+}
+
+.confirm-dialog-actions {
+  @apply mt-6 flex flex-wrap justify-end gap-3;
+}
