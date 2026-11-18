@@ -1,6 +1,7 @@
 import { Service } from '@angular/core';
 import { Dexie, EntityTable } from 'dexie';
 import { Category } from '../../categories/category';
+import { FixedCost } from '../../projections/fixed-cost';
 import { Transaction } from '../../transactions/transaction';
 
 const DB_NAME = 'expense-tracker';
@@ -15,6 +16,7 @@ const DB_NAME = 'expense-tracker';
 export class AppDb extends Dexie {
   readonly transactions!: EntityTable<Transaction, 'id'>;
   readonly categories!: EntityTable<Category, 'id'>;
+  readonly fixedCosts!: EntityTable<FixedCost, 'id'>;
 
   constructor() {
     super(DB_NAME);
@@ -22,6 +24,10 @@ export class AppDb extends Dexie {
     this.version(1).stores({
       transactions: '++id, date, categoryId',
       categories: '++id, name',
+    });
+
+    this.version(2).stores({
+      fixedCosts: '++id, currency',
     });
   }
 }
