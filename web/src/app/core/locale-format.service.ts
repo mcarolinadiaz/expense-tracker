@@ -66,6 +66,11 @@ export class LocaleFormat {
     );
   }
 
+  /** A full day, such as "November 6, 2026" or "6 de noviembre de 2026". */
+  longDate(day: IsoDate): string {
+    return new Intl.DateTimeFormat(this.active(), { dateStyle: 'long' }).format(fromIsoDate(day));
+  }
+
   /** A month and its year, such as "November 2026" or "Noviembre de 2026", starting with a capital. */
   monthName(month: YearMonth): string {
     const locale = this.active();

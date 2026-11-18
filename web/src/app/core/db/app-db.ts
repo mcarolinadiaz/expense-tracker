@@ -6,6 +6,19 @@ import { Transaction } from '../../transactions/transaction';
 
 const DB_NAME = 'expense-tracker';
 
+/** The keys of the device settings stored in `settings`. */
+export const SETTING_KEY = {
+  lastBackup: 'lastBackup',
+} as const;
+
+export type SettingKey = (typeof SETTING_KEY)[keyof typeof SETTING_KEY];
+
+/** A setting of this device, such as the day of the last backup. It's never part of a backup. */
+export interface Setting {
+  key: SettingKey;
+  value: string;
+}
+
 /**
  * The IndexedDB database that holds all user data on this device.
  *
@@ -17,6 +30,7 @@ export class AppDb extends Dexie {
   readonly transactions!: EntityTable<Transaction, 'id'>;
   readonly categories!: EntityTable<Category, 'id'>;
   readonly fixedCosts!: EntityTable<FixedCost, 'id'>;
+  readonly settings!: EntityTable<Setting, 'key'>;
 
   constructor() {
     super(DB_NAME);
@@ -28,6 +42,10 @@ export class AppDb extends Dexie {
 
     this.version(2).stores({
       fixedCosts: '++id, currency',
+    });
+
+    this.version(3).stores({
+      settings: '&key',
     });
   }
 }

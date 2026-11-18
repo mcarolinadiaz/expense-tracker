@@ -49,6 +49,14 @@ describe('LocaleFormat', () => {
     expect(format.shortMonth('2026-11')).toBe('nov 26');
   });
 
+  it('should write a full day in each language', () => {
+    expect(format.longDate('2026-11-06')).toBe('November 6, 2026');
+
+    format.use(APP_LOCALE.esAR);
+
+    expect(format.longDate('2026-11-06')).toBe('6 de noviembre de 2026');
+  });
+
   it('should update derived values when the language changes', () => {
     const label = computed(() => format.monthName('2026-11'));
     expect(label()).toBe('November 2026');

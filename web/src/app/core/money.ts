@@ -22,7 +22,8 @@ export type AmountSign = (typeof AMOUNT_SIGN)[keyof typeof AMOUNT_SIGN];
 
 export const CENTS_PER_UNIT = 100;
 const DECIMALS = 2;
-const MAX_AMOUNT_CENTS: Cents = 999_999_999_999;
+/** The largest amount the app accepts, in cents. */
+export const MAX_AMOUNT_CENTS: Cents = 999_999_999_999;
 
 const PLAIN_AMOUNT = /^\d+(\.\d{1,2})?$/;
 
