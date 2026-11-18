@@ -48,7 +48,7 @@ expense-tracker/
 │       ├── overview/           # Overview page and its summary service
 │       ├── transactions/       # Activity page, transaction model and service, side panel
 │       ├── categories/         # Categories page, category model and service
-│       └── projections/        # Fixed costs, the IPC factors client and the projection
+│       └── projections/        # Projections page, fixed costs and their panel, the IPC factors client and the projection
 └── api/
     ├── app/
     │   ├── Data/               # Readonly data objects, such as IpcMonth and IpcFactor
@@ -186,6 +186,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Buttons combine `btn` with one variant, such as `btn btn-primary`. `btn-icon` makes a square button for a single icon, which needs an `aria-label`.
 - The segmented control (`segmented` and `segmented-item`) is a group of buttons where `aria-pressed` marks the active one.
 - `panel-backdrop` is global because the CDK adds the backdrop behind side panels outside any component.
+- Side panels share the `panel-*` classes and `amount-field`. Each panel component sets `side-panel` on its host through `host: { class }`, since `:host` styles can't be shared.
 
 **Dates and money (`core/`)**
 
@@ -234,6 +235,11 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Percentage and fixed-amount increases are calculated in the browser. IPC increases multiply today's amount by the cumulative factor the API gives for each month, so rounding never piles up.
 - `ProjectionService` asks for factors once per distinct `every` and `lastIncrease`, plus a monthly schedule from today that gives the IPC estimate even without IPC costs. It only sends months and estimate settings, never amounts or names.
 - It keeps the factors it read for the same month and settings, and forgets a failed request so the next one tries again. While the API fails, IPC costs stay the same and `ipc.status` is `unavailable`.
+- The Projections page keeps the last valid estimate settings in a `linkedSignal`, so a custom rate that is still being typed, or is invalid, keeps the previous projection instead of requesting factors. Choosing "Custom" fills the rate with the current monthly estimate.
+- "Try again" calls `reload()` on the projection resource. Since the service forgot the failed request, it asks the API again.
+- Deleting a fixed cost asks for no confirmation, as in the mockup. The page announces it with `LiveAnnouncer`.
+- The table scrolls sideways in a focusable `region`, so it can be scrolled with the keyboard, and its first column stays in place. Increase months are tinted and bold, and say "increase" to screen readers, so they don't rely on color. The bar chart is `aria-hidden` because the table holds the same totals.
+- The fixed cost panel asks for `lastIncrease` with `type="month"` for every rule, and rejects a month after the current one, which the API also rejects.
 
 **Tests**
 
