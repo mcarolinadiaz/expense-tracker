@@ -1,5 +1,6 @@
 import { inject, LOCALE_ID, Service, signal } from '@angular/core';
 import { fromIsoDate, IsoDate, YearMonth } from './dates';
+import { parsePercent } from './decimal';
 import {
   AMOUNT_SIGN,
   AmountSign,
@@ -17,6 +18,9 @@ export const APP_LOCALE = {
 } as const;
 
 export type AppLocale = (typeof APP_LOCALE)[keyof typeof APP_LOCALE];
+
+const PERCENT = 100;
+const PERCENT_DECIMALS = 2;
 
 /**
  * Formats money and dates in the active language. The language is a signal, so anything that
@@ -69,6 +73,34 @@ export class LocaleFormat {
       fromIsoDate(month),
     );
     return name.charAt(0).toLocaleUpperCase(locale) + name.slice(1);
+  }
+
+  /** A short month for table columns, such as "Nov 26" or "nov 26". */
+  shortMonth(month: YearMonth): string {
+    return new Intl.DateTimeFormat(this.active(), { month: 'short', year: '2-digit' }).format(
+      fromIsoDate(month),
+    );
+  }
+
+  /** A percentage given as plain decimal text, such as `"2.11"`, as "2.11%" or "2,11%". */
+  percent(decimal: string): string {
+    return new Intl.NumberFormat(this.active(), {
+      style: 'percent',
+      maximumFractionDigits: PERCENT_DECIMALS,
+    }).format(Number(decimal) / PERCENT);
+  }
+
+  /** Plain decimal text written in the active language, to fill a field, such as `2,5` for `"2.5"`. */
+  decimal(decimal: string): string {
+    return new Intl.NumberFormat(this.active(), {
+      maximumFractionDigits: PERCENT_DECIMALS,
+      useGrouping: false,
+    }).format(Number(decimal));
+  }
+
+  /** Reads a percentage typed in the active language as plain decimal text, such as `"2.5"`. */
+  parsePercent(text: string, max: number): string | null {
+    return parsePercent(text, this.active(), max);
   }
 
   /** Lower case in the active language, to compare text such as a search. */

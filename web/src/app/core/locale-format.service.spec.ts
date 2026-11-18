@@ -35,6 +35,20 @@ describe('LocaleFormat', () => {
     expect(format.parseAmount('1.250,50')).toBe(125050);
   });
 
+  it('should write and read percentages and short months in each language', () => {
+    expect(format.percent('2.11')).toBe('2.11%');
+    expect(format.decimal('2.5')).toBe('2.5');
+    expect(format.parsePercent('2.5', 50)).toBe('2.5');
+    expect(format.shortMonth('2026-11')).toBe('Nov 26');
+
+    format.use(APP_LOCALE.esAR);
+
+    expect(format.percent('2.11')).toBe('2,11%');
+    expect(format.decimal('1234.5')).toBe('1234,5');
+    expect(format.parsePercent('2,5', 50)).toBe('2.5');
+    expect(format.shortMonth('2026-11')).toBe('nov 26');
+  });
+
   it('should update derived values when the language changes', () => {
     const label = computed(() => format.monthName('2026-11'));
     expect(label()).toBe('November 2026');
