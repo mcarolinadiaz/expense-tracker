@@ -121,6 +121,7 @@ export const APP_TEXT = {
       'Your amounts never leave this device. The app only downloads inflation (IPC) factors.',
     ipcDown:
       'Inflation data is unavailable right now. Costs that increase by IPC are shown without increases until it is back.',
+    loading: 'Calculating projection…',
     summary: 'Projection summary',
     now: 'Now',
     inSixMonths: 'In 6 months',

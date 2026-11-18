@@ -43,7 +43,7 @@ expense-tracker/
 │   ├── environments/           # apiUrl per build (environment.development.ts for ng serve)
 │   └── app/
 │       ├── core/               # App-wide code: AppDb, Clock, dates, money, decimal, API_URL, APP_TEXT, page routes
-│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, pipes
+│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, spinner, pipes
 │       ├── layout/             # side-bar and navbar
 │       ├── overview/           # Overview page and its summary service
 │       ├── transactions/       # Activity page, transaction model and service, side panel
@@ -236,14 +236,16 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - `ProjectionService` asks for factors once per distinct `every` and `lastIncrease`, plus a monthly schedule from today that gives the IPC estimate even without IPC costs. It only sends months and estimate settings, never amounts or names.
 - It keeps the factors it read for the same month and settings, and forgets a failed request so the next one tries again. While the API fails, IPC costs stay the same and `ipc.status` is `unavailable`.
 - The Projections page keeps the last valid estimate settings in a `linkedSignal`, so a custom rate that is still being typed, or is invalid, keeps the previous projection instead of requesting factors. Choosing "Custom" fills the rate with the current monthly estimate.
+- On the first load, a spinner takes the place of the cards and the table. After that, a new estimate keeps the current figures dimmed and `aria-busy`, with a spinner by the table title, until the new ones arrive. A new currency starts empty. A hidden `role="status"` text announces the loading.
 - "Try again" calls `reload()` on the projection resource. Since the service forgot the failed request, it asks the API again.
 - Deleting a fixed cost asks for no confirmation, as in the mockup. The page announces it with `LiveAnnouncer`.
-- The table scrolls sideways in a focusable `region`, so it can be scrolled with the keyboard, and its first column stays in place. Increase months are tinted and bold, and say "increase" to screen readers, so they don't rely on color. The bar chart is `aria-hidden` because the table holds the same totals.
+- The table scrolls sideways in a focusable `region`, so it can be scrolled with the keyboard, and its first column stays in place. The region is `relative`: `sr-only` text is `position: absolute`, and without a positioned ancestor it is placed against the whole page, so the cells of the last months would widen the page. Increase months are tinted and bold, and say "increase" to screen readers, so they don't rely on color. The bar chart is `aria-hidden` because the table holds the same totals.
 - The fixed cost panel asks for `lastIncrease` with `type="month"` for every rule, and rejects a month after the current one, which the API also rejects.
 
 **Tests**
 
 - IndexedDB answers outside Angular. After a change that reads or writes the database, wait a macrotask with `setTimeout` before `fixture.whenStable()`, or the view still shows the old data.
+- `fixture.whenStable()` waits for resources that are loading. To check a loading state, refresh the view with `fixture.detectChanges()` instead, as `projections.spec.ts` does.
 - A page that reads several `liveQuery()` results, or writes and then reads, may need more than one macrotask. Wait for the expected result with `vi.waitFor()` instead of a fixed number of waits, as `categories.spec.ts` does.
 
 ### TypeScript

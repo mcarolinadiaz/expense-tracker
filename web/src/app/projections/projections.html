@@ -42,8 +42,22 @@
     </div>
   }
 
+  <p class="sr-only" role="status">{{ loading() ? text.projections.loading : '' }}</p>
+
+  @if (firstLoad()) {
+    <div class="card projection-loading">
+      <app-spinner />
+      <span>{{ text.projections.loading }}</span>
+    </div>
+  }
+
   @if (hasRows()) {
-    <section class="stat-cards" [attr.aria-label]="text.projections.summary">
+    <section
+      class="stat-cards"
+      [class.projection-updating]="loading()"
+      [attr.aria-busy]="loading()"
+      [attr.aria-label]="text.projections.summary"
+    >
       @for (card of cards(); track card.label) {
         <app-stat-card
           [label]="card.label"
@@ -127,90 +141,96 @@
   </section>
 
   @if (hasRows()) {
-    <section class="card projection-panel">
-      <h2 class="section-title" [id]="ids.tableTitle">{{ text.projections.table }}</h2>
-
-      <div class="projection-chart" aria-hidden="true">
-        @for (bar of bars(); track bar.month) {
-          <div class="chart-column">
-            <div class="chart-bar" [style.height.%]="bar.height"></div>
-            <span class="chart-label">{{ bar.label }}</span>
-          </div>
+    <section class="card projection-panel" [attr.aria-busy]="loading()">
+      <div class="projection-heading">
+        <h2 class="section-title" [id]="ids.tableTitle">{{ text.projections.table }}</h2>
+        @if (loading()) {
+          <app-spinner />
         }
       </div>
+      <div class="projection-results" [class.projection-updating]="loading()">
+        <div class="projection-chart" aria-hidden="true">
+          @for (bar of bars(); track bar.month) {
+            <div class="chart-column">
+              <div class="chart-bar" [style.height.%]="bar.height"></div>
+              <span class="chart-label">{{ bar.label }}</span>
+            </div>
+          }
+        </div>
 
-      <div
-        class="projection-scroll"
-        role="region"
-        tabindex="0"
-        [attr.aria-labelledby]="ids.tableTitle"
-      >
-        <table class="projection-table">
-          <thead>
-            <tr>
-              <th scope="col" class="cell-sticky">{{ text.projections.fixedCost }}</th>
-              @for (column of monthLabels(); track column.month) {
-                <th scope="col" class="cell-amount">{{ column.label }}</th>
-              }
-              <th scope="col" class="cell-amount">{{ text.projections.actions }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of rows(); track row.id) {
+        <div
+          class="projection-scroll"
+          role="region"
+          tabindex="0"
+          [attr.aria-labelledby]="ids.tableTitle"
+        >
+          <table class="projection-table">
+            <thead>
               <tr>
-                <th scope="row" class="cell-sticky cell-cost">
-                  <span class="cost-name">{{ row.name }}</span>
-                  <span class="cost-rule">{{ row.rule }}</span>
-                </th>
-                @for (cell of row.cells; track cell.month) {
-                  <td class="cell-amount" [class.cell-increase]="cell.increases">
-                    {{ cell.amount }}
-                    @if (cell.increases) {
-                      <span class="sr-only">({{ text.projections.increaseCell }})</span>
-                    }
-                  </td>
+                <th scope="col" class="cell-sticky">{{ text.projections.fixedCost }}</th>
+                @for (column of monthLabels(); track column.month) {
+                  <th scope="col" class="cell-amount">{{ column.label }}</th>
                 }
-                <td class="cell-amount">
-                  <button
-                    type="button"
-                    class="btn btn-ghost btn-icon"
-                    [attr.aria-label]="row.deleteLabel"
-                    (click)="remove(row.id)"
-                  >
-                    <svg
-                      class="row-icon"
-                      aria-hidden="true"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-                    </svg>
-                  </button>
-                </td>
+                <th scope="col" class="cell-amount">{{ text.projections.actions }}</th>
               </tr>
-            }
-          </tbody>
-          <tfoot>
-            <tr>
-              <th scope="row" class="cell-sticky">{{ text.projections.monthlyTotal }}</th>
-              @for (total of totals(); track total.index) {
-                <td class="cell-amount cell-total">{{ total.amount }}</td>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <th scope="row" class="cell-sticky cell-cost">
+                    <span class="cost-name">{{ row.name }}</span>
+                    <span class="cost-rule">{{ row.rule }}</span>
+                  </th>
+                  @for (cell of row.cells; track cell.month) {
+                    <td class="cell-amount" [class.cell-increase]="cell.increases">
+                      {{ cell.amount }}
+                      @if (cell.increases) {
+                        <span class="sr-only">({{ text.projections.increaseCell }})</span>
+                      }
+                    </td>
+                  }
+                  <td class="cell-amount">
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-icon"
+                      [attr.aria-label]="row.deleteLabel"
+                      (click)="remove(row.id)"
+                    >
+                      <svg
+                        class="row-icon"
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
               }
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row" class="cell-sticky">{{ text.projections.monthlyTotal }}</th>
+                @for (total of totals(); track total.index) {
+                  <td class="cell-amount cell-total">{{ total.amount }}</td>
+                }
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
-      <p class="projection-legend">
-        <span class="legend-swatch" aria-hidden="true"></span>
-        <span>{{ text.projections.increaseLegend }}</span>
-      </p>
-      @if (ipcDetails()?.note; as note) {
-        <p class="projection-muted">{{ note }}</p>
-      }
+        <p class="projection-legend">
+          <span class="legend-swatch" aria-hidden="true"></span>
+          <span>{{ text.projections.increaseLegend }}</span>
+        </p>
+        @if (ipcDetails()?.note; as note) {
+          <p class="projection-muted">{{ note }}</p>
+        }
+      </div>
     </section>
   } @else if (isEmpty()) {
     <section class="card empty-state" [attr.aria-labelledby]="ids.emptyTitle">

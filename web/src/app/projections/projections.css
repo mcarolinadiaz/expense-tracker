@@ -24,6 +24,18 @@
   @apply min-w-0 p-6;
 }
 
+.projection-loading {
+  @apply flex items-center justify-center gap-3 py-12 text-muted;
+}
+
+.projection-heading {
+  @apply flex items-center gap-3;
+}
+
+.projection-updating {
+  @apply opacity-60 transition-opacity;
+}
+
 .projection-muted {
   @apply mt-1 text-sm text-muted;
 }
@@ -69,7 +81,7 @@
 }
 
 .projection-scroll {
-  @apply mt-5 overflow-x-auto;
+  @apply relative mt-5 overflow-x-auto;
 }
 
 .projection-table {

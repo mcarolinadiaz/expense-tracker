@@ -2,7 +2,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { form, FormField, validate } from '@angular/forms/signals';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 import { APP_TEXT } from '../core/constants/app-text';
 import { YearMonth } from '../core/dates';
 import { percentChange } from '../core/decimal';
@@ -10,6 +10,7 @@ import { LocaleFormat } from '../core/locale-format.service';
 import { AMOUNT_SIGN, Cents, CURRENCIES, CURRENCY, Currency } from '../core/money';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
 import { Select, SelectOption } from '../shared/select/select';
+import { Spinner } from '../shared/spinner/spinner';
 import { STAT_CARD_TONE, StatCard } from '../shared/stat-card/stat-card';
 import { FixedCost, INCREASE_RULE } from './fixed-cost';
 import { FixedCostPanelService } from './fixed-cost-panel/fixed-cost-panel.service';
@@ -53,6 +54,11 @@ interface EstimateFormModel {
   customRate: string;
 }
 
+interface ShownProjection {
+  currency: Currency;
+  projection: Projection;
+}
+
 interface SummaryCard {
   label: string;
   amount: Cents;
@@ -79,7 +85,7 @@ interface ChartBar {
 }
 
 @Component({
-  imports: [FormField, NavbarActions, Select, StatCard],
+  imports: [FormField, NavbarActions, Select, Spinner, StatCard],
   selector: 'app-projections',
   styleUrl: './projections.css',
   templateUrl: './projections.html',
@@ -135,12 +141,31 @@ export class Projections {
 
   private readonly projection = rxResource({
     params: () => ({ currency: this.currency(), settings: this.settings() }),
-    stream: ({ params }) => this.projectionService.project(params.currency, params.settings),
+    stream: ({ params }) =>
+      this.projectionService
+        .project(params.currency, params.settings)
+        .pipe(map((projection): ShownProjection => ({ currency: params.currency, projection }))),
   });
 
-  private readonly current = computed((): Projection | null =>
-    this.projection.hasValue() ? this.projection.value() : null,
-  );
+  /**
+   * The projection on screen. While a new one loads for the same currency, such as after changing
+   * the estimate, it keeps the previous one, so the page doesn't empty. A new currency starts empty.
+   */
+  private readonly shown = linkedSignal<ShownProjection | undefined, ShownProjection | null>({
+    source: () => (this.projection.hasValue() ? this.projection.value() : undefined),
+    computation: (next, previous) => {
+      const currency = this.currency();
+      if (next?.currency === currency) {
+        return next;
+      }
+      return previous?.value?.currency === currency ? previous.value : null;
+    },
+  });
+
+  private readonly current = computed(() => this.shown()?.projection ?? null);
+
+  protected readonly loading = this.projection.isLoading;
+  protected readonly firstLoad = computed(() => this.loading() && !this.current());
 
   protected readonly ipcDown = computed(
     () => this.current()?.ipc.status === IPC_STATUS.unavailable,

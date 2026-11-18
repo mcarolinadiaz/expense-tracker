@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { firstValueFrom, Observable, of, throwError } from 'rxjs';
+import { firstValueFrom, Observable, of, Subject, throwError } from 'rxjs';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../core/axe.testing';
 import { provideFixedClock } from '../core/clock.testing';
 import { APP_TEXT } from '../core/constants/app-text';
@@ -10,6 +10,7 @@ import { INCREASE_RULE, NewFixedCost } from './fixed-cost';
 import { FixedCostService } from './fixed-cost.service';
 import { IPC_ESTIMATE, IpcFactors, IpcFactorsQuery } from './ipc-factors';
 import { IpcFactorsService } from './ipc-factors.service';
+import { PROJECTION_MONTHS } from './projection';
 import { Projections, PROJECTIONS_IDS } from './projections';
 
 function factorsFor(query: IpcFactorsQuery): IpcFactors {
@@ -40,6 +41,14 @@ describe('Projections', () => {
     increase: { rule: INCREASE_RULE.ipc },
   };
 
+  const query: IpcFactorsQuery = {
+    from: '2026-11',
+    months: PROJECTION_MONTHS,
+    every: 1,
+    lastIncrease: '2026-11',
+    settings: { estimate: IPC_ESTIMATE.average, averageMonths: 6 },
+  };
+
   beforeEach(() => {
     factors = vi.fn((query: IpcFactorsQuery) => of(factorsFor(query)));
     TestBed.configureTestingModule({
@@ -67,6 +76,15 @@ describe('Projections', () => {
   async function settleUntil(assertion: () => void): Promise<void> {
     await vi.waitFor(async () => {
       await fixture.whenStable();
+      assertion();
+    });
+  }
+
+  /** Like `settleUntil`, for a projection still loading, which `whenStable()` would wait for. */
+  async function renderUntil(assertion: () => void): Promise<void> {
+    await vi.waitFor(async () => {
+      await new Promise((resolve) => setTimeout(resolve));
+      fixture.detectChanges();
       assertion();
     });
   }
@@ -134,6 +152,44 @@ describe('Projections', () => {
     },
     AXE_TEST_TIMEOUT_MS,
   );
+
+  it(
+    'should show a spinner until the first projection arrives',
+    async () => {
+      const pending = new Subject<IpcFactors>();
+      factors.mockReturnValue(pending);
+      await addCost();
+      fixture = TestBed.createComponent(Projections);
+      element = fixture.nativeElement;
+      await renderUntil(() => expect(element.querySelector('app-spinner')).not.toBeNull());
+
+      expect(element.querySelector('[role="status"]')?.textContent).toContain(
+        APP_TEXT.projections.loading,
+      );
+      expect(element.querySelector('table')).toBeNull();
+      await expectNoAxeViolations(element);
+
+      pending.next(factorsFor({ ...query, months: PROJECTION_MONTHS }));
+      pending.complete();
+
+      await settleUntil(() => expect(rowTexts()).toHaveLength(1));
+      expect(element.querySelector('app-spinner')).toBeNull();
+    },
+    AXE_TEST_TIMEOUT_MS,
+  );
+
+  it('should keep the table, marked as busy, while a new estimate loads', async () => {
+    await addCost();
+    await render();
+    await settleUntil(() => expect(rowTexts()).toHaveLength(1));
+
+    factors.mockReturnValue(new Subject<IpcFactors>());
+    fixture.componentInstance['estimateModel'].update((model) => ({ ...model, averageMonths: 12 }));
+
+    await renderUntil(() => expect(element.querySelector('[aria-busy="true"]')).not.toBeNull());
+    expect(rowTexts()).toHaveLength(1);
+    expect(element.querySelector('app-spinner')).not.toBeNull();
+  });
 
   it('should only show the costs of the chosen currency', async () => {
     await addCost();
