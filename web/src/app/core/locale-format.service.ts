@@ -1,6 +1,14 @@
 import { inject, LOCALE_ID, Service, signal } from '@angular/core';
 import { fromIsoDate, IsoDate, YearMonth } from './dates';
-import { AmountSign, Cents, CENTS_PER_UNIT, Currency, formatAmount, parseAmount } from './money';
+import {
+  AMOUNT_SIGN,
+  AmountSign,
+  Cents,
+  CENTS_PER_UNIT,
+  Currency,
+  formatAmount,
+  parseAmount,
+} from './money';
 
 /** The languages the app supports, for its text and for number, date and currency formats. */
 export const APP_LOCALE = {
@@ -35,12 +43,16 @@ export class LocaleFormat {
     return formatAmount(cents, this.active());
   }
 
-  /** Formats cents with the currency's symbol, and the sign if given, such as `− $1,250.50`. */
+  /**
+   * Formats cents with the currency's symbol, and the sign if given, such as `− $1,250.50`.
+   * A negative amount without a sign gets `−` rather than the hyphen `Intl` writes.
+   */
   money(cents: Cents, currency: Currency, sign?: AmountSign): string {
     const text = new Intl.NumberFormat(this.active(), { style: 'currency', currency }).format(
-      cents / CENTS_PER_UNIT,
+      Math.abs(cents) / CENTS_PER_UNIT,
     );
-    return sign ? `${sign} ${text}` : text;
+    const shownSign = sign ?? (cents < 0 ? AMOUNT_SIGN.minus : undefined);
+    return shownSign ? `${shownSign} ${text}` : text;
   }
 
   /** A short day, such as "Nov 6" or "6 nov". */

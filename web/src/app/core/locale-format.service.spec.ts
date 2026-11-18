@@ -20,6 +20,10 @@ describe('LocaleFormat', () => {
     expect(format.parseAmount('1,250.50')).toBe(125050);
   });
 
+  it('should write a negative amount with a minus sign, not a hyphen', () => {
+    expect(format.money(-86804950, CURRENCY.USD)).toBe('− $868,049.50');
+  });
+
   it('should format and read in Argentine Spanish', () => {
     format.use(APP_LOCALE.esAR);
 
