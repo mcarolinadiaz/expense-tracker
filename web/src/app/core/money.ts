@@ -1,3 +1,5 @@
+import { numberSeparators } from './decimal';
+
 export const CURRENCY = {
   ARS: 'ARS',
   USD: 'USD',
@@ -23,15 +25,6 @@ const DECIMALS = 2;
 const MAX_AMOUNT_CENTS: Cents = 999_999_999_999;
 
 const PLAIN_AMOUNT = /^\d+(\.\d{1,2})?$/;
-const SEPARATOR_SAMPLE = 12345.6;
-
-function separators(locale: string): { group: string; decimal: string } {
-  const parts = new Intl.NumberFormat(locale).formatToParts(SEPARATOR_SAMPLE);
-  return {
-    group: parts.find((part) => part.type === 'group')?.value ?? '',
-    decimal: parts.find((part) => part.type === 'decimal')?.value ?? '.',
-  };
-}
 
 /**
  * Reads an amount typed in the format of the language, such as `1.250,50` in es-AR or
@@ -39,7 +32,7 @@ function separators(locale: string): { group: string; decimal: string } {
  * up to 2 decimals. It never goes through decimal `number` math.
  */
 export function parseAmount(text: string, locale: string): Cents | null {
-  const { group, decimal } = separators(locale);
+  const { group, decimal } = numberSeparators(locale);
   const parts = text.replace(/\s/g, '').split(decimal);
 
   if (parts.length > 2) {
