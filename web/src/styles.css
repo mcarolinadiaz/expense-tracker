@@ -140,6 +140,14 @@
     @apply h-11 flex-1 px-3 font-medium transition-colors not-aria-pressed:hover:bg-hover focus-visible:-outline-offset-2 aria-pressed:bg-accent aria-pressed:text-surface;
   }
 
+  .empty-state {
+    @apply px-4 py-12 text-center;
+  }
+
+  .empty-body {
+    @apply mx-auto mt-2 mb-4 max-w-md text-muted;
+  }
+
   .panel-backdrop {
     @apply bg-ink/40;
   }

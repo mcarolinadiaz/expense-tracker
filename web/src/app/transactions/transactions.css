@@ -55,11 +55,3 @@
 .table-footer {
   @apply mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted;
 }
-
-.empty-state {
-  @apply px-4 py-12 text-center;
-}
-
-.empty-body {
-  @apply mx-auto mt-2 mb-4 max-w-md text-muted;
-}
