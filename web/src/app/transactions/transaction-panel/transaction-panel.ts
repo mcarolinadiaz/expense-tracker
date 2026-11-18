@@ -71,6 +71,7 @@ interface TransactionFormModel {
 @Component({
   imports: [FormField, Select],
   selector: 'app-transaction-panel',
+  host: { class: 'side-panel' },
   styleUrl: './transaction-panel.css',
   templateUrl: './transaction-panel.html',
 })

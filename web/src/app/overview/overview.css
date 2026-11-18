@@ -4,10 +4,6 @@
   @apply flex flex-col gap-6;
 }
 
-.stat-cards {
-  @apply grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4;
-}
-
 .overview-details {
   @apply flex flex-wrap items-start gap-6;
 }

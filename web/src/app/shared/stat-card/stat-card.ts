@@ -6,11 +6,15 @@ export const STAT_CARD_TONE = {
   income: 'income',
   expense: 'expense',
   highlight: 'highlight',
+  neutral: 'neutral',
 } as const;
 
 export type StatCardTone = (typeof STAT_CARD_TONE)[keyof typeof STAT_CARD_TONE];
 
-/** A card with one total, such as the month's income. `highlight` shows it on a dark card. */
+/**
+ * A card with one total, such as the month's income. `income` and `expense` color the amount,
+ * `highlight` shows it on a dark card, and `neutral` leaves it plain.
+ */
 @Component({
   imports: [MoneyPipe],
   selector: 'app-stat-card',
