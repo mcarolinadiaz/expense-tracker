@@ -209,10 +209,18 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - The panel's form keeps the amount as text. When saving, the amount validator has already checked that it parses, so `persist()` can parse it without checking again.
 - The Activity filters need no validation, so their form only binds the fields to the `filterValues` signal.
 - The Activity table scrolls sideways inside its own box on narrow screens. The side panel's buttons stay at its bottom when the form is short.
+- Activity reads `?category=<id>` (`ACTIVITY_QUERY_PARAM`) as its `category` input, through `withComponentInputBinding()`. Its filters are a `linkedSignal` that starts from that category, and the filter only covers the selected month.
+
+**Categories (`categories/`)**
+
+- Deleting a category asks for no confirmation, because the service only deletes a category that no transaction uses. Otherwise the row explains why and offers "View transactions", which opens Activity filtered by that category.
+- Only one row is renamed at a time, so the rename field has a fixed id. After saving, or cancelling with Escape, the focus goes back to that row's Rename button.
+- The name fields use `maxLength()` with the `tooLong` error code, so `FormField` sets the native `maxlength` and any error shows the same message as the service's.
 
 **Tests**
 
 - IndexedDB answers outside Angular. After a change that reads or writes the database, wait a macrotask with `setTimeout` before `fixture.whenStable()`, or the view still shows the old data.
+- A page that reads several `liveQuery()` results, or writes and then reads, may need more than one macrotask. Wait for the expected result with `vi.waitFor()` instead of a fixed number of waits, as `categories.spec.ts` does.
 
 ### TypeScript
 
