@@ -1,0 +1,224 @@
+<ng-template appNavbarActions>
+  <div class="segmented" role="group" [attr.aria-label]="text.projections.currency">
+    @for (option of currencies; track option) {
+      <button
+        type="button"
+        class="segmented-item"
+        [attr.aria-pressed]="currency() === option"
+        (click)="currency.set(option)"
+      >
+        {{ option }}
+      </button>
+    }
+  </div>
+
+  <button type="button" class="btn btn-primary" (click)="addFixedCost()">
+    {{ text.actions.addFixedCost }}
+  </button>
+</ng-template>
+
+<div class="projections">
+  <p class="privacy-note">
+    <svg
+      class="privacy-icon"
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+    <span>{{ text.projections.privacy }}</span>
+  </p>
+
+  @if (ipcDown()) {
+    <div class="ipc-alert" role="alert">
+      <span class="ipc-alert-text">{{ text.projections.ipcDown }}</span>
+      <button type="button" class="btn btn-secondary" (click)="retry()">
+        {{ text.actions.tryAgain }}
+      </button>
+    </div>
+  }
+
+  @if (hasRows()) {
+    <section class="stat-cards" [attr.aria-label]="text.projections.summary">
+      @for (card of cards(); track card.label) {
+        <app-stat-card
+          [label]="card.label"
+          [amount]="card.amount"
+          [currency]="currency()"
+          [tone]="neutralTone"
+        />
+      }
+      <article class="card-inverse">
+        <h2 class="stat-label">{{ text.projections.increase }}</h2>
+        <p class="stat-value">{{ increase() }}</p>
+      </article>
+    </section>
+  }
+
+  <section class="card projection-panel" [attr.aria-labelledby]="ids.ipcTitle">
+    <div class="ipc-header">
+      <div>
+        <h2 class="section-title" [id]="ids.ipcTitle">{{ text.projections.ipcTitle }}</h2>
+        @if (ipcDetails()?.source; as source) {
+          <p class="projection-muted">{{ source }}</p>
+        }
+      </div>
+      <div class="ipc-rate">
+        <p class="projection-muted">{{ text.projections.monthlyRate }}</p>
+        <p class="ipc-rate-value">{{ ipcDetails()?.rate ?? text.projections.noValue }}</p>
+      </div>
+    </div>
+
+    <div class="ipc-controls">
+      <div>
+        <p class="field-label" [id]="ids.estimateLabel">{{ text.projections.estimate }}</p>
+        <div class="segmented" role="group" [attr.aria-labelledby]="ids.estimateLabel">
+          @for (option of estimates; track option) {
+            <button
+              type="button"
+              class="segmented-item"
+              [attr.aria-pressed]="estimateModel().estimate === option"
+              (click)="pickEstimate(option)"
+            >
+              {{ text.projections.estimates[option] }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (estimateModel().estimate === estimateOf.average) {
+        <div class="ipc-average">
+          <label class="field-label" [for]="ids.averageMonths">
+            {{ text.projections.averageMonths }}
+          </label>
+          <app-select
+            [inputId]="ids.averageMonths"
+            [formField]="estimateForm.averageMonths"
+            [options]="averageMonthsOptions"
+          />
+        </div>
+      } @else {
+        <div class="ipc-custom">
+          <label class="field-label" [for]="ids.customRate">{{
+            text.projections.customRate
+          }}</label>
+          <input
+            class="field"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            [id]="ids.customRate"
+            [formField]="estimateForm.customRate"
+            [attr.aria-invalid]="rateError() || null"
+            [attr.aria-describedby]="rateError() ? ids.customRateError : null"
+          />
+        </div>
+      }
+    </div>
+    @if (rateError()) {
+      <p class="field-error" role="alert" [id]="ids.customRateError">
+        {{ text.projections.customRateError }}
+      </p>
+    }
+  </section>
+
+  @if (hasRows()) {
+    <section class="card projection-panel">
+      <h2 class="section-title" [id]="ids.tableTitle">{{ text.projections.table }}</h2>
+
+      <div class="projection-chart" aria-hidden="true">
+        @for (bar of bars(); track bar.month) {
+          <div class="chart-column">
+            <div class="chart-bar" [style.height.%]="bar.height"></div>
+            <span class="chart-label">{{ bar.label }}</span>
+          </div>
+        }
+      </div>
+
+      <div
+        class="projection-scroll"
+        role="region"
+        tabindex="0"
+        [attr.aria-labelledby]="ids.tableTitle"
+      >
+        <table class="projection-table">
+          <thead>
+            <tr>
+              <th scope="col" class="cell-sticky">{{ text.projections.fixedCost }}</th>
+              @for (column of monthLabels(); track column.month) {
+                <th scope="col" class="cell-amount">{{ column.label }}</th>
+              }
+              <th scope="col" class="cell-amount">{{ text.projections.actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <th scope="row" class="cell-sticky cell-cost">
+                  <span class="cost-name">{{ row.name }}</span>
+                  <span class="cost-rule">{{ row.rule }}</span>
+                </th>
+                @for (cell of row.cells; track cell.month) {
+                  <td class="cell-amount" [class.cell-increase]="cell.increases">
+                    {{ cell.amount }}
+                    @if (cell.increases) {
+                      <span class="sr-only">({{ text.projections.increaseCell }})</span>
+                    }
+                  </td>
+                }
+                <td class="cell-amount">
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-icon"
+                    [attr.aria-label]="row.deleteLabel"
+                    (click)="remove(row.id)"
+                  >
+                    <svg
+                      class="row-icon"
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" class="cell-sticky">{{ text.projections.monthlyTotal }}</th>
+              @for (total of totals(); track total.index) {
+                <td class="cell-amount cell-total">{{ total.amount }}</td>
+              }
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <p class="projection-legend">
+        <span class="legend-swatch" aria-hidden="true"></span>
+        <span>{{ text.projections.increaseLegend }}</span>
+      </p>
+      @if (ipcDetails()?.note; as note) {
+        <p class="projection-muted">{{ note }}</p>
+      }
+    </section>
+  } @else if (isEmpty()) {
+    <section class="card empty-state" [attr.aria-labelledby]="ids.emptyTitle">
+      <h2 class="section-title" [id]="ids.emptyTitle">{{ emptyTitle() }}</h2>
+      <p class="empty-body">{{ text.projections.emptyBody }}</p>
+      <button type="button" class="btn btn-primary" (click)="addFixedCost()">
+        {{ text.actions.addFixedCost }}
+      </button>
+    </section>
+  }
+</div>

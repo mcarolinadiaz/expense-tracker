@@ -1,0 +1,172 @@
+<form class="panel-form" novalidate (submit)="save($event)">
+  <header class="panel-header">
+    <h2 class="panel-title" [id]="ids.title">{{ text.actions.addFixedCost }}</h2>
+    <button
+      type="button"
+      class="btn btn-ghost btn-icon"
+      [attr.aria-label]="text.actions.close"
+      (click)="close()"
+    >
+      <svg
+        class="panel-close-icon"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+  </header>
+
+  <div>
+    <label class="field-label" [for]="ids.name">{{ text.fixedCost.name }}</label>
+    <input
+      class="field"
+      autocomplete="off"
+      [id]="ids.name"
+      [formField]="form.name"
+      [attr.aria-invalid]="nameError() ? true : null"
+      [attr.aria-describedby]="nameError() ? ids.nameError : null"
+    />
+    @if (nameError(); as code) {
+      <p class="field-error" role="alert" [id]="ids.nameError">
+        {{ text.fixedCostErrors[code] }}
+      </p>
+    }
+  </div>
+
+  <div class="panel-row">
+    <div class="panel-row-wide">
+      <label class="field-label" [for]="ids.amount">{{ text.fixedCost.currentAmount }}</label>
+      <input
+        class="amount-field"
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
+        [id]="ids.amount"
+        [formField]="form.amount"
+        [placeholder]="amountHint()"
+        [attr.aria-invalid]="amountError() ? true : null"
+        [attr.aria-describedby]="amountError() ? ids.amountError : null"
+      />
+      @if (amountError(); as code) {
+        <p class="field-error" role="alert" [id]="ids.amountError">
+          {{ text.fixedCostErrors[code] }}
+        </p>
+      }
+    </div>
+    <div class="panel-row-narrow">
+      <p class="field-label" [id]="ids.currencyLabel">{{ text.fixedCost.currency }}</p>
+      <div class="segmented" role="group" [attr.aria-labelledby]="ids.currencyLabel">
+        @for (currency of currencies; track currency) {
+          <button
+            type="button"
+            class="segmented-item"
+            [attr.aria-pressed]="model().currency === currency"
+            (click)="form.currency().value.set(currency)"
+          >
+            {{ currency }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="field-label" [id]="ids.ruleLabel">{{ text.fixedCost.rule }}</p>
+    <div class="segmented" role="group" [attr.aria-labelledby]="ids.ruleLabel">
+      @for (rule of rules; track rule) {
+        <button
+          type="button"
+          class="segmented-item"
+          [attr.aria-pressed]="model().rule === rule"
+          (click)="form.rule().value.set(rule)"
+        >
+          {{ text.projections.rules[rule] }}
+        </button>
+      }
+    </div>
+    @if (model().rule === ruleOf.ipc) {
+      <p class="field-hint" [id]="ids.ruleHint">{{ text.fixedCost.ipcHint }}</p>
+    }
+  </div>
+
+  @switch (model().rule) {
+    @case (ruleOf.percent) {
+      <div>
+        <label class="field-label" [for]="ids.value">{{ text.fixedCost.percent }}</label>
+        <input
+          class="field"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          [id]="ids.value"
+          [formField]="form.percent"
+          [placeholder]="percentHint()"
+          [attr.aria-invalid]="percentError() ? true : null"
+          [attr.aria-describedby]="percentError() ? ids.valueError : null"
+        />
+        @if (percentError(); as code) {
+          <p class="field-error" role="alert" [id]="ids.valueError">
+            {{ text.fixedCostErrors[code] }}
+          </p>
+        }
+      </div>
+    }
+    @case (ruleOf.amount) {
+      <div>
+        <label class="field-label" [for]="ids.value">{{ text.fixedCost.increaseAmount }}</label>
+        <input
+          class="field"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          [id]="ids.value"
+          [formField]="form.increaseAmount"
+          [placeholder]="amountHint()"
+          [attr.aria-invalid]="increaseAmountError() ? true : null"
+          [attr.aria-describedby]="increaseAmountError() ? ids.valueError : null"
+        />
+        @if (increaseAmountError(); as code) {
+          <p class="field-error" role="alert" [id]="ids.valueError">
+            {{ text.fixedCostErrors[code] }}
+          </p>
+        }
+      </div>
+    }
+  }
+
+  <div class="panel-row">
+    <div class="panel-row-wide">
+      <label class="field-label" [for]="ids.every">{{ text.fixedCost.every }}</label>
+      <app-select [inputId]="ids.every" [formField]="form.every" [options]="everyOptions" />
+    </div>
+    <div class="panel-row-wide">
+      <label class="field-label" [for]="ids.lastIncrease">{{ text.fixedCost.lastIncrease }}</label>
+      <input
+        class="field"
+        type="month"
+        [id]="ids.lastIncrease"
+        [formField]="form.lastIncrease"
+        [attr.max]="currentMonth"
+        [attr.aria-invalid]="lastIncreaseError() ? true : null"
+        [attr.aria-describedby]="lastIncreaseError() ? ids.lastIncreaseError : ids.lastIncreaseHint"
+      />
+    </div>
+  </div>
+  @if (lastIncreaseError(); as code) {
+    <p class="field-error" role="alert" [id]="ids.lastIncreaseError">
+      {{ text.fixedCostErrors[code] }}
+    </p>
+  } @else {
+    <p class="field-hint" [id]="ids.lastIncreaseHint">{{ text.fixedCost.lastIncreaseHint }}</p>
+  }
+
+  <div class="panel-actions">
+    <button type="submit" class="btn btn-primary panel-action" [disabled]="form().submitting()">
+      {{ text.actions.save }}
+    </button>
+  </div>
+</form>

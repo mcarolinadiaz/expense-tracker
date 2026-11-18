@@ -14,6 +14,18 @@ export const INCREASE_EVERY_OPTIONS = [1, 2, 3, 4, 6, 12] as const;
 
 export const FIXED_COST_NAME_MAX_LENGTH = 60;
 
+/** The rules a fixed cost form can break. The interface shows its own translated message for each. */
+export const FIXED_COST_ERROR = {
+  nameRequired: 'nameRequired',
+  nameTooLong: 'nameTooLong',
+  invalidAmount: 'invalidAmount',
+  invalidPercent: 'invalidPercent',
+  invalidIncreaseAmount: 'invalidIncreaseAmount',
+  futureLastIncrease: 'futureLastIncrease',
+} as const;
+
+export type FixedCostErrorCode = (typeof FIXED_COST_ERROR)[keyof typeof FIXED_COST_ERROR];
+
 /** The largest percentage a fixed cost may increase by each time. */
 export const FIXED_COST_MAX_PERCENT = 100;
 

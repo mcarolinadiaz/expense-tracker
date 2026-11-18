@@ -6,6 +6,7 @@ export const APP_PAGE_PATH = {
   overview: '',
   transactions: 'transactions',
   categories: 'categories',
+  projections: 'projections',
 } as const;
 
 export const APP_PAGE_ROUTES = [
@@ -24,6 +25,11 @@ export const APP_PAGE_ROUTES = [
     path: APP_PAGE_PATH.categories,
     title: APP_TEXT.pages.categories,
     loadComponent: () => import('../../categories/categories').then((m) => m.Categories),
+  },
+  {
+    path: APP_PAGE_PATH.projections,
+    title: APP_TEXT.pages.projections,
+    loadComponent: () => import('../../projections/projections').then((m) => m.Projections),
   },
 ] satisfies Routes;
 

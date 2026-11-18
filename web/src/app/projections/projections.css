@@ -1,0 +1,137 @@
+@reference '../../styles.css';
+
+.projections {
+  @apply flex flex-col gap-6;
+}
+
+.privacy-note {
+  @apply flex items-center gap-2 text-muted;
+}
+
+.privacy-icon {
+  @apply size-4 flex-none;
+}
+
+.ipc-alert {
+  @apply flex flex-wrap items-center justify-between gap-3 rounded-lg bg-expense-soft px-4 py-3 text-expense-hover;
+}
+
+.ipc-alert-text {
+  @apply flex-[1_1_17.5rem];
+}
+
+.projection-panel {
+  @apply min-w-0 p-6;
+}
+
+.projection-muted {
+  @apply mt-1 text-sm text-muted;
+}
+
+.ipc-header {
+  @apply flex flex-wrap items-start justify-between gap-4;
+}
+
+.ipc-rate {
+  @apply text-right;
+}
+
+.ipc-rate-value {
+  @apply text-[1.375rem] font-semibold tabular-nums;
+}
+
+.ipc-controls {
+  @apply mt-4 flex flex-wrap items-end gap-3;
+}
+
+.ipc-average {
+  @apply w-40;
+}
+
+.ipc-custom {
+  @apply w-32;
+}
+
+.projection-chart {
+  @apply mt-4 flex h-40 items-end gap-1.5;
+}
+
+.chart-column {
+  @apply flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5;
+}
+
+.chart-bar {
+  @apply min-h-1 w-full max-w-10 rounded-t bg-accent;
+}
+
+.chart-label {
+  @apply text-xs whitespace-nowrap text-muted;
+}
+
+.projection-scroll {
+  @apply mt-5 overflow-x-auto;
+}
+
+.projection-table {
+  @apply w-full min-w-295 border-collapse text-sm;
+
+  & th {
+    @apply p-2 text-left font-medium;
+  }
+
+  & thead th {
+    @apply text-muted;
+  }
+
+  & td {
+    @apply p-2;
+  }
+
+  & tbody tr {
+    @apply border-t border-line-soft;
+  }
+
+  & tfoot tr {
+    @apply border-t-2 border-ink;
+  }
+}
+
+.projection-table .cell-amount {
+  @apply text-right whitespace-nowrap tabular-nums;
+}
+
+.cell-sticky {
+  @apply sticky left-0 bg-surface;
+}
+
+.cell-cost {
+  @apply min-w-42.5;
+}
+
+.cost-name {
+  @apply block;
+}
+
+.cost-rule {
+  @apply block text-xs font-normal text-muted;
+}
+
+.cell-increase {
+  @apply bg-accent-soft font-semibold;
+}
+
+.cell-total {
+  @apply font-semibold;
+}
+
+.row-icon {
+  @apply size-4;
+}
+
+.projection-legend {
+  @apply mt-3 flex items-center gap-2 text-sm text-muted;
+}
+
+.legend-swatch {
+  @apply inline-block size-3.5 rounded-sm bg-accent-soft;
+}

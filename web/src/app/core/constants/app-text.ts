@@ -3,10 +3,21 @@ import {
   CATEGORY_NAME_MAX_LENGTH,
   CategoryErrorCode,
 } from '../../categories/category';
+import {
+  FIXED_COST_ERROR,
+  FIXED_COST_MAX_PERCENT,
+  FIXED_COST_NAME_MAX_LENGTH,
+  FixedCostErrorCode,
+  INCREASE_RULE,
+  IncreaseRule,
+} from '../../projections/fixed-cost';
+import { IPC_ESTIMATE, IPC_MAX_CUSTOM_RATE, IpcEstimate } from '../../projections/ipc-factors';
 import { TRANSACTION_TYPE, TransactionType } from '../../transactions/transaction';
 
 const transactionCount = (count: number) =>
   count === 1 ? '1 transaction' : `${count} transactions`;
+
+const AMOUNT_ERROR = 'Enter an amount above 0, with up to 2 decimals.';
 
 export const APP_TEXT = {
   appName: 'Expense Tracker',
@@ -15,9 +26,12 @@ export const APP_TEXT = {
     overview: 'Overview',
     activity: 'Activity',
     categories: 'Categories',
+    projections: 'Projections',
   },
   actions: {
     addTransaction: 'Add transaction',
+    addFixedCost: 'Add fixed cost',
+    tryAgain: 'Try again',
     newCategory: 'New category',
     save: 'Save',
     saveAndAddAnother: 'Save and add another',
@@ -61,7 +75,7 @@ export const APP_TEXT = {
     date: 'Date',
     description: 'Description',
     descriptionOptional: 'Description (optional)',
-    amountError: 'Enter an amount above 0, with up to 2 decimals.',
+    amountError: AMOUNT_ERROR,
     saved: 'Transaction saved',
     deleted: 'Transaction deleted',
   },
@@ -101,4 +115,72 @@ export const APP_TEXT = {
     emptyTitle: 'No categories yet',
     emptyBody: 'Create one here, or while adding a transaction.',
   },
+  projections: {
+    currency: 'Currency',
+    privacy:
+      'Your amounts never leave this device. The app only downloads inflation (IPC) factors.',
+    ipcDown:
+      'Inflation data is unavailable right now. Costs that increase by IPC are shown without increases until it is back.',
+    summary: 'Projection summary',
+    now: 'Now',
+    inSixMonths: 'In 6 months',
+    inTwelveMonths: 'In 12 months',
+    increase: 'Increase over 12 months',
+    noValue: '—',
+    ipcTitle: 'Inflation (IPC) estimate',
+    ipcSource: (source: string, month: string) => `Latest official ${source} data: ${month}.`,
+    monthlyRate: 'Estimated monthly inflation',
+    estimate: 'Months without official data',
+    estimates: {
+      [IPC_ESTIMATE.average]: 'Recent average',
+      [IPC_ESTIMATE.custom]: 'Custom',
+    } satisfies Record<IpcEstimate, string>,
+    averageMonths: 'Months to average',
+    monthsCount: (count: number) => `${count} months`,
+    customRate: 'Monthly (%)',
+    customRateError: `Enter a rate above 0 and up to ${IPC_MAX_CUSTOM_RATE}, with up to 2 decimals.`,
+    ipcNote: (month: string) =>
+      `IPC increases use official data up to ${month} and the chosen estimate for later months.`,
+    table: 'Month-by-month projection',
+    fixedCost: 'Fixed cost',
+    monthlyTotal: 'Monthly total',
+    increaseLegend: 'Increase month',
+    increaseCell: 'increase',
+    actions: 'Actions',
+    deleteCost: (name: string) => `Delete ${name}`,
+    deleted: 'Fixed cost deleted',
+    rules: {
+      [INCREASE_RULE.ipc]: 'IPC',
+      [INCREASE_RULE.percent]: 'Percent',
+      [INCREASE_RULE.amount]: 'Fixed amount',
+    } satisfies Record<IncreaseRule, string>,
+    every: (months: number) => (months === 1 ? 'every month' : `every ${months} months`),
+    lastIncrease: (month: string) => `last: ${month}`,
+    ipcPending: 'no IPC data',
+    emptyTitle: (currency: string) => `You have no fixed costs in ${currency}.`,
+    emptyBody:
+      'Add your rent, utilities or subscriptions to see what they will cost in the coming months.',
+  },
+  fixedCost: {
+    name: 'Name',
+    currentAmount: 'Current amount',
+    currency: 'Currency',
+    rule: 'How it increases',
+    ipcHint: 'Adjusted by the inflation accumulated since the last increase.',
+    percent: 'Increase (%)',
+    increaseAmount: 'Increase amount',
+    every: 'Frequency',
+    everyOption: (months: number) => (months === 1 ? 'Every month' : `Every ${months} months`),
+    lastIncrease: 'Last increase',
+    lastIncreaseHint: 'The month it last increased. The next increase is counted from there.',
+    saved: 'Fixed cost saved',
+  },
+  fixedCostErrors: {
+    [FIXED_COST_ERROR.nameRequired]: 'Enter a name.',
+    [FIXED_COST_ERROR.nameTooLong]: `Use up to ${FIXED_COST_NAME_MAX_LENGTH} characters.`,
+    [FIXED_COST_ERROR.invalidAmount]: AMOUNT_ERROR,
+    [FIXED_COST_ERROR.invalidPercent]: `Enter a percentage above 0 and up to ${FIXED_COST_MAX_PERCENT}, with up to 2 decimals.`,
+    [FIXED_COST_ERROR.invalidIncreaseAmount]: AMOUNT_ERROR,
+    [FIXED_COST_ERROR.futureLastIncrease]: 'Choose this month or an earlier one.',
+  } satisfies Record<FixedCostErrorCode, string>,
 } as const;
