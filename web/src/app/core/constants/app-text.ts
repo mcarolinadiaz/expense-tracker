@@ -5,6 +5,9 @@ import {
 } from '../../categories/category';
 import { TRANSACTION_TYPE, TransactionType } from '../../transactions/transaction';
 
+const transactionCount = (count: number) =>
+  count === 1 ? '1 transaction' : `${count} transactions`;
+
 export const APP_TEXT = {
   appName: 'Expense Tracker',
   mainNavigation: 'Main navigation',
@@ -70,12 +73,25 @@ export const APP_TEXT = {
     allCurrencies: 'All',
     actions: 'Actions',
     confirmDelete: 'Delete?',
-    count: (count: number) => (count === 1 ? '1 transaction' : `${count} transactions`),
+    count: transactionCount,
     perCurrency:
       'Choose a currency to see its totals in Overview. ARS and USD are never added together.',
     emptyTitle: 'No transactions this month yet',
     emptyBody: 'Add your first income or expense and it will appear here.',
     noResultsTitle: 'No transactions found',
     noResultsBody: 'Try different filters or another month.',
+  },
+  categories: {
+    create: 'Create',
+    rename: 'Rename',
+    newName: 'New name',
+    list: 'Your categories',
+    uses: (count: number) => (count === 0 ? 'No transactions' : transactionCount(count)),
+    viewTransactions: 'View transactions',
+    created: 'Category created',
+    renamed: 'Category renamed',
+    deleted: 'Category deleted',
+    emptyTitle: 'No categories yet',
+    emptyBody: 'Create one here, or while adding a transaction.',
   },
 } as const;

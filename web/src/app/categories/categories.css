@@ -1,0 +1,57 @@
+@reference '../../styles.css';
+
+.categories-card {
+  @apply max-w-180 p-6;
+}
+
+.category-create {
+  @apply flex flex-wrap items-start gap-3;
+}
+
+.category-create-field {
+  @apply flex-[1_1_15rem];
+}
+
+.category-create-submit {
+  @apply mt-6.25;
+}
+
+.category-list {
+  @apply mt-5;
+}
+
+.category-item {
+  @apply border-t border-line-soft py-2;
+}
+
+.category-row {
+  @apply flex flex-wrap items-center justify-between gap-3;
+}
+
+.category-rename-field {
+  @apply flex-[1_1_12.5rem];
+}
+
+.category-name {
+  @apply font-medium;
+}
+
+.category-uses {
+  @apply text-sm text-muted;
+}
+
+.category-actions {
+  @apply flex gap-1;
+}
+
+.category-delete {
+  @apply text-expense;
+}
+
+.category-conflict {
+  @apply mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-expense-soft px-3 py-2;
+}
+
+.category-conflict-action {
+  @apply font-semibold text-expense-hover;
+}
