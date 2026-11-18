@@ -144,6 +144,16 @@ describe('Transactions', () => {
     expect(rowTexts()).toEqual(['Nov 1 Sueldo de noviembre Sueldo + ARS 1,850,000.00']);
   });
 
+  it('should start filtered by the currency in the query parameter', async () => {
+    await seed();
+    fixture = TestBed.createComponent(Transactions);
+    element = fixture.nativeElement;
+    fixture.componentRef.setInput('currency', CURRENCY.USD);
+    await settle();
+
+    expect(rowTexts()).toEqual(['Nov 5 — Comida − $24.00']);
+  });
+
   it('should offer to clear the filters when nothing matches', async () => {
     await seed();
     await render();

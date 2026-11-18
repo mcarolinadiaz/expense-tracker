@@ -21,11 +21,16 @@ type Filter<T> = T | typeof FILTER_ALL;
 /** The query parameters Activity reads, such as `/transactions?category=3`. */
 export const ACTIVITY_QUERY_PARAM = {
   category: 'category',
+  currency: 'currency',
 } as const;
 
 function categoryFilter(param: string | undefined): Filter<number> {
   const id = Number(param);
   return Number.isInteger(id) && id > 0 ? id : FILTER_ALL;
+}
+
+function currencyFilter(param: string | undefined): Filter<Currency> {
+  return CURRENCIES.find((currency) => currency === param) ?? FILTER_ALL;
 }
 
 interface ActivityFilters {
@@ -74,10 +79,13 @@ export class Transactions {
 
   /** The category id from `ACTIVITY_QUERY_PARAM.category`, bound by the router. */
   readonly category = input<string>();
+  /** The currency from `ACTIVITY_QUERY_PARAM.currency`, bound by the router. */
+  readonly currency = input<string>();
 
   protected readonly filterValues = linkedSignal<ActivityFilters>(() => ({
     ...NO_FILTERS,
     categoryId: categoryFilter(this.category()),
+    currency: currencyFilter(this.currency()),
   }));
   protected readonly filters = form(this.filterValues);
 

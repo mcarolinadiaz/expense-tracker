@@ -37,14 +37,14 @@
     <div>
       <p class="field-label" id="activity-currency-label">{{ text.transaction.currency }}</p>
       <div class="segmented" role="group" aria-labelledby="activity-currency-label">
-        @for (currency of currencyFilters; track currency) {
+        @for (option of currencyFilters; track option) {
           <button
             type="button"
             class="segmented-item"
-            [attr.aria-pressed]="filterValues().currency === currency"
-            (click)="filters.currency().value.set(currency)"
+            [attr.aria-pressed]="filterValues().currency === option"
+            (click)="filters.currency().value.set(option)"
           >
-            {{ currency === all ? text.activity.allCurrencies : currency }}
+            {{ option === all ? text.activity.allCurrencies : option }}
           </button>
         }
       </div>
