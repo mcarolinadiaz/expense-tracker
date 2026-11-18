@@ -27,8 +27,17 @@ export function fromIsoDate(value: IsoDate | YearMonth): Date {
   return new Date(year, month - 1, day);
 }
 
-export function shiftMonth(month: YearMonth, delta: number): YearMonth {
+function monthIndex(month: YearMonth): number {
   const [year, monthNumber] = month.split('-').map(Number);
-  const index = year * MONTHS_PER_YEAR + monthNumber - 1 + delta;
+  return year * MONTHS_PER_YEAR + monthNumber - 1;
+}
+
+export function shiftMonth(month: YearMonth, delta: number): YearMonth {
+  const index = monthIndex(month) + delta;
   return `${Math.floor(index / MONTHS_PER_YEAR)}-${pad((index % MONTHS_PER_YEAR) + 1)}`;
+}
+
+/** How many months go from one month to another, such as 3 from `2026-08` to `2026-11`. */
+export function monthsBetween(from: YearMonth, to: YearMonth): number {
+  return monthIndex(to) - monthIndex(from);
 }

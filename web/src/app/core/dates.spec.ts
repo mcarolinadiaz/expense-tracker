@@ -1,4 +1,4 @@
-import { fromIsoDate, shiftMonth, toIsoDate, toYearMonth } from './dates';
+import { fromIsoDate, monthsBetween, shiftMonth, toIsoDate, toYearMonth } from './dates';
 
 describe('dates', () => {
   it('should read a day as a local date, not as UTC', () => {
@@ -21,5 +21,14 @@ describe('dates', () => {
     ['2026-11', -13, '2025-10'],
   ])('should move %s by %i months to %s', (month, delta, expected) => {
     expect(shiftMonth(month, delta)).toBe(expected);
+  });
+
+  it.each([
+    ['2026-08', '2026-11', 3],
+    ['2026-11', '2027-02', 3],
+    ['2026-11', '2026-11', 0],
+    ['2026-11', '2026-10', -1],
+  ])('should count the months from %s to %s', (from, to, expected) => {
+    expect(monthsBetween(from, to)).toBe(expected);
   });
 });
