@@ -18,7 +18,7 @@ The owner is an experienced Angular developer who is learning Laravel through th
 ## Stack
 
 - **API (`api/`):** PHP 8.4, Laravel 13, Pest 4. No database: the cache, sessions and queue use files or run in the request.
-- **Frontend (`web/`):** Angular 22, Tailwind CSS 4, Dexie (IndexedDB), Vitest. Planned: Transloco for translations and `big.js` for decimal math.
+- **Frontend (`web/`):** Angular 22, Tailwind CSS 4, Dexie (IndexedDB), Vitest. Planned: Transloco for translations. Decimal math uses native `BigInt` in `core/decimal.ts`, with no library.
 - **Development machine:** Debian 13. If an external APT repository is ever needed, keep its key in `/etc/apt/keyrings`, not `/usr/share/keyrings`.
 
 The first server-based version, with users, MariaDB and a CRUD API, is kept in the Git tag `v0-server-crud`.
@@ -40,13 +40,15 @@ expense-tracker/
 ├── AGENTS.md                   # This guide (CLAUDE.md imports it)
 ├── web/src/
 │   ├── styles.css              # Theme tokens and shared component classes
+│   ├── environments/           # apiUrl per build (environment.development.ts for ng serve)
 │   └── app/
-│       ├── core/               # App-wide code: AppDb, Clock, dates, money, APP_TEXT, page routes
+│       ├── core/               # App-wide code: AppDb, Clock, dates, money, decimal, API_URL, APP_TEXT, page routes
 │       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, pipes
 │       ├── layout/             # side-bar and navbar
 │       ├── overview/           # Overview page and its summary service
 │       ├── transactions/       # Activity page, transaction model and service, side panel
-│       └── categories/         # Categories page, category model and service
+│       ├── categories/         # Categories page, category model and service
+│       └── projections/        # Fixed costs, the IPC factors client and the projection
 └── api/
     ├── app/
     │   ├── Data/               # Readonly data objects, such as IpcMonth and IpcFactor
@@ -191,11 +193,14 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - `parseAmount()` only accepts thousands separators in the whole part and one decimal separator, so `1.250,5.0` is rejected rather than read as `1.250,50`.
 - `LocaleFormat.money()` writes `−` before a negative amount, such as a negative balance, rather than the hyphen `Intl` uses.
 - `Intl` separates a currency symbol and its number with a non-breaking space. Tests that compare formatted amounts replace `\s` with a plain space first.
+- `core/decimal.ts` keeps factors and percentages as plain decimal text, such as `"1.0952"` or `"8.5"`, and multiplies them by cents with `BigInt`, rounding half away from zero to the cent.
+- `parsePercent()` rejects a thousands separator, so `2.5` typed in es-AR is not read as 25.
 
 **Database (`core/db/`)**
 
 - Dexie's `stores()` only lists the primary key and the indexed fields. Other fields are stored too, but can't be queried with `where()`.
 - `TransactionService.listMonth()` reads the month as the text range from `YYYY-MM-01` to `YYYY-MM-31`, which works for every month because dates are `YYYY-MM-DD` strings.
+- `version(2)` adds `fixedCosts`, indexed by `currency`. A later version only lists the stores it adds or changes, and Dexie keeps the others.
 
 **Select (`shared/select/`)**
 
@@ -222,6 +227,13 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Deleting a category asks for no confirmation, because the service only deletes a category that no transaction uses. Otherwise the row explains why and offers "View transactions", which opens Activity filtered by that category.
 - Only one row is renamed at a time, so the rename field has a fixed id. After saving, or cancelling with Escape, the focus goes back to that row's Rename button.
 - The name fields use `maxLength()` with the `tooLong` error code, so `FormField` sets the native `maxlength` and any error shows the same message as the service's.
+
+**Projections (`projections/`)**
+
+- Every fixed cost has a `lastIncrease` month and increases every `every` months after it, whatever its rule. The first projected month is today's amount and never increases, as in the API.
+- Percentage and fixed-amount increases are calculated in the browser. IPC increases multiply today's amount by the cumulative factor the API gives for each month, so rounding never piles up.
+- `ProjectionService` asks for factors once per distinct `every` and `lastIncrease`, plus a monthly schedule from today that gives the IPC estimate even without IPC costs. It only sends months and estimate settings, never amounts or names.
+- It keeps the factors it read for the same month and settings, and forgets a failed request so the next one tries again. While the API fails, IPC costs stay the same and `ipc.status` is `unavailable`.
 
 **Tests**
 
@@ -318,6 +330,7 @@ These development defaults are not yet handled:
 
 - Set `APP_DEBUG=false`, because `true` exposes stack traces in error responses.
 - Set `CORS_ALLOWED_ORIGINS` to the frontend's real domain.
+- Set `apiUrl` in `web/src/environments/environment.ts` to the deployed API. It still points to `php artisan serve`.
 - Make the cache folder, `storage/framework/cache`, writable in the container.
 - Run behind HTTPS.
 
