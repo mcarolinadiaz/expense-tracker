@@ -3,10 +3,12 @@ import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { Component, computed, inject, signal, Signal } from '@angular/core';
 import { FieldTree, form, FormField, maxLength, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
-import { APP_TEXT } from '../../core/constants/app-text';
 import { monthsBetween, YearMonth } from '../../core/dates';
+import { TextKey } from '../../core/i18n/translations';
+import { Translator } from '../../core/i18n/translator.service';
 import { LocaleFormat } from '../../core/locale-format.service';
 import { CURRENCIES, Currency } from '../../core/money';
+import { TextPipe } from '../../shared/pipes/text.pipe';
 import { Select, SelectOption } from '../../shared/select/select';
 import {
   FIXED_COST_ERROR,
@@ -18,6 +20,7 @@ import {
   INCREASE_RULE,
   IncreaseRule,
 } from '../fixed-cost';
+import { fixedCostErrorText } from '../fixed-cost-error-text';
 import { FixedCostService } from '../fixed-cost.service';
 
 export const FIXED_COST_PANEL_IDS = {
@@ -60,7 +63,7 @@ interface FixedCostFormModel {
 
 /** The side panel to add a fixed cost. Open it with `FixedCostPanelService`. */
 @Component({
-  imports: [FormField, Select],
+  imports: [FormField, Select, TextPipe],
   selector: 'app-fixed-cost-panel',
   host: { class: 'side-panel' },
   templateUrl: './fixed-cost-panel.html',
@@ -71,17 +74,19 @@ export class FixedCostPanel {
   private readonly format = inject(LocaleFormat);
   private readonly fixedCostService = inject(FixedCostService);
   private readonly announcer = inject(LiveAnnouncer);
+  private readonly translator = inject(Translator);
 
-  protected readonly text = APP_TEXT;
   protected readonly ids = FIXED_COST_PANEL_IDS;
   protected readonly rules = Object.values(INCREASE_RULE);
   protected readonly ruleOf = INCREASE_RULE;
   protected readonly currencies = CURRENCIES;
   protected readonly currentMonth = this.data.currentMonth;
-  protected readonly everyOptions: SelectOption<number>[] = INCREASE_EVERY_OPTIONS.map((every) => ({
-    value: every,
-    label: APP_TEXT.fixedCost.everyOption(every),
-  }));
+  protected readonly everyOptions = computed((): SelectOption<number>[] =>
+    INCREASE_EVERY_OPTIONS.map((every) => ({
+      value: every,
+      label: this.translator.plural('fixedCost.everyOption', every),
+    })),
+  );
   protected readonly amountHint = computed(() => this.format.formatAmount(AMOUNT_HINT_CENTS));
   protected readonly percentHint = computed(() => this.format.decimal(PERCENT_HINT));
 
@@ -164,7 +169,7 @@ export class FixedCostPanel {
         increase: this.increase(value),
       }),
     );
-    void this.announcer.announce(APP_TEXT.fixedCost.saved);
+    void this.announcer.announce(this.translator.translate('fixedCost.saved'));
     this.close();
   }
 
@@ -183,5 +188,13 @@ export class FixedCostPanel {
       default:
         return { rule: INCREASE_RULE.ipc };
     }
+  }
+
+  protected ruleLabel(rule: IncreaseRule): TextKey {
+    return `projections.rules.${rule}`;
+  }
+
+  protected errorText(code: FixedCostErrorCode): string {
+    return fixedCostErrorText(this.translator, code);
   }
 }

@@ -3,12 +3,14 @@ import { Component, computed, inject, linkedSignal, signal } from '@angular/core
 import { rxResource } from '@angular/core/rxjs-interop';
 import { form, FormField, validate } from '@angular/forms/signals';
 import { firstValueFrom, map } from 'rxjs';
-import { APP_TEXT } from '../core/constants/app-text';
 import { YearMonth } from '../core/dates';
+import { TextKey } from '../core/i18n/translations';
+import { Translator } from '../core/i18n/translator.service';
 import { percentChange } from '../core/decimal';
 import { LocaleFormat } from '../core/locale-format.service';
 import { AMOUNT_SIGN, Cents, CURRENCIES, CURRENCY, Currency } from '../core/money';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
+import { TextPipe } from '../shared/pipes/text.pipe';
 import { Select, SelectOption } from '../shared/select/select';
 import { Spinner } from '../shared/spinner/spinner';
 import { STAT_CARD_TONE, StatCard } from '../shared/stat-card/stat-card';
@@ -85,7 +87,7 @@ interface ChartBar {
 }
 
 @Component({
-  imports: [FormField, NavbarActions, Select, Spinner, StatCard],
+  imports: [FormField, NavbarActions, Select, Spinner, StatCard, TextPipe],
   selector: 'app-projections',
   styleUrl: './projections.css',
   templateUrl: './projections.html',
@@ -96,16 +98,20 @@ export class Projections {
   private readonly panel = inject(FixedCostPanelService);
   private readonly format = inject(LocaleFormat);
   private readonly announcer = inject(LiveAnnouncer);
+  private readonly translator = inject(Translator);
 
-  protected readonly text = APP_TEXT;
   protected readonly ids = PROJECTIONS_IDS;
   protected readonly currencies = CURRENCIES;
   protected readonly estimates = Object.values(IPC_ESTIMATE);
   protected readonly estimateOf = IPC_ESTIMATE;
   protected readonly neutralTone = STAT_CARD_TONE.neutral;
-  protected readonly averageMonthsOptions: SelectOption<number>[] = IPC_AVERAGE_MONTHS_OPTIONS.map(
-    (months) => ({ value: months, label: APP_TEXT.projections.monthsCount(months) }),
+  protected readonly averageMonthsOptions = computed((): SelectOption<number>[] =>
+    IPC_AVERAGE_MONTHS_OPTIONS.map((months) => ({
+      value: months,
+      label: this.translator.plural('projections.monthsCount', months),
+    })),
   );
+  protected readonly customRateParams = { max: IPC_MAX_CUSTOM_RATE };
   protected readonly currency = signal<Currency>(CURRENCY.ARS);
 
   protected readonly estimateModel = signal<EstimateFormModel>({
@@ -172,14 +178,17 @@ export class Projections {
   );
   protected readonly hasRows = computed(() => (this.current()?.rows.length ?? 0) > 0);
   protected readonly isEmpty = computed(() => this.current()?.rows.length === 0);
-  protected readonly emptyTitle = computed(() => APP_TEXT.projections.emptyTitle(this.currency()));
+  protected readonly emptyTitle = computed(() =>
+    this.translator.translate('projections.emptyTitle', { currency: this.currency() }),
+  );
 
   protected readonly cards = computed((): SummaryCard[] => {
     const totals = this.current()?.totals ?? [];
+    const label = (key: TextKey) => this.translator.translate(key);
     return [
-      { label: APP_TEXT.projections.now, amount: totals[SUMMARY_OFFSET.now] },
-      { label: APP_TEXT.projections.inSixMonths, amount: totals[SUMMARY_OFFSET.half] },
-      { label: APP_TEXT.projections.inTwelveMonths, amount: totals[SUMMARY_OFFSET.year] },
+      { label: label('projections.now'), amount: totals[SUMMARY_OFFSET.now] },
+      { label: label('projections.inSixMonths'), amount: totals[SUMMARY_OFFSET.half] },
+      { label: label('projections.inTwelveMonths'), amount: totals[SUMMARY_OFFSET.year] },
     ];
   });
 
@@ -191,7 +200,7 @@ export class Projections {
       INCREASE_DECIMALS,
     );
     if (change === null) {
-      return APP_TEXT.projections.noValue;
+      return this.translator.translate('projections.noValue');
     }
     return change.startsWith('-')
       ? `${AMOUNT_SIGN.minus} ${this.format.percent(change.slice(1))}`
@@ -206,8 +215,15 @@ export class Projections {
     const lastMonth = ipc.lastMonth ? this.format.monthName(ipc.lastMonth) : null;
     return {
       rate: this.format.percent(ipc.monthlyEstimate),
-      source: lastMonth ? APP_TEXT.projections.ipcSource(ipc.source, lastMonth) : null,
-      note: lastMonth ? APP_TEXT.projections.ipcNote(lastMonth) : null,
+      source: lastMonth
+        ? this.translator.translate('projections.ipcSource', {
+            source: ipc.source,
+            month: lastMonth,
+          })
+        : null,
+      note: lastMonth
+        ? this.translator.translate('projections.ipcNote', { month: lastMonth })
+        : null,
     };
   });
 
@@ -224,7 +240,7 @@ export class Projections {
       id: cost.id,
       name: cost.name,
       rule: this.ruleLabel(cost, ipcDown),
-      deleteLabel: APP_TEXT.projections.deleteCost(cost.name),
+      deleteLabel: this.translator.translate('projections.deleteCost', { name: cost.name }),
       cells: cells.map((cell) => ({
         month: cell.month,
         amount: this.format.money(cell.amount, cost.currency),
@@ -270,7 +286,7 @@ export class Projections {
 
   protected async remove(id: number): Promise<void> {
     await firstValueFrom(this.fixedCostService.remove(id));
-    void this.announcer.announce(APP_TEXT.projections.deleted);
+    void this.announcer.announce(this.translator.translate('projections.deleted'));
   }
 
   private parseRate(text: string): string | null {
@@ -286,7 +302,6 @@ export class Projections {
   /** How a cost increases, such as "IPC every 4 months · last: Aug 26". */
   private ruleLabel(cost: FixedCost, ipcDown: boolean): string {
     const { increase } = cost;
-    const text = APP_TEXT.projections;
     let head: string;
     switch (increase.rule) {
       case INCREASE_RULE.percent:
@@ -296,12 +311,19 @@ export class Projections {
         head = this.format.money(increase.amount, cost.currency, AMOUNT_SIGN.plus);
         break;
       default:
-        head = text.rules[INCREASE_RULE.ipc];
+        head = this.translator.translate('projections.rules.ipc');
     }
     const last =
       increase.rule === INCREASE_RULE.ipc && ipcDown
-        ? text.ipcPending
-        : text.lastIncrease(this.format.shortMonth(cost.lastIncrease));
-    return [`${head} ${text.every(cost.every)}`, last].join(RULE_SEPARATOR);
+        ? this.translator.translate('projections.ipcPending')
+        : this.translator.translate('projections.lastIncrease', {
+            month: this.format.shortMonth(cost.lastIncrease),
+          });
+    const every = this.translator.plural('projections.every', cost.every);
+    return [`${head} ${every}`, last].join(RULE_SEPARATOR);
+  }
+
+  protected estimateLabel(estimate: IpcEstimate): TextKey {
+    return `projections.estimates.${estimate}`;
   }
 }

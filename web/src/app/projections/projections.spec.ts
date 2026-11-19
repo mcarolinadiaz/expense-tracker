@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { firstValueFrom, Observable, of, Subject, throwError } from 'rxjs';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../core/axe.testing';
 import { provideFixedClock } from '../core/clock.testing';
-import { APP_TEXT } from '../core/constants/app-text';
+import en from '../core/i18n/en.json';
+import { provideTestTranslations } from '../core/i18n/translations.testing';
 import { shiftMonth } from '../core/dates';
 import { AppDb } from '../core/db/app-db';
 import { CURRENCY } from '../core/money';
@@ -53,6 +54,7 @@ describe('Projections', () => {
     factors = vi.fn((query: IpcFactorsQuery) => of(factorsFor(query)));
     TestBed.configureTestingModule({
       providers: [
+        provideTestTranslations(),
         provideFixedClock('2026-11-18'),
         { provide: IpcFactorsService, useValue: { factors } },
       ],
@@ -108,7 +110,7 @@ describe('Projections', () => {
     async () => {
       await render();
       await settleUntil(() =>
-        expect(element.textContent).toContain(APP_TEXT.projections.emptyTitle(CURRENCY.ARS)),
+        expect(element.textContent).toContain('You have no fixed costs in ARS.'),
       );
 
       expect(element.querySelector('table')).toBeNull();
@@ -138,15 +140,13 @@ describe('Projections', () => {
       const headers = Array.from(element.querySelectorAll('thead th')).map((cell) =>
         cell.textContent?.trim(),
       );
-      expect(headers.slice(0, 3)).toEqual([APP_TEXT.projections.fixedCost, 'Nov 26', 'Dec 26']);
+      expect(headers.slice(0, 3)).toEqual([en.projections.fixedCost, 'Nov 26', 'Dec 26']);
       const totals = Array.from(element.querySelectorAll('tfoot td')).map((cell) =>
         cell.textContent?.trim().replace(/\s/g, ' '),
       );
       expect(totals.slice(0, 2)).toEqual(['ARS 1,500.00', 'ARS 1,650.00']);
       expect(element.querySelectorAll('.cell-increase').length).toBeGreaterThan(0);
-      expect(element.textContent).toContain(
-        APP_TEXT.projections.ipcSource('INDEC', 'September 2026'),
-      );
+      expect(element.textContent).toContain('Latest official INDEC data: September 2026.');
       expect(element.textContent).toContain('2.11%');
       await expectNoAxeViolations(element);
     },
@@ -164,7 +164,7 @@ describe('Projections', () => {
       await renderUntil(() => expect(element.querySelector('app-spinner')).not.toBeNull());
 
       expect(element.querySelector('[role="status"]')?.textContent).toContain(
-        APP_TEXT.projections.loading,
+        en.projections.loading,
       );
       expect(element.querySelector('table')).toBeNull();
       await expectNoAxeViolations(element);
@@ -207,14 +207,10 @@ describe('Projections', () => {
     await render();
     await settleUntil(() => expect(rowTexts()).toHaveLength(1));
 
-    element
-      .querySelector<HTMLButtonElement>(
-        `[aria-label="${APP_TEXT.projections.deleteCost('Alquiler')}"]`,
-      )!
-      .click();
+    element.querySelector<HTMLButtonElement>(`[aria-label="Delete Alquiler"]`)!.click();
 
     await settleUntil(() =>
-      expect(element.textContent).toContain(APP_TEXT.projections.emptyTitle(CURRENCY.ARS)),
+      expect(element.textContent).toContain('You have no fixed costs in ARS.'),
     );
   });
 
@@ -224,16 +220,14 @@ describe('Projections', () => {
       factors.mockReturnValueOnce(throwError(() => new Error('offline')));
       await addCost();
       await render();
-      await settleUntil(() => expect(element.textContent).toContain(APP_TEXT.projections.ipcDown));
+      await settleUntil(() => expect(element.textContent).toContain(en.projections.ipcDown));
 
-      expect(rowTexts()[0]).toContain(APP_TEXT.projections.ipcPending);
+      expect(rowTexts()[0]).toContain(en.projections.ipcPending);
       await expectNoAxeViolations(element);
 
-      button(APP_TEXT.actions.tryAgain).click();
+      button(en.actions.tryAgain).click();
 
-      await settleUntil(() =>
-        expect(element.textContent).not.toContain(APP_TEXT.projections.ipcDown),
-      );
+      await settleUntil(() => expect(element.textContent).not.toContain(en.projections.ipcDown));
     },
     AXE_TEST_TIMEOUT_MS,
   );
@@ -244,7 +238,7 @@ describe('Projections', () => {
       await render();
       await settleUntil(() => expect(element.textContent).toContain('2.11%'));
 
-      button(APP_TEXT.projections.estimates[IPC_ESTIMATE.custom]).click();
+      button(en.projections.estimates[IPC_ESTIMATE.custom]).click();
       await fixture.whenStable();
       const rate = element.querySelector<HTMLInputElement>(`#${PROJECTIONS_IDS.customRate}`)!;
       expect(rate.value).toBe('2.11');
@@ -259,7 +253,9 @@ describe('Projections', () => {
       rate.dispatchEvent(new Event('input'));
       rate.dispatchEvent(new Event('blur'));
       await settleUntil(() =>
-        expect(element.textContent).toContain(APP_TEXT.projections.customRateError),
+        expect(element.textContent).toContain(
+          'Enter a rate above 0 and up to 50, with up to 2 decimals.',
+        ),
       );
 
       expect(factors).toHaveBeenCalledTimes(calls);

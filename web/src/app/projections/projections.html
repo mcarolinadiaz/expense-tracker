@@ -1,5 +1,5 @@
 <ng-template appNavbarActions>
-  <div class="segmented" role="group" [attr.aria-label]="text.projections.currency">
+  <div class="segmented" role="group" [attr.aria-label]="'projections.currency' | text">
     @for (option of currencies; track option) {
       <button
         type="button"
@@ -13,7 +13,7 @@
   </div>
 
   <button type="button" class="btn btn-primary" (click)="addFixedCost()">
-    {{ text.actions.addFixedCost }}
+    {{ 'actions.addFixedCost' | text }}
   </button>
 </ng-template>
 
@@ -30,24 +30,24 @@
       <rect x="4" y="11" width="16" height="10" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </svg>
-    <span>{{ text.projections.privacy }}</span>
+    <span>{{ 'projections.privacy' | text }}</span>
   </p>
 
   @if (ipcDown()) {
     <div class="ipc-alert" role="alert">
-      <span class="ipc-alert-text">{{ text.projections.ipcDown }}</span>
+      <span class="ipc-alert-text">{{ 'projections.ipcDown' | text }}</span>
       <button type="button" class="btn btn-secondary" (click)="retry()">
-        {{ text.actions.tryAgain }}
+        {{ 'actions.tryAgain' | text }}
       </button>
     </div>
   }
 
-  <p class="sr-only" role="status">{{ loading() ? text.projections.loading : '' }}</p>
+  <p class="sr-only" role="status">{{ loading() ? ('projections.loading' | text) : '' }}</p>
 
   @if (firstLoad()) {
     <div class="card projection-loading">
       <app-spinner />
-      <span>{{ text.projections.loading }}</span>
+      <span>{{ 'projections.loading' | text }}</span>
     </div>
   }
 
@@ -56,7 +56,7 @@
       class="stat-cards"
       [class.projection-updating]="loading()"
       [attr.aria-busy]="loading()"
-      [attr.aria-label]="text.projections.summary"
+      [attr.aria-label]="'projections.summary' | text"
     >
       @for (card of cards(); track card.label) {
         <app-stat-card
@@ -67,7 +67,7 @@
         />
       }
       <article class="card-inverse">
-        <h2 class="stat-label">{{ text.projections.increase }}</h2>
+        <h2 class="stat-label">{{ 'projections.increase' | text }}</h2>
         <p class="stat-value">{{ increase() }}</p>
       </article>
     </section>
@@ -76,20 +76,20 @@
   <section class="card projection-panel" [attr.aria-labelledby]="ids.ipcTitle">
     <div class="ipc-header">
       <div>
-        <h2 class="section-title" [id]="ids.ipcTitle">{{ text.projections.ipcTitle }}</h2>
+        <h2 class="section-title" [id]="ids.ipcTitle">{{ 'projections.ipcTitle' | text }}</h2>
         @if (ipcDetails()?.source; as source) {
           <p class="projection-muted">{{ source }}</p>
         }
       </div>
       <div class="ipc-rate">
-        <p class="projection-muted">{{ text.projections.monthlyRate }}</p>
-        <p class="ipc-rate-value">{{ ipcDetails()?.rate ?? text.projections.noValue }}</p>
+        <p class="projection-muted">{{ 'projections.monthlyRate' | text }}</p>
+        <p class="ipc-rate-value">{{ ipcDetails()?.rate ?? ('projections.noValue' | text) }}</p>
       </div>
     </div>
 
     <div class="ipc-controls">
       <div>
-        <p class="field-label" [id]="ids.estimateLabel">{{ text.projections.estimate }}</p>
+        <p class="field-label" [id]="ids.estimateLabel">{{ 'projections.estimate' | text }}</p>
         <div class="segmented" role="group" [attr.aria-labelledby]="ids.estimateLabel">
           @for (option of estimates; track option) {
             <button
@@ -98,7 +98,7 @@
               [attr.aria-pressed]="estimateModel().estimate === option"
               (click)="pickEstimate(option)"
             >
-              {{ text.projections.estimates[option] }}
+              {{ estimateLabel(option) | text }}
             </button>
           }
         </div>
@@ -107,18 +107,18 @@
       @if (estimateModel().estimate === estimateOf.average) {
         <div class="ipc-average">
           <label class="field-label" [for]="ids.averageMonths">
-            {{ text.projections.averageMonths }}
+            {{ 'projections.averageMonths' | text }}
           </label>
           <app-select
             [inputId]="ids.averageMonths"
             [formField]="estimateForm.averageMonths"
-            [options]="averageMonthsOptions"
+            [options]="averageMonthsOptions()"
           />
         </div>
       } @else {
         <div class="ipc-custom">
           <label class="field-label" [for]="ids.customRate">{{
-            text.projections.customRate
+            'projections.customRate' | text
           }}</label>
           <input
             class="field"
@@ -135,7 +135,7 @@
     </div>
     @if (rateError()) {
       <p class="field-error" role="alert" [id]="ids.customRateError">
-        {{ text.projections.customRateError }}
+        {{ 'projections.customRateError' | text: customRateParams }}
       </p>
     }
   </section>
@@ -143,7 +143,7 @@
   @if (hasRows()) {
     <section class="card projection-panel" [attr.aria-busy]="loading()">
       <div class="projection-heading">
-        <h2 class="section-title" [id]="ids.tableTitle">{{ text.projections.table }}</h2>
+        <h2 class="section-title" [id]="ids.tableTitle">{{ 'projections.table' | text }}</h2>
         @if (loading()) {
           <app-spinner />
         }
@@ -167,11 +167,11 @@
           <table class="projection-table">
             <thead>
               <tr>
-                <th scope="col" class="cell-sticky">{{ text.projections.fixedCost }}</th>
+                <th scope="col" class="cell-sticky">{{ 'projections.fixedCost' | text }}</th>
                 @for (column of monthLabels(); track column.month) {
                   <th scope="col" class="cell-amount">{{ column.label }}</th>
                 }
-                <th scope="col" class="cell-amount">{{ text.projections.actions }}</th>
+                <th scope="col" class="cell-amount">{{ 'projections.actions' | text }}</th>
               </tr>
             </thead>
             <tbody>
@@ -185,7 +185,7 @@
                     <td class="cell-amount" [class.cell-increase]="cell.increases">
                       {{ cell.amount }}
                       @if (cell.increases) {
-                        <span class="sr-only">({{ text.projections.increaseCell }})</span>
+                        <span class="sr-only">({{ 'projections.increaseCell' | text }})</span>
                       }
                     </td>
                   }
@@ -213,7 +213,7 @@
             </tbody>
             <tfoot>
               <tr>
-                <th scope="row" class="cell-sticky">{{ text.projections.monthlyTotal }}</th>
+                <th scope="row" class="cell-sticky">{{ 'projections.monthlyTotal' | text }}</th>
                 @for (total of totals(); track total.index) {
                   <td class="cell-amount cell-total">{{ total.amount }}</td>
                 }
@@ -225,7 +225,7 @@
 
         <p class="projection-legend">
           <span class="legend-swatch" aria-hidden="true"></span>
-          <span>{{ text.projections.increaseLegend }}</span>
+          <span>{{ 'projections.increaseLegend' | text }}</span>
         </p>
         @if (ipcDetails()?.note; as note) {
           <p class="projection-muted">{{ note }}</p>
@@ -235,9 +235,9 @@
   } @else if (isEmpty()) {
     <section class="card empty-state" [attr.aria-labelledby]="ids.emptyTitle">
       <h2 class="section-title" [id]="ids.emptyTitle">{{ emptyTitle() }}</h2>
-      <p class="empty-body">{{ text.projections.emptyBody }}</p>
+      <p class="empty-body">{{ 'projections.emptyBody' | text }}</p>
       <button type="button" class="btn btn-primary" (click)="addFixedCost()">
-        {{ text.actions.addFixedCost }}
+        {{ 'actions.addFixedCost' | text }}
       </button>
     </section>
   }

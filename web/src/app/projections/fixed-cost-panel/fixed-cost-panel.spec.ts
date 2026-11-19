@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../../core/axe.testing';
 import { provideFixedClock } from '../../core/clock.testing';
-import { APP_TEXT } from '../../core/constants/app-text';
+import en from '../../core/i18n/en.json';
+import { provideTestTranslations } from '../../core/i18n/translations.testing';
 import { AppDb } from '../../core/db/app-db';
 import { CURRENCY, Currency } from '../../core/money';
 import { FIXED_COST_ERROR, INCREASE_RULE } from '../fixed-cost';
@@ -12,7 +13,9 @@ import { FixedCostPanelService } from './fixed-cost-panel.service';
 
 describe('FixedCostPanel', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideFixedClock('2026-11-18')] });
+    TestBed.configureTestingModule({
+      providers: [provideTestTranslations(), provideFixedClock('2026-11-18')],
+    });
   });
 
   afterEach(async () => {
@@ -55,7 +58,7 @@ describe('FixedCostPanel', () => {
 
     type(FIXED_COST_PANEL_IDS.name, '  Alquiler  ');
     type(FIXED_COST_PANEL_IDS.amount, '620,000');
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
     expect(await saved()).toEqual([
@@ -78,11 +81,11 @@ describe('FixedCostPanel', () => {
     type(FIXED_COST_PANEL_IDS.name, 'Software');
     type(FIXED_COST_PANEL_IDS.amount, '24');
     button(CURRENCY.USD).click();
-    button(APP_TEXT.projections.rules[INCREASE_RULE.percent]).click();
+    button(en.projections.rules[INCREASE_RULE.percent]).click();
     await settle();
     type(FIXED_COST_PANEL_IDS.value, '8.5');
     type(FIXED_COST_PANEL_IDS.lastIncrease, '2026-06');
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
     const [cost] = await saved(CURRENCY.USD);
@@ -99,10 +102,10 @@ describe('FixedCostPanel', () => {
 
     type(FIXED_COST_PANEL_IDS.name, 'Internet');
     type(FIXED_COST_PANEL_IDS.amount, '25,000');
-    button(APP_TEXT.projections.rules[INCREASE_RULE.amount]).click();
+    button(en.projections.rules[INCREASE_RULE.amount]).click();
     await settle();
     type(FIXED_COST_PANEL_IDS.value, '1,500.50');
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
     const [cost] = await saved();
@@ -112,18 +115,18 @@ describe('FixedCostPanel', () => {
   it('should show each broken rule and save nothing', async () => {
     await open();
 
-    button(APP_TEXT.projections.rules[INCREASE_RULE.percent]).click();
+    button(en.projections.rules[INCREASE_RULE.percent]).click();
     await settle();
     type(FIXED_COST_PANEL_IDS.value, '150');
     type(FIXED_COST_PANEL_IDS.lastIncrease, '2026-12');
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
     const text = panel().textContent;
-    expect(text).toContain(APP_TEXT.fixedCostErrors[FIXED_COST_ERROR.nameRequired]);
-    expect(text).toContain(APP_TEXT.fixedCostErrors[FIXED_COST_ERROR.invalidAmount]);
-    expect(text).toContain(APP_TEXT.fixedCostErrors[FIXED_COST_ERROR.invalidPercent]);
-    expect(text).toContain(APP_TEXT.fixedCostErrors[FIXED_COST_ERROR.futureLastIncrease]);
+    expect(text).toContain(en.fixedCostErrors[FIXED_COST_ERROR.nameRequired]);
+    expect(text).toContain(en.fixedCostErrors[FIXED_COST_ERROR.invalidAmount]);
+    expect(text).toContain('Enter a percentage above 0 and up to 100, with up to 2 decimals.');
+    expect(text).toContain(en.fixedCostErrors[FIXED_COST_ERROR.futureLastIncrease]);
     expect(await saved()).toEqual([]);
   });
 
@@ -133,8 +136,8 @@ describe('FixedCostPanel', () => {
       await open();
       await expectNoAxeViolations();
 
-      button(APP_TEXT.projections.rules[INCREASE_RULE.amount]).click();
-      button(APP_TEXT.actions.save).click();
+      button(en.projections.rules[INCREASE_RULE.amount]).click();
+      button(en.actions.save).click();
       await settle();
       await expectNoAxeViolations();
     },
