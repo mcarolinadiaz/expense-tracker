@@ -28,7 +28,7 @@ jobs:
           extensions: bcmath, mbstring, xml, curl
           coverage: none
 
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
         with:
           working-directory: api
 
