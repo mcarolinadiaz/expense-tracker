@@ -4,7 +4,8 @@ import { firstValueFrom } from 'rxjs';
 import { CategoryService } from '../categories/category.service';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../core/axe.testing';
 import { provideFixedClock } from '../core/clock.testing';
-import { APP_TEXT } from '../core/constants/app-text';
+import en from '../core/i18n/en.json';
+import { provideTestTranslations } from '../core/i18n/translations.testing';
 import { AppDb } from '../core/db/app-db';
 import { CURRENCY, Currency } from '../core/money';
 import { TRANSACTION_TYPE } from '../transactions/transaction';
@@ -67,7 +68,7 @@ describe('Overview', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideRouter([]), provideFixedClock('2026-11-15')],
+      providers: [provideTestTranslations(), provideRouter([]), provideFixedClock('2026-11-15')],
     });
   });
 
@@ -84,9 +85,9 @@ describe('Overview', () => {
       expect(texts('app-stat-card .stat-value')).toEqual(['$1,000.00', '$24.00', '$976.00']),
     );
     expect(texts('app-stat-card .stat-label')).toEqual([
-      APP_TEXT.summary.income,
-      APP_TEXT.summary.expenses,
-      APP_TEXT.summary.balance,
+      en.summary.income,
+      en.summary.expenses,
+      en.summary.balance,
     ]);
   });
 
@@ -97,7 +98,7 @@ describe('Overview', () => {
 
     await settleUntil(() => expect(element.querySelector('.category-bar')).toBeTruthy());
     const bar = element.querySelector<HTMLAnchorElement>('.category-bar')!;
-    expect(bar.getAttribute('aria-label')).toBe(APP_TEXT.summary.viewCategory('Comida', '$24.00'));
+    expect(bar.getAttribute('aria-label')).toBe('View transactions in Comida: $24.00');
     expect(bar.getAttribute('href')).toBe(`/transactions?currency=USD&category=${food}`);
     expect(element.querySelector('.view-all')!.getAttribute('href')).toBe(
       '/transactions?currency=USD',
@@ -124,7 +125,7 @@ describe('Overview', () => {
     await seed();
     await render();
 
-    await settleUntil(() => expect(element.textContent).toContain(APP_TEXT.summary.emptyTitle));
+    await settleUntil(() => expect(element.textContent).toContain(en.summary.emptyTitle));
     expect(texts('app-stat-card .stat-value')).toEqual(['ARS 0.00', 'ARS 0.00', 'ARS 0.00']);
   });
 

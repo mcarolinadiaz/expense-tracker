@@ -4,12 +4,15 @@ import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 import { CategoryService } from '../categories/category.service';
-import { APP_TEXT } from '../core/constants/app-text';
+import { TextKey } from '../core/i18n/translations';
+import { Translator } from '../core/i18n/translator.service';
 import { LocaleFormat } from '../core/locale-format.service';
 import { CURRENCIES, Currency } from '../core/money';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
 import { MonthPicker } from '../shared/month-picker/month-picker';
 import { SelectedMonthService } from '../shared/month-picker/selected-month.service';
+import { PluralPipe } from '../shared/pipes/plural.pipe';
+import { TextPipe } from '../shared/pipes/text.pipe';
 import { Select, SelectOption } from '../shared/select/select';
 import { Transaction, TRANSACTION_SIGN, TRANSACTION_TYPE, TransactionType } from './transaction';
 import { TransactionPanelService } from './transaction-panel/transaction-panel.service';
@@ -58,7 +61,7 @@ interface TransactionRow {
 }
 
 @Component({
-  imports: [FormField, MonthPicker, NavbarActions, Select],
+  imports: [FormField, MonthPicker, NavbarActions, PluralPipe, Select, TextPipe],
   selector: 'app-transactions',
   styleUrl: './transactions.css',
   templateUrl: './transactions.html',
@@ -69,9 +72,9 @@ export class Transactions {
   private readonly categoryService = inject(CategoryService);
   private readonly panel = inject(TransactionPanelService);
   private readonly announcer = inject(LiveAnnouncer);
+  private readonly translator = inject(Translator);
   private readonly month = inject(SelectedMonthService).month;
 
-  protected readonly text = APP_TEXT;
   protected readonly types = TRANSACTION_TYPE;
   protected readonly all = FILTER_ALL;
   protected readonly currencyFilters: Filter<Currency>[] = [FILTER_ALL, ...CURRENCIES];
@@ -89,17 +92,17 @@ export class Transactions {
   }));
   protected readonly filters = form(this.filterValues);
 
-  protected readonly typeOptions: SelectOption<Filter<TransactionType>>[] = [
-    { value: FILTER_ALL, label: APP_TEXT.activity.allTypes },
+  protected readonly typeOptions = computed((): SelectOption<Filter<TransactionType>>[] => [
+    { value: FILTER_ALL, label: this.translator.translate('activity.allTypes') },
     ...[TRANSACTION_TYPE.expense, TRANSACTION_TYPE.income].map((type) => ({
       value: type,
-      label: APP_TEXT.transactionTypes[type],
+      label: this.translator.translate(`transactionTypes.${type}`),
     })),
-  ];
+  ]);
 
   private readonly categories = toSignal(this.categoryService.list(), { initialValue: [] });
   protected readonly categoryOptions = computed((): SelectOption<Filter<number>>[] => [
-    { value: FILTER_ALL, label: APP_TEXT.activity.allCategories },
+    { value: FILTER_ALL, label: this.translator.translate('activity.allCategories') },
     ...this.categories().map((category) => ({ value: category.id, label: category.name })),
   ]);
 
@@ -157,7 +160,7 @@ export class Transactions {
   protected async remove(id: number): Promise<void> {
     await firstValueFrom(this.transactionService.remove(id));
     this.confirmingId.set(null);
-    void this.announcer.announce(APP_TEXT.transaction.deleted);
+    void this.announcer.announce(this.translator.translate('transaction.deleted'));
   }
 
   protected clearFilters(): void {
@@ -165,7 +168,7 @@ export class Transactions {
   }
 
   /** The accessible name of a row's buttons, such as "Edit: Taxi". */
-  protected rowLabel(action: string, row: TransactionRow): string {
-    return `${action}: ${row.transaction.description || row.category}`;
+  protected rowLabel(action: TextKey, row: TransactionRow): string {
+    return `${this.translator.translate(action)}: ${row.transaction.description || row.category}`;
   }
 }

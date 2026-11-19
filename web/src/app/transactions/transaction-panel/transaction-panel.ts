@@ -13,11 +13,14 @@ import {
 } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 import { Category, CategoryError, CategoryErrorCode } from '../../categories/category';
+import { categoryErrorText } from '../../categories/category-error-text';
 import { CategoryService } from '../../categories/category.service';
-import { APP_TEXT } from '../../core/constants/app-text';
 import { IsoDate } from '../../core/dates';
+import { TextKey } from '../../core/i18n/translations';
+import { Translator } from '../../core/i18n/translator.service';
 import { LocaleFormat } from '../../core/locale-format.service';
 import { CURRENCIES, Currency } from '../../core/money';
+import { TextPipe } from '../../shared/pipes/text.pipe';
 import { Select, SelectOption } from '../../shared/select/select';
 import {
   NewTransaction,
@@ -69,7 +72,7 @@ interface TransactionFormModel {
 
 /** The side panel to add or edit a transaction. Open it with `TransactionPanelService`. */
 @Component({
-  imports: [FormField, Select],
+  imports: [FormField, Select, TextPipe],
   selector: 'app-transaction-panel',
   host: { class: 'side-panel' },
   styleUrl: './transaction-panel.css',
@@ -82,8 +85,8 @@ export class TransactionPanel {
   private readonly transactionService = inject(TransactionService);
   private readonly categoryService = inject(CategoryService);
   private readonly announcer = inject(LiveAnnouncer);
+  private readonly translator = inject(Translator);
 
-  protected readonly text = APP_TEXT;
   protected readonly ids = TRANSACTION_PANEL_IDS;
   protected readonly types = [TRANSACTION_TYPE.expense, TRANSACTION_TYPE.income];
   protected readonly currencies = CURRENCIES;
@@ -113,7 +116,7 @@ export class TransactionPanel {
   });
   protected readonly categoryOptions = computed((): SelectOption<CategoryChoice>[] => [
     ...this.categories().map((category) => ({ value: category.id, label: category.name })),
-    { value: NEW_CATEGORY, label: APP_TEXT.transaction.newCategoryOption },
+    { value: NEW_CATEGORY, label: this.translator.translate('transaction.newCategoryOption') },
   ]);
   protected readonly isNewCategory = computed(() => this.model().categoryId === NEW_CATEGORY);
 
@@ -169,7 +172,7 @@ export class TransactionPanel {
     }
 
     this.data.onSaved({ type: record.type, currency: record.currency, categoryId });
-    void this.announcer.announce(APP_TEXT.transaction.saved);
+    void this.announcer.announce(this.translator.translate('transaction.saved'));
 
     if (addAnother) {
       this.form().reset({ ...value, amount: '', description: '', categoryId, newCategory: '' });
@@ -178,5 +181,13 @@ export class TransactionPanel {
       this.close();
     }
     return undefined;
+  }
+
+  protected typeLabel(type: TransactionType): TextKey {
+    return `transactionTypes.${type}`;
+  }
+
+  protected categoryErrorText(code: CategoryErrorCode): string {
+    return categoryErrorText(this.translator, code);
   }
 }

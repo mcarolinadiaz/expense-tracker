@@ -1,6 +1,6 @@
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { Component, inject } from '@angular/core';
-import { APP_TEXT } from '../../core/constants/app-text';
+import { TextPipe } from '../pipes/text.pipe';
 
 export const CONFIRM_DIALOG_IDS = {
   title: 'confirm-dialog-title',
@@ -27,6 +27,7 @@ export interface ConfirmDialogData {
 
 /** A modal that asks to confirm an action. Open it with `ConfirmDialogService`. */
 @Component({
+  imports: [TextPipe],
   selector: 'app-confirm-dialog',
   styleUrl: './confirm-dialog.css',
   template: `
@@ -34,7 +35,7 @@ export interface ConfirmDialogData {
     <p class="confirm-dialog-message" [id]="ids.message">{{ data.message }}</p>
     <div class="confirm-dialog-actions">
       <button type="button" class="btn btn-secondary" [id]="ids.cancel" (click)="close(false)">
-        {{ text.actions.cancel }}
+        {{ 'actions.cancel' | text }}
       </button>
       <button
         type="button"
@@ -53,7 +54,6 @@ export class ConfirmDialog {
   private readonly dialogRef = inject<DialogRef<boolean>>(DialogRef);
 
   protected readonly data = inject<ConfirmDialogData>(DIALOG_DATA);
-  protected readonly text = APP_TEXT;
   protected readonly ids = CONFIRM_DIALOG_IDS;
   protected readonly tones = CONFIRM_DIALOG_TONE;
 

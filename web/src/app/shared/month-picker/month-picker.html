@@ -2,7 +2,7 @@
   <button
     type="button"
     class="btn btn-ghost btn-icon"
-    [attr.aria-label]="text.previous"
+    [attr.aria-label]="'month.previous' | text"
     (click)="selected.previous()"
   >
     <svg
@@ -20,7 +20,7 @@
   <button
     type="button"
     class="btn btn-ghost btn-icon"
-    [attr.aria-label]="text.next"
+    [attr.aria-label]="'month.next' | text"
     (click)="selected.next()"
   >
     <svg

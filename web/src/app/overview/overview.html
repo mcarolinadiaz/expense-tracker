@@ -1,6 +1,6 @@
 <ng-template appNavbarActions>
   <app-month-picker />
-  <div class="segmented" role="group" [attr.aria-label]="text.summary.currency">
+  <div class="segmented" role="group" [attr.aria-label]="'summary.currency' | text">
     @for (option of currencies; track option) {
       <button
         type="button"
@@ -14,12 +14,12 @@
   </div>
 
   <button type="button" class="btn btn-primary" (click)="addTransaction()">
-    {{ text.actions.addTransaction }}
+    {{ 'actions.addTransaction' | text }}
   </button>
 </ng-template>
 
 <div class="overview">
-  <section class="stat-cards" [attr.aria-label]="text.summary.title">
+  <section class="stat-cards" [attr.aria-label]="'summary.title' | text">
     @for (card of cards(); track card.label) {
       <app-stat-card
         [label]="card.label"
@@ -34,7 +34,7 @@
     <div class="overview-details">
       <section class="card overview-panel" aria-labelledby="overview-by-category">
         <h2 id="overview-by-category" class="section-title overview-panel-title">
-          {{ text.summary.byCategory }}
+          {{ 'summary.byCategory' | text }}
         </h2>
         @if (categoryBars().length > 0) {
           <ul class="category-bars">
@@ -58,19 +58,19 @@
             }
           </ul>
         } @else {
-          <p class="overview-muted">{{ text.summary.noExpenses }}</p>
+          <p class="overview-muted">{{ 'summary.noExpenses' | text }}</p>
         }
       </section>
 
       <section class="card overview-panel" aria-labelledby="overview-recent">
         <div class="overview-panel-header">
-          <h2 id="overview-recent" class="section-title">{{ text.summary.recent }}</h2>
+          <h2 id="overview-recent" class="section-title">{{ 'summary.recent' | text }}</h2>
           <a
             class="btn btn-ghost view-all"
             [routerLink]="activityPath"
             [queryParams]="activityParams()"
           >
-            {{ text.summary.viewAll }}
+            {{ 'summary.viewAll' | text }}
           </a>
         </div>
         <ul>
@@ -94,10 +94,10 @@
     </div>
   } @else if (isEmpty()) {
     <section class="card empty-state" aria-labelledby="overview-empty">
-      <h2 id="overview-empty" class="section-title">{{ text.summary.emptyTitle }}</h2>
-      <p class="empty-body">{{ text.summary.emptyBody }}</p>
+      <h2 id="overview-empty" class="section-title">{{ 'summary.emptyTitle' | text }}</h2>
+      <p class="empty-body">{{ 'summary.emptyBody' | text }}</p>
       <button type="button" class="btn btn-primary" (click)="addTransaction()">
-        {{ text.actions.addTransaction }}
+        {{ 'actions.addTransaction' | text }}
       </button>
     </section>
   }

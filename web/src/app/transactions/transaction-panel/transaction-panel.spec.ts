@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { CURRENCY } from '../../core/money';
 import { TRANSACTION_TYPE } from '../transaction';
-import { APP_TEXT } from '../../core/constants/app-text';
+import en from '../../core/i18n/en.json';
+import { provideTestTranslations } from '../../core/i18n/translations.testing';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../../core/axe.testing';
 import { AppDb } from '../../core/db/app-db';
 import { CategoryService } from '../../categories/category.service';
@@ -13,7 +14,9 @@ import { TransactionPanelService } from './transaction-panel.service';
 
 describe('TransactionPanel', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideFixedClock('2026-11-06')] });
+    TestBed.configureTestingModule({
+      providers: [provideTestTranslations(), provideFixedClock('2026-11-06')],
+    });
   });
 
   afterEach(async () => {
@@ -54,7 +57,7 @@ describe('TransactionPanel', () => {
     expect(panel().querySelector<HTMLInputElement>('#transaction-date')!.value).toBe('2026-11-06');
     type(`#${TRANSACTION_PANEL_IDS.amount}`, '1,250.50');
     type('#transaction-description', '  Taxi  ');
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
     expect(await savedTransactions()).toEqual([
@@ -78,7 +81,7 @@ describe('TransactionPanel', () => {
     type('#transaction-new-category', 'Viajes');
     type(`#${TRANSACTION_PANEL_IDS.amount}`, '310.50');
     button(CURRENCY.USD).click();
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
     const [category] = await firstValueFrom(TestBed.inject(CategoryService).list());
@@ -97,10 +100,10 @@ describe('TransactionPanel', () => {
     await settle();
 
     type(`#${TRANSACTION_PANEL_IDS.amount}`, '12.345');
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
-    expect(panel().textContent).toContain(APP_TEXT.transaction.amountError);
+    expect(panel().textContent).toContain(en.transaction.amountError);
     expect(await savedTransactions()).toEqual([]);
   });
 
@@ -112,15 +115,15 @@ describe('TransactionPanel', () => {
     panel().querySelector<HTMLButtonElement>('#transaction-category')!.click();
     await settle();
     Array.from(document.querySelectorAll<HTMLElement>('[role="option"]'))
-      .find((option) => option.textContent?.trim() === APP_TEXT.transaction.newCategoryOption)!
+      .find((option) => option.textContent?.trim() === en.transaction.newCategoryOption)!
       .click();
     await settle();
     type('#transaction-new-category', 'comida');
     type(`#${TRANSACTION_PANEL_IDS.amount}`, '100');
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
-    expect(panel().textContent).toContain(APP_TEXT.categoryErrors.taken);
+    expect(panel().textContent).toContain(en.categoryErrors.taken);
     expect(await savedTransactions()).toEqual([]);
   });
 
@@ -132,7 +135,7 @@ describe('TransactionPanel', () => {
       await expectNoAxeViolations();
 
       type(`#${TRANSACTION_PANEL_IDS.amount}`, '12.345');
-      button(APP_TEXT.actions.save).click();
+      button(en.actions.save).click();
       await settle();
       await expectNoAxeViolations();
     },
@@ -145,7 +148,7 @@ describe('TransactionPanel', () => {
     await settle();
 
     type(`#${TRANSACTION_PANEL_IDS.amount}`, '100');
-    button(APP_TEXT.actions.saveAndAddAnother).click();
+    button(en.actions.saveAndAddAnother).click();
     await settle();
 
     expect(panel()).not.toBeNull();
@@ -171,13 +174,13 @@ describe('TransactionPanel', () => {
     await TestBed.inject(TransactionPanelService).open(saved);
     await settle();
 
-    expect(panel().textContent).toContain(APP_TEXT.transaction.editTitle);
+    expect(panel().textContent).toContain(en.transaction.editTitle);
     expect(panel().querySelector<HTMLInputElement>(`#${TRANSACTION_PANEL_IDS.amount}`)!.value).toBe(
       '50,000.00',
     );
 
     type(`#${TRANSACTION_PANEL_IDS.amount}`, '55,000');
-    button(APP_TEXT.actions.save).click();
+    button(en.actions.save).click();
     await settle();
 
     expect(await savedTransactions()).toEqual([{ ...saved, id, amount: 5500000 }]);

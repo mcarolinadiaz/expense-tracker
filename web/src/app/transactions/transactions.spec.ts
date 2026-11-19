@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { CURRENCY } from '../core/money';
 import { NewTransaction, TRANSACTION_TYPE } from './transaction';
-import { APP_TEXT } from '../core/constants/app-text';
+import en from '../core/i18n/en.json';
+import { provideTestTranslations } from '../core/i18n/translations.testing';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../core/axe.testing';
 import { AppDb } from '../core/db/app-db';
 import { APP_LOCALE, LocaleFormat } from '../core/locale-format.service';
@@ -78,7 +79,9 @@ describe('Transactions', () => {
   }
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideFixedClock('2026-11-15')] });
+    TestBed.configureTestingModule({
+      providers: [provideTestTranslations(), provideFixedClock('2026-11-15')],
+    });
   });
 
   afterEach(async () => {
@@ -95,7 +98,7 @@ describe('Transactions', () => {
       'Nov 5 — Comida − $24.00',
       'Nov 1 Sueldo de noviembre Sueldo + ARS 1,850,000.00',
     ]);
-    expect(element.textContent).toContain(APP_TEXT.activity.count(3));
+    expect(element.textContent).toContain('3 transactions');
   });
 
   it('should show dates and amounts in the new language without reloading', async () => {
@@ -122,7 +125,7 @@ describe('Transactions', () => {
     await settle();
     expect(rowTexts()).toHaveLength(1);
 
-    currencyButton(APP_TEXT.activity.allCurrencies).click();
+    currencyButton(en.activity.allCurrencies).click();
     const search = element.querySelector<HTMLInputElement>('#activity-search')!;
     search.value = 'super';
     search.dispatchEvent(new Event('input'));
@@ -163,10 +166,10 @@ describe('Transactions', () => {
     search.value = 'nothing like this';
     search.dispatchEvent(new Event('input'));
     await settle();
-    expect(element.textContent).toContain(APP_TEXT.activity.noResultsTitle);
+    expect(element.textContent).toContain(en.activity.noResultsTitle);
 
     Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
-      .find((button) => button.textContent?.trim() === APP_TEXT.actions.clearFilters)!
+      .find((button) => button.textContent?.trim() === en.actions.clearFilters)!
       .click();
     await settle();
     expect(rowTexts()).toHaveLength(3);
@@ -178,11 +181,11 @@ describe('Transactions', () => {
     await settle();
 
     element
-      .querySelector<HTMLButtonElement>(`[aria-label="${APP_TEXT.actions.delete}: Supermercado"]`)!
+      .querySelector<HTMLButtonElement>(`[aria-label="${en.actions.delete}: Supermercado"]`)!
       .click();
     await settle();
     expect(rowTexts()).toHaveLength(3);
-    expect(element.textContent).toContain(APP_TEXT.activity.confirmDelete);
+    expect(element.textContent).toContain(en.activity.confirmDelete);
 
     element.querySelector<HTMLButtonElement>('.btn-danger')!.click();
     await settle();
@@ -199,9 +202,7 @@ describe('Transactions', () => {
       await expectNoAxeViolations(element);
 
       element
-        .querySelector<HTMLButtonElement>(
-          `[aria-label="${APP_TEXT.actions.delete}: Supermercado"]`,
-        )!
+        .querySelector<HTMLButtonElement>(`[aria-label="${en.actions.delete}: Supermercado"]`)!
         .click();
       await settle();
       await expectNoAxeViolations(element);
@@ -213,6 +214,6 @@ describe('Transactions', () => {
     await render();
     await settle();
 
-    expect(element.textContent).toContain(APP_TEXT.activity.emptyTitle);
+    expect(element.textContent).toContain(en.activity.emptyTitle);
   });
 });

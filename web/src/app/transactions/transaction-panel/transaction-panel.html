@@ -1,12 +1,12 @@
 <form class="panel-form" novalidate (submit)="save(false, $event)">
   <header class="panel-header">
     <h2 class="panel-title" [id]="ids.title">
-      {{ editing ? text.transaction.editTitle : text.transaction.addTitle }}
+      {{ (editing ? 'transaction.editTitle' : 'transaction.addTitle') | text }}
     </h2>
     <button
       type="button"
       class="btn btn-ghost btn-icon"
-      [attr.aria-label]="text.actions.close"
+      [attr.aria-label]="'actions.close' | text"
       (click)="close()"
     >
       <svg
@@ -23,7 +23,7 @@
   </header>
 
   <div>
-    <label class="field-label" [for]="ids.amount">{{ text.transaction.amount }}</label>
+    <label class="field-label" [for]="ids.amount">{{ 'transaction.amount' | text }}</label>
     <input
       class="amount-field"
       type="text"
@@ -37,14 +37,14 @@
     />
     @if (amountError()) {
       <p class="field-error" role="alert" [id]="ids.amountError">
-        {{ text.transaction.amountError }}
+        {{ 'transaction.amountError' | text }}
       </p>
     }
   </div>
 
   <div class="panel-row">
     <div class="panel-row-wide">
-      <p class="field-label" id="transaction-type-label">{{ text.transaction.type }}</p>
+      <p class="field-label" id="transaction-type-label">{{ 'transaction.type' | text }}</p>
       <div class="segmented" role="group" aria-labelledby="transaction-type-label">
         @for (type of types; track type) {
           <button
@@ -53,13 +53,13 @@
             [attr.aria-pressed]="model().type === type"
             (click)="form.type().value.set(type)"
           >
-            {{ text.transactionTypes[type] }}
+            {{ typeLabel(type) | text }}
           </button>
         }
       </div>
     </div>
     <div class="panel-row-narrow">
-      <p class="field-label" id="transaction-currency-label">{{ text.transaction.currency }}</p>
+      <p class="field-label" id="transaction-currency-label">{{ 'transaction.currency' | text }}</p>
       <div class="segmented" role="group" aria-labelledby="transaction-currency-label">
         @for (currency of currencies; track currency) {
           <button
@@ -76,7 +76,9 @@
   </div>
 
   <div>
-    <label class="field-label" for="transaction-category">{{ text.transaction.category }}</label>
+    <label class="field-label" for="transaction-category">{{
+      'transaction.category' | text
+    }}</label>
     <app-select
       inputId="transaction-category"
       [formField]="form.categoryId"
@@ -85,7 +87,7 @@
     @if (isNewCategory()) {
       <div class="panel-nested">
         <label class="field-label" for="transaction-new-category">
-          {{ text.transaction.newCategoryName }}
+          {{ 'transaction.newCategoryName' | text }}
         </label>
         <input
           id="transaction-new-category"
@@ -97,25 +99,25 @@
       </div>
     }
     @if (categoryError(); as code) {
-      <p class="field-error" role="alert">{{ text.categoryErrors[code] }}</p>
+      <p class="field-error" role="alert">{{ categoryErrorText(code) }}</p>
     }
   </div>
 
   <div>
-    <label class="field-label" for="transaction-date">{{ text.transaction.date }}</label>
+    <label class="field-label" for="transaction-date">{{ 'transaction.date' | text }}</label>
     <input id="transaction-date" class="field" type="date" [formField]="form.date" />
   </div>
 
   <div>
     <label class="field-label" for="transaction-description">
-      {{ text.transaction.descriptionOptional }}
+      {{ 'transaction.descriptionOptional' | text }}
     </label>
     <input id="transaction-description" class="field" [formField]="form.description" />
   </div>
 
   <div class="panel-actions">
     <button type="submit" class="btn btn-primary panel-action" [disabled]="form().submitting()">
-      {{ text.actions.save }}
+      {{ 'actions.save' | text }}
     </button>
     @if (!editing) {
       <button
@@ -124,7 +126,7 @@
         [disabled]="form().submitting()"
         (click)="save(true)"
       >
-        {{ text.actions.saveAndAddAnother }}
+        {{ 'actions.saveAndAddAnother' | text }}
       </button>
     }
   </div>

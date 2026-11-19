@@ -1,33 +1,33 @@
 <ng-template appNavbarActions>
   <app-month-picker />
   <button type="button" class="btn btn-primary" (click)="add()">
-    {{ text.actions.addTransaction }}
+    {{ 'actions.addTransaction' | text }}
   </button>
 </ng-template>
 
-<section class="card" [attr.aria-label]="text.pages.activity">
+<section class="card" [attr.aria-label]="'pages.activity' | text">
   <form
     class="filters"
     role="search"
-    [attr.aria-label]="text.activity.filters"
+    [attr.aria-label]="'activity.filters' | text"
     (submit)="$event.preventDefault()"
   >
     <div class="filter-search">
-      <label class="field-label" for="activity-search">{{ text.activity.search }}</label>
+      <label class="field-label" for="activity-search">{{ 'activity.search' | text }}</label>
       <input
         id="activity-search"
         class="field"
         type="search"
         [formField]="filters.search"
-        [placeholder]="text.activity.searchHint"
+        [placeholder]="'activity.searchHint' | text"
       />
     </div>
     <div class="filter">
-      <label class="field-label" for="activity-type">{{ text.transaction.type }}</label>
-      <app-select inputId="activity-type" [formField]="filters.type" [options]="typeOptions" />
+      <label class="field-label" for="activity-type">{{ 'transaction.type' | text }}</label>
+      <app-select inputId="activity-type" [formField]="filters.type" [options]="typeOptions()" />
     </div>
     <div class="filter">
-      <label class="field-label" for="activity-category">{{ text.transaction.category }}</label>
+      <label class="field-label" for="activity-category">{{ 'transaction.category' | text }}</label>
       <app-select
         inputId="activity-category"
         [formField]="filters.categoryId"
@@ -35,7 +35,7 @@
       />
     </div>
     <div>
-      <p class="field-label" id="activity-currency-label">{{ text.transaction.currency }}</p>
+      <p class="field-label" id="activity-currency-label">{{ 'transaction.currency' | text }}</p>
       <div class="segmented" role="group" aria-labelledby="activity-currency-label">
         @for (option of currencyFilters; track option) {
           <button
@@ -44,7 +44,7 @@
             [attr.aria-pressed]="filterValues().currency === option"
             (click)="filters.currency().value.set(option)"
           >
-            {{ option === all ? text.activity.allCurrencies : option }}
+            {{ option === all ? ('activity.allCurrencies' | text) : option }}
           </button>
         }
       </div>
@@ -56,11 +56,11 @@
       <table class="transactions-table">
         <thead>
           <tr>
-            <th scope="col">{{ text.transaction.date }}</th>
-            <th scope="col">{{ text.transaction.description }}</th>
-            <th scope="col">{{ text.transaction.category }}</th>
-            <th scope="col" class="cell-end">{{ text.transaction.amount }}</th>
-            <th scope="col" class="cell-end">{{ text.activity.actions }}</th>
+            <th scope="col">{{ 'transaction.date' | text }}</th>
+            <th scope="col">{{ 'transaction.description' | text }}</th>
+            <th scope="col">{{ 'transaction.category' | text }}</th>
+            <th scope="col" class="cell-end">{{ 'transaction.amount' | text }}</th>
+            <th scope="col" class="cell-end">{{ 'activity.actions' | text }}</th>
           </tr>
         </thead>
         <tbody>
@@ -79,27 +79,27 @@
               <td class="cell-end">
                 @if (confirmingId() === row.transaction.id) {
                   <span class="row-confirm" role="alert">
-                    <span>{{ text.activity.confirmDelete }}</span>
+                    <span>{{ 'activity.confirmDelete' | text }}</span>
                     <button
                       type="button"
                       class="btn btn-danger"
                       (click)="remove(row.transaction.id)"
                     >
-                      {{ text.actions.delete }}
+                      {{ 'actions.delete' | text }}
                     </button>
                     <button
                       type="button"
                       class="btn btn-secondary"
                       (click)="confirmingId.set(null)"
                     >
-                      {{ text.actions.cancel }}
+                      {{ 'actions.cancel' | text }}
                     </button>
                   </span>
                 } @else {
                   <button
                     type="button"
                     class="btn btn-ghost btn-icon"
-                    [attr.aria-label]="rowLabel(text.actions.edit, row)"
+                    [attr.aria-label]="rowLabel('actions.edit', row)"
                     (click)="edit(row.transaction)"
                   >
                     <svg
@@ -117,7 +117,7 @@
                   <button
                     type="button"
                     class="btn btn-ghost btn-icon"
-                    [attr.aria-label]="rowLabel(text.actions.delete, row)"
+                    [attr.aria-label]="rowLabel('actions.delete', row)"
                     (click)="confirmingId.set(row.transaction.id)"
                   >
                     <svg
@@ -139,25 +139,25 @@
       </table>
     </div>
     <div class="table-footer">
-      <span>{{ text.activity.count(rows().length) }}</span>
+      <span>{{ 'activity.count' | plural: rows().length }}</span>
       @if (showsAllCurrencies()) {
-        <span>{{ text.activity.perCurrency }}</span>
+        <span>{{ 'activity.perCurrency' | text }}</span>
       }
     </div>
   } @else if (monthIsEmpty()) {
     <div class="empty-state">
-      <h2 class="section-title">{{ text.activity.emptyTitle }}</h2>
-      <p class="empty-body">{{ text.activity.emptyBody }}</p>
+      <h2 class="section-title">{{ 'activity.emptyTitle' | text }}</h2>
+      <p class="empty-body">{{ 'activity.emptyBody' | text }}</p>
       <button type="button" class="btn btn-primary" (click)="add()">
-        {{ text.actions.addTransaction }}
+        {{ 'actions.addTransaction' | text }}
       </button>
     </div>
   } @else {
     <div class="empty-state">
-      <h2 class="section-title">{{ text.activity.noResultsTitle }}</h2>
-      <p class="empty-body">{{ text.activity.noResultsBody }}</p>
+      <h2 class="section-title">{{ 'activity.noResultsTitle' | text }}</h2>
+      <p class="empty-body">{{ 'activity.noResultsBody' | text }}</p>
       <button type="button" class="btn btn-secondary" (click)="clearFilters()">
-        {{ text.actions.clearFilters }}
+        {{ 'actions.clearFilters' | text }}
       </button>
     </div>
   }
