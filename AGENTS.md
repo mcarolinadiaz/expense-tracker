@@ -18,7 +18,7 @@ The owner is an experienced Angular developer who is learning Laravel through th
 ## Stack
 
 - **API (`api/`):** PHP 8.4, Laravel 13, Pest 4. No database: the cache, sessions and queue use files or run in the request.
-- **Frontend (`web/`):** Angular 22, Tailwind CSS 4, Dexie (IndexedDB), Vitest. Planned: Transloco for translations. Decimal math uses native `BigInt` in `core/decimal.ts`, with no library.
+- **Frontend (`web/`):** Angular 22, Tailwind CSS 4, Dexie (IndexedDB), Transloco, Vitest. Decimal math uses native `BigInt` in `core/decimal.ts`, with no library.
 - **Development machine:** Debian 13. If an external APT repository is ever needed, keep its key in `/etc/apt/keyrings`, not `/usr/share/keyrings`.
 
 The first server-based version, with users, MariaDB and a CRUD API, is kept in the Git tag `v0-server-crud`.
@@ -42,8 +42,8 @@ expense-tracker/
 │   ├── styles.css              # Theme tokens and shared component classes
 │   ├── environments/           # apiUrl per build (environment.development.ts for ng serve)
 │   └── app/
-│       ├── core/               # App-wide code: AppDb, Clock, dates, money, decimal, API_URL, APP_TEXT, page routes
-│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, spinner, confirm-dialog, pipes
+│       ├── core/               # App-wide code: AppDb, Clock, dates, money, decimal, API_URL, i18n (translations, LanguageService, Translator), page routes
+│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, spinner, confirm-dialog, pipes (money, text, plural)
 │       ├── layout/             # side-bar and navbar
 │       ├── overview/           # Overview page and its summary service
 │       ├── transactions/       # Activity page, transaction model and service, side panel
@@ -136,7 +136,11 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 ### Translations
 
 - Never hardcode user-facing text in components or API responses. Add new text in both `es-AR` and `en-US`.
-- Frontend: keep shared text in `APP_TEXT` (`web/src/app/core/constants/app-text.ts`). It's English only until translations are set up.
+- Frontend: keep every text in `web/src/app/core/i18n/en.json` and `es.json`, with the same keys. `translations.spec.ts` checks that both files match.
+- Frontend: in templates, use the `text` pipe, as in `{{ 'data.title' | text }}`, or `plural` for a count, as in `{{ 'activity.count' | plural: total }}`. In TypeScript, such as `computed()` labels or `LiveAnnouncer`, use `Translator.translate()` or `plural()`. Never use Transloco's own pipe or directive: their keys aren't typed.
+- Frontend: keys are typed (`TextKey`), so a key missing from `en.json` fails to compile. For a key per code, such as an error or a rule, return a template literal typed as `TextKey`, such as `` `fixedCostErrors.${code}` ``, rather than a map. Mark a key kept outside a template, such as a route title, with `textKey()`.
+- Frontend: placeholders use `{{ name }}`, filled from the params. A plural text is an object with `one` and `other`, and `{{ count }}` is formatted in the active language.
+- Frontend: change the language only through `LanguageService.use()`, which keeps Transloco, `LocaleFormat` and `<html lang>` in step and saves it on the device.
 - Frontend: don't repeat fixed values such as `'ARS'` or `'income'` as string literals. Define them once in an `as const` object, such as `CURRENCY` or `STAT_CARD_TONE`, derive the type from it, and import it.
 - Frontend: add a page in `APP_PAGE_ROUTES` (`web/src/app/core/constants/app-page-routes.ts`) with a `title`. The side bar builds its links from those routes, so don't list them again.
 - API: wrap your own messages in `__()` and add them to `lang/es.json`, using the English text as the key.
@@ -157,7 +161,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 ### Frontend data
 
 - Organize the frontend by feature: each feature folder, such as `transactions/`, holds its page, model, service, sub-components and tests. A feature may use another feature's service, as the side panel uses `CategoryService`.
-- `core/` holds code the whole app needs and never imports a feature, except `AppDb` for its schema, `APP_TEXT` and the page routes. `shared/` only holds reusable UI with no feature logic.
+- `core/` holds code the whole app needs and never imports a feature, except `AppDb` for its schema and the page routes. `shared/` only holds reusable UI with no feature logic.
 - Components get their data from a service, never from values defined in the component. Create a service only when a component needs it.
 - Services that own user data read and write local storage (IndexedDB). Only public data, such as the IPC, comes from the API.
 - The database is `AppDb` (`web/src/app/core/db/app-db.ts`). Read with `liveQuery()` wrapped in `from()`, so the view updates when the data changes. To change the schema, add a new `version()`, and never edit an existing one.
@@ -188,6 +192,17 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - The segmented control (`segmented` and `segmented-item`) is a group of buttons where `aria-pressed` marks the active one.
 - `panel-backdrop` is global because the CDK adds the backdrop behind side panels outside any component.
 - Side panels share the `panel-*` classes and `amount-field`. Each panel component sets `side-panel` on its host through `host: { class }`, since `:host` styles can't be shared. A class set on the host only works from `styles.css`: the component's own CSS scopes each selector to its template, which doesn't include the host, so style the host there with `:host`.
+
+**Translations (`core/i18n/`)**
+
+- Transloco only loads the files and fills the placeholders. The app's own `text` and `plural` pipes and `Translator` add the typed keys. Each language's file is imported on demand, so it's its own chunk and needs no HTTP request.
+- `@jsverse/transloco-messageformat` (ICU) was left out on purpose: it added about 100 kB to the initial bundle, over the budget, for a handful of plurals. `Translator.plural()` picks `one` or `other` with `Intl.PluralRules`, and other categories, such as Spanish `many`, use `other`.
+- `LanguageService.start()` runs in an app initializer: it reads the saved language, or the browser's, and loads its file before the first render, so the page never shows keys.
+- The `text` and `plural` pipes are impure and `Translator` reads the active language as a signal, so text in templates and `computed()` updates when the language changes.
+- Route titles are text keys. `TranslatedTitleStrategy` writes the document title, and the navbar translates the title with `Translator.isKey()`, because the router types it as plain text.
+- `acceptLanguageInterceptor` sends the active language to the API, so its validation and error messages match.
+- The language selector at the bottom of the side bar shows each language's name in that language (`LANGUAGE_NAME`), with a `lang` attribute, and never translates it.
+- Option lists built in TypeScript, such as the type filter or the frequency options, are `computed()`, so their labels follow the language.
 
 **Dates and money (`core/`)**
 
@@ -258,6 +273,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 
 - IndexedDB answers outside Angular. After a change that reads or writes the database, wait a macrotask with `setTimeout` before `fixture.whenStable()`, or the view still shows the old data.
 - `fixture.whenStable()` waits for resources that are loading. To check a loading state, refresh the view with `fixture.detectChanges()` instead, as `projections.spec.ts` does.
+- Components that show text need `provideTestTranslations()` (`core/i18n/translations.testing.ts`), which loads both languages before the test, in English. Compare with texts from `en.json`, or with a literal string when the text has placeholders, such as `'3 transactions'`.
 - A page that reads several `liveQuery()` results, or writes and then reads, may need more than one macrotask. Wait for the expected result with `vi.waitFor()` instead of a fixed number of waits, as `categories.spec.ts` does.
 
 ### TypeScript
