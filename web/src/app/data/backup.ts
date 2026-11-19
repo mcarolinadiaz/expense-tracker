@@ -24,8 +24,12 @@ export const BACKUP_FORMAT = 'expense-tracker-backup';
 /** The version of the backup format. Raise it when the stored records change. */
 export const BACKUP_VERSION = 1;
 
+const BYTES_PER_MEGABYTE = 1024 * 1024;
+
 /** The largest backup file the app reads, so a wrong file can't freeze the page. */
-export const BACKUP_MAX_BYTES = 20 * 1024 * 1024;
+export const BACKUP_MAX_MEGABYTES = 20;
+
+export const BACKUP_MAX_BYTES = BACKUP_MAX_MEGABYTES * BYTES_PER_MEGABYTE;
 
 export const BACKUP_FILE_TYPE = 'application/json';
 

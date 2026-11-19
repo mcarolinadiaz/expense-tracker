@@ -1,7 +1,7 @@
 <div class="data-page">
   <section class="card data-section" aria-labelledby="data-title">
-    <h2 id="data-title" class="section-title">{{ text.data.title }}</h2>
-    <p class="data-muted">{{ text.data.body }}</p>
+    <h2 id="data-title" class="section-title">{{ 'data.title' | text }}</h2>
+    <p class="data-muted">{{ 'data.body' | text }}</p>
     <dl class="data-counts">
       @for (item of countItems(); track item.label) {
         <div class="data-count">
@@ -13,10 +13,10 @@
   </section>
 
   <section class="card data-section" aria-labelledby="data-backup-title">
-    <h2 id="data-backup-title" class="section-title">{{ text.data.backupTitle }}</h2>
-    <p class="data-muted">{{ text.data.backupBody }}</p>
+    <h2 id="data-backup-title" class="section-title">{{ 'data.backupTitle' | text }}</h2>
+    <p class="data-muted">{{ 'data.backupBody' | text }}</p>
     <p class="data-last-backup">
-      {{ text.data.lastBackup }}: <strong>{{ lastBackup() }}</strong>
+      {{ 'data.lastBackup' | text }}: <strong>{{ lastBackup() }}</strong>
     </p>
     <div class="data-actions">
       <button
@@ -25,7 +25,7 @@
         [id]="ids.exportButton"
         (click)="exportBackup()"
       >
-        {{ text.data.exportBackup }}
+        {{ 'data.exportBackup' | text }}
       </button>
       <button
         type="button"
@@ -34,7 +34,7 @@
         [disabled]="busy()"
         (click)="askImport()"
       >
-        {{ text.data.importBackup }}
+        {{ 'data.importBackup' | text }}
       </button>
     </div>
     <input
@@ -49,7 +49,7 @@
 
     @if (confirmingImport()) {
       <div class="data-confirm" role="alert">
-        <span class="data-confirm-text">{{ text.data.confirmImport }}</span>
+        <span class="data-confirm-text">{{ 'data.confirmImport' | text }}</span>
         <button
           type="button"
           class="btn btn-primary"
@@ -57,36 +57,36 @@
           [disabled]="busy()"
           (click)="chooseFile()"
         >
-          {{ text.data.chooseFile }}
+          {{ 'data.chooseFile' | text }}
         </button>
         <button type="button" class="btn btn-secondary" (click)="cancelImport()">
-          {{ text.actions.cancel }}
+          {{ 'actions.cancel' | text }}
         </button>
       </div>
     }
     @if (importError(); as code) {
       <p class="field-error" role="alert" [id]="ids.importError">
-        {{ text.backupErrors[code] }}
+        {{ errorText(code) }}
       </p>
     }
   </section>
 
   <section class="card data-section" aria-labelledby="data-about-title">
-    <h2 id="data-about-title" class="section-title">{{ text.data.aboutTitle }}</h2>
-    <p class="data-muted">{{ text.data.aboutBody }}</p>
+    <h2 id="data-about-title" class="section-title">{{ 'data.aboutTitle' | text }}</h2>
+    <p class="data-muted">{{ 'data.aboutBody' | text }}</p>
     <p class="data-link-row">
       <a class="data-link" [href]="apiDocsUrl" target="_blank" rel="noopener">
-        {{ text.data.apiDocs }}
-        <span class="sr-only">{{ text.data.opensInNewTab }}</span>
+        {{ 'data.apiDocs' | text }}
+        <span class="sr-only">{{ 'data.opensInNewTab' | text }}</span>
       </a>
     </p>
   </section>
 
   <section class="card data-section data-danger" aria-labelledby="data-danger-title">
-    <h2 id="data-danger-title" class="section-title">{{ text.data.dangerTitle }}</h2>
-    <p class="data-muted">{{ text.data.dangerBody }}</p>
+    <h2 id="data-danger-title" class="section-title">{{ 'data.dangerTitle' | text }}</h2>
+    <p class="data-muted">{{ 'data.dangerBody' | text }}</p>
     <button type="button" class="btn btn-secondary data-danger-button" (click)="wipe()">
-      {{ text.data.deleteAll }}
+      {{ 'data.deleteAll' | text }}
     </button>
   </section>
 </div>

@@ -4,7 +4,6 @@ import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
 import { routes } from './app.routes';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from './core/axe.testing';
-import { APP_TEXT } from './core/constants/app-text';
 import en from './core/i18n/en.json';
 import { provideTestTranslations } from './core/i18n/translations.testing';
 import { CURRENCIES, CURRENCY } from './core/money';
@@ -57,9 +56,9 @@ describe('App', () => {
   );
 
   it.each([
-    ['/', en.pages.overview, [...CURRENCIES, APP_TEXT.actions.addTransaction]],
-    ['/transactions', en.pages.activity, [APP_TEXT.actions.addTransaction]],
-    ['/categories', en.pages.categories, [APP_TEXT.actions.newCategory]],
+    ['/', en.pages.overview, [...CURRENCIES, en.actions.addTransaction]],
+    ['/transactions', en.pages.activity, [en.actions.addTransaction]],
+    ['/categories', en.pages.categories, [en.actions.newCategory]],
   ])('should show the title and actions of %s in the navbar', async (url, title, actions) => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl(url);
@@ -83,14 +82,12 @@ describe('App', () => {
     await router.navigateByUrl('/');
     await fixture.whenStable();
     expect(buttons().map((button) => button.textContent?.trim())).toContain(
-      APP_TEXT.actions.addTransaction,
+      en.actions.addTransaction,
     );
 
     await router.navigateByUrl('/categories');
     await fixture.whenStable();
-    expect(buttons().map((button) => button.textContent?.trim())).toEqual([
-      APP_TEXT.actions.newCategory,
-    ]);
+    expect(buttons().map((button) => button.textContent?.trim())).toEqual([en.actions.newCategory]);
   });
 
   it('should update the overview from its navbar actions', async () => {
