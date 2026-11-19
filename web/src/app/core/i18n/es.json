@@ -8,5 +8,205 @@
     "categories": "Categorías",
     "projections": "Proyecciones",
     "data": "Datos"
+  },
+  "actions": {
+    "addTransaction": "Agregar movimiento",
+    "addFixedCost": "Agregar gasto fijo",
+    "tryAgain": "Reintentar",
+    "newCategory": "Nueva categoría",
+    "save": "Guardar",
+    "saveAndAddAnother": "Guardar y agregar otro",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "clearFilters": "Limpiar filtros"
+  },
+  "month": {
+    "previous": "Mes anterior",
+    "next": "Mes siguiente"
+  },
+  "summary": {
+    "title": "Totales del mes",
+    "currency": "Moneda",
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "balance": "Balance",
+    "byCategory": "Gastos por categoría",
+    "noExpenses": "No hay gastos este mes.",
+    "viewCategory": "Ver movimientos de {{ name }}: {{ total }}",
+    "recent": "Últimos movimientos",
+    "viewAll": "Ver todos",
+    "emptyTitle": "Todavía no hay movimientos este mes",
+    "emptyBody": "Agregá tu primer ingreso o gasto y tus totales van a aparecer acá."
+  },
+  "transactionTypes": {
+    "expense": "Gasto",
+    "income": "Ingreso"
+  },
+  "transaction": {
+    "addTitle": "Agregar movimiento",
+    "editTitle": "Editar movimiento",
+    "amount": "Monto",
+    "type": "Tipo",
+    "currency": "Moneda",
+    "category": "Categoría",
+    "newCategoryOption": "+ Nueva categoría",
+    "newCategoryName": "Nombre de la nueva categoría",
+    "date": "Fecha",
+    "description": "Descripción",
+    "descriptionOptional": "Descripción (opcional)",
+    "amountError": "Ingresá un monto mayor a 0, con hasta 2 decimales.",
+    "saved": "Movimiento guardado",
+    "deleted": "Movimiento eliminado"
+  },
+  "categoryErrors": {
+    "required": "Ingresá un nombre para la categoría.",
+    "tooLong": "Usá hasta {{ max }} caracteres.",
+    "taken": "Ya tenés una categoría con ese nombre.",
+    "inUse": "Esta categoría todavía tiene movimientos."
+  },
+  "activity": {
+    "filters": "Filtros",
+    "search": "Buscar",
+    "searchHint": "Descripción",
+    "allTypes": "Todos",
+    "allCategories": "Todas",
+    "allCurrencies": "Todas",
+    "actions": "Acciones",
+    "confirmDelete": "¿Eliminar?",
+    "count": {
+      "one": "{{ count }} movimiento",
+      "other": "{{ count }} movimientos"
+    },
+    "perCurrency": "Elegí una moneda para ver sus totales en Resumen. Los pesos y los dólares nunca se suman.",
+    "emptyTitle": "Todavía no hay movimientos este mes",
+    "emptyBody": "Agregá tu primer ingreso o gasto y va a aparecer acá.",
+    "noResultsTitle": "No se encontraron movimientos",
+    "noResultsBody": "Probá con otros filtros u otro mes."
+  },
+  "categories": {
+    "create": "Crear",
+    "rename": "Renombrar",
+    "newName": "Nombre nuevo",
+    "list": "Tus categorías",
+    "noUses": "Sin movimientos",
+    "uses": {
+      "one": "{{ count }} movimiento",
+      "other": "{{ count }} movimientos"
+    },
+    "viewTransactions": "Ver movimientos",
+    "created": "Categoría creada",
+    "renamed": "Categoría renombrada",
+    "deleted": "Categoría eliminada",
+    "emptyTitle": "Todavía no hay categorías",
+    "emptyBody": "Creá una acá, o mientras agregás un movimiento."
+  },
+  "projections": {
+    "currency": "Moneda",
+    "privacy": "Tus montos nunca salen de este dispositivo. La app solo descarga los factores de inflación (IPC).",
+    "ipcDown": "Los datos de inflación no están disponibles en este momento. Los gastos que aumentan por IPC se muestran sin aumentos hasta que vuelvan.",
+    "loading": "Calculando la proyección…",
+    "summary": "Resumen de la proyección",
+    "now": "Hoy",
+    "inSixMonths": "En 6 meses",
+    "inTwelveMonths": "En 12 meses",
+    "increase": "Aumento en 12 meses",
+    "noValue": "—",
+    "ipcTitle": "Estimación de inflación (IPC)",
+    "ipcSource": "Último dato oficial del {{ source }}: {{ month }}.",
+    "monthlyRate": "Inflación mensual estimada",
+    "estimate": "Meses sin datos oficiales",
+    "estimates": {
+      "average": "Promedio reciente",
+      "custom": "Personalizada"
+    },
+    "averageMonths": "Meses a promediar",
+    "monthsCount": {
+      "one": "{{ count }} mes",
+      "other": "{{ count }} meses"
+    },
+    "customRate": "Mensual (%)",
+    "customRateError": "Ingresá una tasa mayor a 0 y de hasta {{ max }}, con hasta 2 decimales.",
+    "ipcNote": "Los aumentos por IPC usan datos oficiales hasta {{ month }} y la estimación elegida para los meses siguientes.",
+    "table": "Proyección mes a mes",
+    "fixedCost": "Gasto fijo",
+    "monthlyTotal": "Total mensual",
+    "increaseLegend": "Mes de aumento",
+    "increaseCell": "aumento",
+    "actions": "Acciones",
+    "deleteCost": "Eliminar {{ name }}",
+    "deleted": "Gasto fijo eliminado",
+    "rules": {
+      "ipc": "IPC",
+      "percent": "Porcentaje",
+      "amount": "Monto fijo"
+    },
+    "every": {
+      "one": "todos los meses",
+      "other": "cada {{ count }} meses"
+    },
+    "lastIncrease": "último: {{ month }}",
+    "ipcPending": "sin datos de IPC",
+    "emptyTitle": "No tenés gastos fijos en {{ currency }}.",
+    "emptyBody": "Agregá tu alquiler, servicios o suscripciones para ver cuánto van a costar en los próximos meses."
+  },
+  "fixedCost": {
+    "name": "Nombre",
+    "currentAmount": "Monto actual",
+    "currency": "Moneda",
+    "rule": "Cómo aumenta",
+    "ipcHint": "Se ajusta por la inflación acumulada desde el último aumento.",
+    "percent": "Aumento (%)",
+    "increaseAmount": "Monto del aumento",
+    "every": "Frecuencia",
+    "everyOption": {
+      "one": "Todos los meses",
+      "other": "Cada {{ count }} meses"
+    },
+    "lastIncrease": "Último aumento",
+    "lastIncreaseHint": "El mes en que aumentó por última vez. El próximo aumento se cuenta desde ahí.",
+    "saved": "Gasto fijo guardado"
+  },
+  "fixedCostErrors": {
+    "nameRequired": "Ingresá un nombre.",
+    "nameTooLong": "Usá hasta {{ max }} caracteres.",
+    "invalidAmount": "Ingresá un monto mayor a 0, con hasta 2 decimales.",
+    "invalidPercent": "Ingresá un porcentaje mayor a 0 y de hasta {{ max }}, con hasta 2 decimales.",
+    "invalidIncreaseAmount": "Ingresá un monto mayor a 0, con hasta 2 decimales.",
+    "futureLastIncrease": "Elegí este mes o uno anterior."
+  },
+  "data": {
+    "title": "Tus datos",
+    "body": "Todo se guarda en este navegador. No hay cuentas ni servidores que guarden tus datos.",
+    "transactions": "Movimientos",
+    "categories": "Categorías",
+    "fixedCosts": "Gastos fijos",
+    "backupTitle": "Copia de seguridad",
+    "backupBody": "Si borrás los datos del navegador o cambiás de dispositivo, perdés todo lo que no hayas exportado. Usá una copia de seguridad para pasar tus datos a otro dispositivo.",
+    "lastBackup": "Última copia",
+    "never": "nunca",
+    "today": "hoy",
+    "exportBackup": "Exportar copia",
+    "importBackup": "Importar copia",
+    "confirmImport": "Importar reemplaza todos los datos de este dispositivo por los del archivo.",
+    "chooseFile": "Elegir archivo",
+    "exported": "Copia exportada",
+    "imported": "Copia importada",
+    "aboutTitle": "Acerca de",
+    "aboutBody": "Los datos de inflación (IPC) vienen del INDEC, a través de una API pública que nunca recibe tus montos.",
+    "apiDocs": "Documentación de la API",
+    "opensInNewTab": "(se abre en una pestaña nueva)",
+    "dangerTitle": "Borrar todo",
+    "dangerBody": "Elimina todos tus datos de este dispositivo. No se puede deshacer.",
+    "deleteAll": "Borrar todos los datos",
+    "confirmWipeTitle": "¿Borrar todos los datos?",
+    "confirmWipe": "Se eliminan todos los movimientos, categorías y gastos fijos de este dispositivo. Si los podés llegar a necesitar, exportá una copia antes.",
+    "wiped": "Se borraron todos los datos"
+  },
+  "backupErrors": {
+    "invalid": "Este archivo no es una copia de Expense Tracker, o está dañado. No se cambió nada.",
+    "newerVersion": "Esta copia viene de una versión más nueva de la app. Actualizá la app y volvé a intentar. No se cambió nada.",
+    "tooLarge": "Este archivo pesa más de {{ size }} MB, así que no puede ser una copia. No se cambió nada."
   }
 }
