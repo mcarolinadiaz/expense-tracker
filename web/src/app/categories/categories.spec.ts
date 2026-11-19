@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../core/axe.testing';
-import { APP_TEXT } from '../core/constants/app-text';
+import en from '../core/i18n/en.json';
+import { provideTestTranslations } from '../core/i18n/translations.testing';
 import { AppDb } from '../core/db/app-db';
 import { CURRENCY } from '../core/money';
 import { TRANSACTION_TYPE } from '../transactions/transaction';
@@ -82,7 +83,7 @@ describe('Categories', () => {
   }
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    TestBed.configureTestingModule({ providers: [provideTestTranslations(), provideRouter([])] });
   });
 
   afterEach(async () => {
@@ -115,7 +116,7 @@ describe('Categories', () => {
 
     await settleUntil(() =>
       expect(element.querySelector(`#${CATEGORIES_IDS.newNameError}`)?.textContent?.trim()).toBe(
-        APP_TEXT.categoryErrors[CATEGORY_ERROR.taken],
+        en.categoryErrors[CATEGORY_ERROR.taken],
       ),
     );
     expect(rowTexts()).toHaveLength(2);
@@ -133,7 +134,7 @@ describe('Categories', () => {
     await seed();
     await render();
 
-    button(`${APP_TEXT.categories.rename}: Sueldo`).click();
+    button(`${en.categories.rename}: Sueldo`).click();
     await settle();
     expect(document.activeElement?.id).toBe(CATEGORIES_IDS.rename);
 
@@ -143,7 +144,7 @@ describe('Categories', () => {
     await settleUntil(() => {
       expect(rowTexts()).toEqual(['Comida 2 transactions', 'Salario No transactions']);
       expect(document.activeElement?.getAttribute('aria-label')).toBe(
-        `${APP_TEXT.categories.rename}: Salario`,
+        `${en.categories.rename}: Salario`,
       );
     });
   });
@@ -152,7 +153,7 @@ describe('Categories', () => {
     await seed();
     await render();
 
-    button(`${APP_TEXT.categories.rename}: Sueldo`).click();
+    button(`${en.categories.rename}: Sueldo`).click();
     await settle();
     type(CATEGORIES_IDS.rename, 'Salario');
     element
@@ -167,7 +168,7 @@ describe('Categories', () => {
     await seed();
     await render();
 
-    button(`${APP_TEXT.actions.delete}: Sueldo`).click();
+    button(`${en.actions.delete}: Sueldo`).click();
 
     await settleUntil(() => expect(rowTexts()).toEqual(['Comida 2 transactions']));
   });
@@ -177,12 +178,12 @@ describe('Categories', () => {
     await render();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    button(`${APP_TEXT.actions.delete}: Comida`).click();
+    button(`${en.actions.delete}: Comida`).click();
 
     await settleUntil(() => expect(element.querySelector('[role="alert"]')).toBeTruthy());
     expect(rowTexts()).toHaveLength(2);
     const conflict = element.querySelector('[role="alert"]')!;
-    expect(conflict.textContent).toContain(APP_TEXT.categoryErrors[CATEGORY_ERROR.inUse]);
+    expect(conflict.textContent).toContain(en.categoryErrors[CATEGORY_ERROR.inUse]);
 
     conflict.querySelector('button')!.click();
     expect(navigate).toHaveBeenCalledWith(['/transactions'], {
@@ -193,7 +194,7 @@ describe('Categories', () => {
   it('should explain that there are no categories yet', async () => {
     await render();
 
-    expect(element.textContent).toContain(APP_TEXT.categories.emptyTitle);
+    expect(element.textContent).toContain(en.categories.emptyTitle);
   });
 
   it(
@@ -203,11 +204,11 @@ describe('Categories', () => {
       await render();
       await expectNoAxeViolations(element);
 
-      button(`${APP_TEXT.actions.delete}: Comida`).click();
+      button(`${en.actions.delete}: Comida`).click();
       await settleUntil(() => expect(element.querySelector('.category-conflict')).toBeTruthy());
       await expectNoAxeViolations(element);
 
-      button(`${APP_TEXT.categories.rename}: Sueldo`).click();
+      button(`${en.categories.rename}: Sueldo`).click();
       await settle();
       type(CATEGORIES_IDS.rename, 'Comida');
       submitForm(CATEGORIES_IDS.rename);

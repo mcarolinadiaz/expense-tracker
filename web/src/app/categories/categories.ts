@@ -20,9 +20,11 @@ import {
 } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { APP_TEXT } from '../core/constants/app-text';
 import { APP_PAGE_PATH } from '../core/constants/app-page-routes';
+import { TextKey } from '../core/i18n/translations';
+import { Translator } from '../core/i18n/translator.service';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
+import { TextPipe } from '../shared/pipes/text.pipe';
 import { ACTIVITY_QUERY_PARAM } from '../transactions/transactions';
 import {
   Category,
@@ -31,6 +33,7 @@ import {
   CategoryError,
   CategoryErrorCode,
 } from './category';
+import { categoryErrorText } from './category-error-text';
 import { CategoryService } from './category.service';
 
 export const CATEGORIES_IDS = {
@@ -55,7 +58,7 @@ function categoryNameSchema(path: SchemaPathTree<CategoryNameModel>): void {
 }
 
 @Component({
-  imports: [FormField, NavbarActions],
+  imports: [FormField, NavbarActions, TextPipe],
   selector: 'app-categories',
   styleUrl: './categories.css',
   templateUrl: './categories.html',
@@ -63,11 +66,11 @@ function categoryNameSchema(path: SchemaPathTree<CategoryNameModel>): void {
 export class Categories {
   private readonly categoryService = inject(CategoryService);
   private readonly announcer = inject(LiveAnnouncer);
+  private readonly translator = inject(Translator);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  protected readonly text = APP_TEXT;
   protected readonly ids = CATEGORIES_IDS;
 
   private readonly categories = toSignal(this.categoryService.list());
@@ -77,7 +80,7 @@ export class Categories {
   protected readonly rows = computed((): CategoryRow[] =>
     (this.categories() ?? []).map((category) => ({
       category,
-      uses: APP_TEXT.categories.uses(this.usage().get(category.id) ?? 0),
+      uses: this.usesText(this.usage().get(category.id) ?? 0),
     })),
   );
   protected readonly isEmpty = computed(() => this.categories()?.length === 0);
@@ -106,7 +109,7 @@ export class Categories {
         return this.asFieldError(error, this.newForm.name);
       }
       this.newForm().reset({ name: '' });
-      void this.announcer.announce(APP_TEXT.categories.created);
+      void this.announcer.announce(this.translator.translate('categories.created'));
       return undefined;
     });
   }
@@ -129,7 +132,7 @@ export class Categories {
         return this.asFieldError(error, this.renameForm.name);
       }
       this.stopRename(id);
-      void this.announcer.announce(APP_TEXT.categories.renamed);
+      void this.announcer.announce(this.translator.translate('categories.renamed'));
       return undefined;
     });
   }
@@ -158,7 +161,7 @@ export class Categories {
       throw error;
     }
     this.conflictId.set(null);
-    void this.announcer.announce(APP_TEXT.categories.deleted);
+    void this.announcer.announce(this.translator.translate('categories.deleted'));
   }
 
   protected viewTransactions(id: number): void {
@@ -168,8 +171,18 @@ export class Categories {
   }
 
   /** The accessible name of a row's buttons, such as "Rename: Comida". */
-  protected rowLabel(action: string, category: Category): string {
-    return `${action}: ${category.name}`;
+  protected rowLabel(action: TextKey, category: Category): string {
+    return `${this.translator.translate(action)}: ${category.name}`;
+  }
+
+  protected categoryErrorText(code: CategoryErrorCode): string {
+    return categoryErrorText(this.translator, code);
+  }
+
+  private usesText(count: number): string {
+    return count === 0
+      ? this.translator.translate('categories.noUses')
+      : this.translator.plural('categories.uses', count);
   }
 
   private errorCode(field: FieldTree<string>): CategoryErrorCode | undefined {

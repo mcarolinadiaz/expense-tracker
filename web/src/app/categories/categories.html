@@ -1,13 +1,13 @@
 <ng-template appNavbarActions>
   <button type="button" class="btn btn-primary" (click)="focusNewCategory()">
-    {{ text.actions.newCategory }}
+    {{ 'actions.newCategory' | text }}
   </button>
 </ng-template>
 
-<section class="card categories-card" [attr.aria-label]="text.pages.categories">
+<section class="card categories-card" [attr.aria-label]="'pages.categories' | text">
   <form class="category-create" (submit)="create($event)">
     <div class="category-create-field">
-      <label class="field-label" [for]="ids.newName">{{ text.actions.newCategory }}</label>
+      <label class="field-label" [for]="ids.newName">{{ 'actions.newCategory' | text }}</label>
       <input
         class="field"
         autocomplete="off"
@@ -18,23 +18,25 @@
       />
       @if (newError(); as code) {
         <p class="field-error" role="alert" [id]="ids.newNameError">
-          {{ text.categoryErrors[code] }}
+          {{ categoryErrorText(code) }}
         </p>
       }
     </div>
     <button type="submit" class="btn btn-primary category-create-submit">
-      {{ text.categories.create }}
+      {{ 'categories.create' | text }}
     </button>
   </form>
 
   @if (rows().length > 0) {
-    <ul class="category-list" [attr.aria-label]="text.categories.list">
+    <ul class="category-list" [attr.aria-label]="'categories.list' | text">
       @for (row of rows(); track row.category.id) {
         <li class="category-item">
           @if (editingId() === row.category.id) {
             <form class="category-row" (submit)="saveRename($event, row.category.id)">
               <div class="category-rename-field">
-                <label class="field-label" [for]="ids.rename">{{ text.categories.newName }}</label>
+                <label class="field-label" [for]="ids.rename">{{
+                  'categories.newName' | text
+                }}</label>
                 <input
                   class="field"
                   autocomplete="off"
@@ -46,18 +48,18 @@
                 />
                 @if (renameError(); as code) {
                   <p class="field-error" role="alert" [id]="ids.renameError">
-                    {{ text.categoryErrors[code] }}
+                    {{ categoryErrorText(code) }}
                   </p>
                 }
               </div>
               <div class="category-actions">
-                <button type="submit" class="btn btn-primary">{{ text.actions.save }}</button>
+                <button type="submit" class="btn btn-primary">{{ 'actions.save' | text }}</button>
                 <button
                   type="button"
                   class="btn btn-secondary"
                   (click)="stopRename(row.category.id)"
                 >
-                  {{ text.actions.cancel }}
+                  {{ 'actions.cancel' | text }}
                 </button>
               </div>
             </form>
@@ -72,31 +74,31 @@
                   type="button"
                   class="btn btn-ghost"
                   [id]="ids.renameButton(row.category.id)"
-                  [attr.aria-label]="rowLabel(text.categories.rename, row.category)"
+                  [attr.aria-label]="rowLabel('categories.rename', row.category)"
                   (click)="startRename(row.category)"
                 >
-                  {{ text.categories.rename }}
+                  {{ 'categories.rename' | text }}
                 </button>
                 <button
                   type="button"
                   class="btn btn-ghost category-delete"
-                  [attr.aria-label]="rowLabel(text.actions.delete, row.category)"
+                  [attr.aria-label]="rowLabel('actions.delete', row.category)"
                   (click)="remove(row.category.id)"
                 >
-                  {{ text.actions.delete }}
+                  {{ 'actions.delete' | text }}
                 </button>
               </div>
             </div>
           }
           @if (conflictId() === row.category.id) {
             <div class="category-conflict" role="alert">
-              <span>{{ text.categoryErrors.inUse }}</span>
+              <span>{{ 'categoryErrors.inUse' | text }}</span>
               <button
                 type="button"
                 class="btn btn-ghost category-conflict-action"
                 (click)="viewTransactions(row.category.id)"
               >
-                {{ text.categories.viewTransactions }}
+                {{ 'categories.viewTransactions' | text }}
               </button>
             </div>
           }
@@ -105,8 +107,8 @@
     </ul>
   } @else if (isEmpty()) {
     <div class="empty-state">
-      <h2 class="section-title">{{ text.categories.emptyTitle }}</h2>
-      <p class="empty-body">{{ text.categories.emptyBody }}</p>
+      <h2 class="section-title">{{ 'categories.emptyTitle' | text }}</h2>
+      <p class="empty-body">{{ 'categories.emptyBody' | text }}</p>
     </div>
   }
 </section>
