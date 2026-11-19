@@ -1,0 +1,12 @@
+{
+  "appName": "Expense Tracker",
+  "mainNavigation": "Main navigation",
+  "language": "Language",
+  "pages": {
+    "overview": "Overview",
+    "activity": "Activity",
+    "categories": "Categories",
+    "projections": "Projections",
+    "data": "Data"
+  }
+}
