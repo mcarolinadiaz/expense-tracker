@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { APP_TEXT } from './app-text';
+import { textKey } from '../i18n/translations';
 
 /** The path of each page, without the leading slash. */
 export const APP_PAGE_PATH = {
@@ -14,27 +14,27 @@ export const APP_PAGE_ROUTES = [
   {
     path: APP_PAGE_PATH.overview,
     pathMatch: 'full',
-    title: APP_TEXT.pages.overview,
+    title: textKey('pages.overview'),
     loadComponent: () => import('../../overview/overview').then((m) => m.Overview),
   },
   {
     path: APP_PAGE_PATH.transactions,
-    title: APP_TEXT.pages.activity,
+    title: textKey('pages.activity'),
     loadComponent: () => import('../../transactions/transactions').then((m) => m.Transactions),
   },
   {
     path: APP_PAGE_PATH.categories,
-    title: APP_TEXT.pages.categories,
+    title: textKey('pages.categories'),
     loadComponent: () => import('../../categories/categories').then((m) => m.Categories),
   },
   {
     path: APP_PAGE_PATH.projections,
-    title: APP_TEXT.pages.projections,
+    title: textKey('pages.projections'),
     loadComponent: () => import('../../projections/projections').then((m) => m.Projections),
   },
   {
     path: APP_PAGE_PATH.data,
-    title: APP_TEXT.pages.data,
+    title: textKey('pages.data'),
     loadComponent: () => import('../../data/data').then((m) => m.Data),
   },
 ] satisfies Routes;

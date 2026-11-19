@@ -19,6 +19,19 @@ export const APP_LOCALE = {
 
 export type AppLocale = (typeof APP_LOCALE)[keyof typeof APP_LOCALE];
 
+export const APP_LOCALES = Object.values(APP_LOCALE);
+
+/** Each language's name in that same language, for the language selector. It's never translated. */
+export const LANGUAGE_NAME = {
+  [APP_LOCALE.esAR]: 'Español',
+  [APP_LOCALE.enUS]: 'English',
+} as const satisfies Record<AppLocale, string>;
+
+/** Whether a value, such as a stored setting, is one of the supported languages. */
+export function isAppLocale(value: unknown): value is AppLocale {
+  return APP_LOCALES.some((locale) => locale === value);
+}
+
 const PERCENT = 100;
 const PERCENT_DECIMALS = 2;
 
@@ -106,6 +119,11 @@ export class LocaleFormat {
   /** Reads a percentage typed in the active language as plain decimal text, such as `"2.5"`. */
   parsePercent(text: string, max: number): string | null {
     return parsePercent(text, this.active(), max);
+  }
+
+  /** A whole number with the language's grouping, such as "1,250" or "1.250". */
+  integer(value: number): string {
+    return new Intl.NumberFormat(this.active(), { maximumFractionDigits: 0 }).format(value);
   }
 
   /** Lower case in the active language, to compare text such as a search. */

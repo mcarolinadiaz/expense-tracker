@@ -9,6 +9,7 @@ const DB_NAME = 'expense-tracker';
 /** The keys of the device settings stored in `settings`. */
 export const SETTING_KEY = {
   lastBackup: 'lastBackup',
+  language: 'language',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEY)[keyof typeof SETTING_KEY];

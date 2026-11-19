@@ -16,6 +16,10 @@
   @apply flex h-11 items-center rounded-lg px-3 font-medium transition-colors hover:bg-hover;
 }
 
+.language-picker {
+  @apply mt-auto;
+}
+
 .nav-link-active {
   @apply bg-accent-soft font-semibold text-accent;
 }

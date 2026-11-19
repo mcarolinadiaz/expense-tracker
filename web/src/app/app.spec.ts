@@ -5,13 +5,15 @@ import { App } from './app';
 import { routes } from './app.routes';
 import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from './core/axe.testing';
 import { APP_TEXT } from './core/constants/app-text';
+import en from './core/i18n/en.json';
+import { provideTestTranslations } from './core/i18n/translations.testing';
 import { CURRENCIES, CURRENCY } from './core/money';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter(routes)],
+      providers: [provideRouter(routes), provideTestTranslations()],
     }).compileComponents();
   });
 
@@ -55,9 +57,9 @@ describe('App', () => {
   );
 
   it.each([
-    ['/', APP_TEXT.pages.overview, [...CURRENCIES, APP_TEXT.actions.addTransaction]],
-    ['/transactions', APP_TEXT.pages.activity, [APP_TEXT.actions.addTransaction]],
-    ['/categories', APP_TEXT.pages.categories, [APP_TEXT.actions.newCategory]],
+    ['/', en.pages.overview, [...CURRENCIES, APP_TEXT.actions.addTransaction]],
+    ['/transactions', en.pages.activity, [APP_TEXT.actions.addTransaction]],
+    ['/categories', en.pages.categories, [APP_TEXT.actions.newCategory]],
   ])('should show the title and actions of %s in the navbar', async (url, title, actions) => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl(url);

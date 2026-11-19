@@ -1,5 +1,5 @@
-<nav [attr.aria-label]="text.mainNavigation" class="side-bar">
-  <p class="brand">{{ text.appName }}</p>
+<nav [attr.aria-label]="'mainNavigation' | text" class="side-bar">
+  <p class="brand">{{ 'appName' | text }}</p>
 
   <ul class="nav-list">
     @for (link of links; track link.path) {
@@ -11,9 +11,23 @@
           ariaCurrentWhenActive="page"
           class="nav-link"
         >
-          {{ link.label }}
+          {{ link.label | text }}
         </a>
       </li>
     }
   </ul>
+
+  <div class="segmented language-picker" role="group" [attr.aria-label]="'language' | text">
+    @for (locale of locales; track locale) {
+      <button
+        type="button"
+        class="segmented-item"
+        [attr.lang]="locale"
+        [attr.aria-pressed]="language() === locale"
+        (click)="chooseLanguage(locale)"
+      >
+        {{ languageNames[locale] }}
+      </button>
+    }
+  </div>
 </nav>
