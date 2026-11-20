@@ -2,6 +2,10 @@
   "appName": "Expense Tracker",
   "mainNavigation": "Navegación principal",
   "language": "Idioma",
+  "update": {
+    "ready": "Hay una versión nueva de la app.",
+    "reload": "Actualizar"
+  },
   "pages": {
     "overview": "Resumen",
     "activity": "Movimientos",

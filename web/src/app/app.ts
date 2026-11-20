@@ -5,9 +5,10 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { Navbar } from './layout/navbar/navbar';
 import { SideBar } from './layout/side-bar/side-bar';
+import { UpdateBanner } from './layout/update-banner/update-banner';
 
 @Component({
-  imports: [CdkScrollable, Navbar, RouterOutlet, SideBar],
+  imports: [CdkScrollable, Navbar, RouterOutlet, SideBar, UpdateBanner],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',

@@ -1,0 +1,5 @@
+@reference '../../../styles.css';
+
+.update-banner {
+  @apply fixed right-4 bottom-4 left-4 z-50 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-ink px-4 py-3 text-surface shadow-lg sm:left-auto sm:max-w-sm;
+}
