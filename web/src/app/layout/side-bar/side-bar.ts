@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TextPipe } from '../../shared/pipes/text.pipe';
@@ -6,7 +7,7 @@ import { LanguageService } from '../../core/i18n/language.service';
 import { APP_LOCALES, AppLocale, LANGUAGE_NAME } from '../../core/locale-format.service';
 
 @Component({
-  imports: [RouterLink, RouterLinkActive, TextPipe],
+  imports: [NgOptimizedImage, RouterLink, RouterLinkActive, TextPipe],
   selector: 'app-side-bar',
   styleUrl: './side-bar.css',
   templateUrl: './side-bar.html',

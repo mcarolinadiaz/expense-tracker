@@ -1,5 +1,8 @@
 <nav [attr.aria-label]="'mainNavigation' | text" class="side-bar">
-  <p class="brand">{{ 'appName' | text }}</p>
+  <p class="brand">
+    <img ngSrc="icons/sloth-mascot.svg" alt="" width="63" height="60" priority />
+    <span>{{ 'appName' | text }}</span>
+  </p>
 
   <ul class="nav-list">
     @for (link of links; track link.path) {
