@@ -42,9 +42,9 @@ expense-tracker/
 │   ├── styles.css              # Theme tokens and shared component classes
 │   ├── environments/           # apiUrl per build (environment.development.ts for ng serve)
 │   └── app/
-│       ├── core/               # App-wide code: AppDb, Clock, dates, money, decimal, API_URL, i18n (translations, LanguageService, Translator), page routes
+│       ├── core/               # App-wide code: AppDb, Clock, AppUpdate, dates, money, decimal, API_URL, i18n (translations, LanguageService, Translator), page routes
 │       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, spinner, confirm-dialog, pipes (money, text, plural)
-│       ├── layout/             # side-bar and navbar
+│       ├── layout/             # side-bar, navbar and update-banner
 │       ├── overview/           # Overview page and its summary service
 │       ├── transactions/       # Activity page, transaction model and service, side panel
 │       ├── categories/         # Categories page, category model and service
@@ -183,6 +183,16 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - From `md` up, the shell is exactly as tall as the window: the side bar stays whole and only the content area scrolls. On narrower screens the side bar stacks above the content and the whole page scrolls.
 - The content area scrolls on its own, and the router only resets the window's scroll, so `App` sets the content area's `scrollTop` to `0` after each navigation.
 - The content area has `cdkScrollable`, so overlays such as an open dropdown follow it when it scrolls.
+- The side bar shows the sloth mascot, `public/icons/sloth-mascot.svg`, with an empty `alt` because the app name sits next to it.
+
+**PWA**
+
+- The service worker only runs in production builds (`ngsw-config.json`, `serviceWorker` in the `production` configuration), so `ng serve` never caches anything. Try it with `ng build` and a static server, such as `npx http-server dist/web/browser`.
+- The app files are prefetched, so the app opens offline. Icons and fonts are cached the first time they are used.
+- The IPC data group matches the API's absolute URL (`http*://**/api/ipc**`), because the API is on another origin. It uses `freshness`: it asks the API first and falls back to the cached answer after `timeout` or offline.
+- `AppUpdate` (`core/`) watches `SwUpdate` for `VERSION_READY`, and `UpdateBanner` offers to reload. It injects `SwUpdate` as optional, so tests and development builds without a service worker never show it.
+- Fonts come from `@fontsource-variable` in `angular.json` `styles`, not from Google Fonts, so they're served and cached with the app. Their families are `Inter Variable` and `Space Grotesk Variable`.
+- The icons in `public/icons/` come from `sloth.svg`, the sloth on the accent color. The `any` icons and the favicon have rounded corners; the `maskable` icon and `apple-touch-icon` stay square, because Android and iOS cut their own shape, and iOS paints transparent corners black.
 
 **Shared styles (`styles.css`)**
 
