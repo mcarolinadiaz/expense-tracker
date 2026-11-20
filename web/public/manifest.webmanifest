@@ -1,0 +1,21 @@
+{
+  "name": "Expense Tracker",
+  "short_name": "Expenses",
+  "description": "Record income and expenses by category and project how your fixed costs will increase. Your data stays on your device.",
+  "lang": "en-US",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f6f3",
+  "theme_color": "#0e5f58",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
