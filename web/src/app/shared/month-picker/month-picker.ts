@@ -14,4 +14,7 @@ export class MonthPicker {
 
   protected readonly selected = inject(SelectedMonthService);
   protected readonly label = computed(() => this.format.monthName(this.selected.month()));
+  protected readonly shortLabel = computed(() =>
+    this.format.abbreviatedMonth(this.selected.month()),
+  );
 }

@@ -49,6 +49,16 @@ describe('LocaleFormat', () => {
     expect(format.shortMonth('2026-11')).toBe('nov 26');
   });
 
+  it('should abbreviate a month with a capital and no period in each language', () => {
+    expect(format.abbreviatedMonth('2026-11')).toBe('Nov 2026');
+    expect(format.abbreviatedMonth('2026-09')).toBe('Sep 2026');
+
+    format.use(APP_LOCALE.esAR);
+
+    expect(format.abbreviatedMonth('2026-11')).toBe('Nov 2026');
+    expect(format.abbreviatedMonth('2026-09')).toBe('Sept 2026');
+  });
+
   it('should write a full day in each language', () => {
     expect(format.longDate('2026-11-06')).toBe('November 6, 2026');
 

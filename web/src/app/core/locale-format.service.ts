@@ -93,6 +93,19 @@ export class LocaleFormat {
     return name.charAt(0).toLocaleUpperCase(locale) + name.slice(1);
   }
 
+  /** A month abbreviated and its full year, such as "Nov 2026" in both languages, without a period. */
+  abbreviatedMonth(month: YearMonth): string {
+    const locale = this.active();
+    const parts = new Intl.DateTimeFormat(locale, {
+      month: 'short',
+      year: 'numeric',
+    }).formatToParts(fromIsoDate(month));
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((candidate) => candidate.type === type)?.value ?? '';
+    const name = part('month').replace(/\.$/, '');
+    return `${name.charAt(0).toLocaleUpperCase(locale)}${name.slice(1)} ${part('year')}`;
+  }
+
   /** A short month for table columns, such as "Nov 26" or "nov 26". */
   shortMonth(month: YearMonth): string {
     return new Intl.DateTimeFormat(this.active(), { month: 'short', year: '2-digit' }).format(

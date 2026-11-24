@@ -5,7 +5,7 @@
 }
 
 .month-label {
-  @apply min-w-38 text-center font-medium;
+  @apply min-w-22 text-center font-medium;
 }
 
 .month-arrow {
