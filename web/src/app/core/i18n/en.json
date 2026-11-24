@@ -42,7 +42,7 @@
     "balance": "Balance",
     "byCategory": "Spending by category",
     "noExpenses": "No expenses this month.",
-    "viewCategory": "View transactions in {{ name }}: {{ total }}",
+    "viewCategory": "View transactions in",
     "recent": "Recent transactions",
     "viewAll": "View all",
     "emptyTitle": "No transactions this month yet",

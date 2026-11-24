@@ -1,33 +1,30 @@
+import { NgOptimizedImage } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { APP_PAGE_PATH } from '../core/constants/app-page-routes';
+import { TEXT_SEPARATOR } from '../core/constants/text-separator';
 import { TextKey } from '../core/i18n/translations';
 import { Translator } from '../core/i18n/translator.service';
 import { LocaleFormat } from '../core/locale-format.service';
-import { Cents, CURRENCIES, CURRENCY, Currency } from '../core/money';
+import { CURRENCIES, CURRENCY, Currency } from '../core/money';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
+import { AddButton } from '../shared/add-button/add-button';
 import { MonthPicker } from '../shared/month-picker/month-picker';
 import { SelectedMonthService } from '../shared/month-picker/selected-month.service';
 import { TextPipe } from '../shared/pipes/text.pipe';
-import { STAT_CARD_TONE, StatCard, StatCardTone } from '../shared/stat-card/stat-card';
+import { STAT_CARD_TONE } from '../shared/stat-card/stat-card';
+import { SummaryCards, SummaryFigure } from '../shared/summary-cards/summary-cards';
 import { TRANSACTION_SIGN, TRANSACTION_TYPE } from '../transactions/transaction';
 import { TransactionPanelService } from '../transactions/transaction-panel/transaction-panel.service';
 import { ACTIVITY_QUERY_PARAM } from '../transactions/transactions';
 import { SummaryService } from './summary.service';
-
-interface SummaryCard {
-  label: string;
-  amount: Cents;
-  tone: StatCardTone;
-}
 
 interface CategoryBar {
   categoryId: number;
   name: string;
   total: string;
   share: number;
-  label: string;
 }
 
 interface RecentRow {
@@ -38,10 +35,16 @@ interface RecentRow {
   isIncome: boolean;
 }
 
-const DETAILS_SEPARATOR = ' · ';
-
 @Component({
-  imports: [MonthPicker, NavbarActions, RouterLink, StatCard, TextPipe],
+  imports: [
+    AddButton,
+    MonthPicker,
+    NavbarActions,
+    NgOptimizedImage,
+    RouterLink,
+    SummaryCards,
+    TextPipe,
+  ],
   selector: 'app-overview',
   styleUrl: './overview.css',
   templateUrl: './overview.html',
@@ -62,7 +65,7 @@ export class Overview {
     stream: ({ params }) => this.summaryService.getSummary(params.month, params.currency),
   });
 
-  protected readonly cards = computed((): SummaryCard[] => {
+  protected readonly cards = computed((): SummaryFigure[] => {
     if (!this.summary.hasValue()) {
       return [];
     }
@@ -87,16 +90,12 @@ export class Overview {
       return [];
     }
     const currency = this.currency();
-    return this.summary.value().byCategory.map((item) => {
-      const total = this.format.money(item.total, currency);
-      return {
-        categoryId: item.categoryId,
-        name: item.name,
-        total,
-        share: item.share,
-        label: this.translator.translate('summary.viewCategory', { name: item.name, total }),
-      };
-    });
+    return this.summary.value().byCategory.map((item) => ({
+      categoryId: item.categoryId,
+      name: item.name,
+      total: this.format.money(item.total, currency),
+      share: item.share,
+    }));
   });
 
   protected readonly recentRows = computed((): RecentRow[] => {
@@ -106,7 +105,7 @@ export class Overview {
     return this.summary.value().recent.map(({ transaction, category }) => ({
       id: transaction.id,
       title: transaction.description || category,
-      details: [this.format.shortDate(transaction.date), category].join(DETAILS_SEPARATOR),
+      details: [this.format.shortDate(transaction.date), category].join(TEXT_SEPARATOR),
       amount: this.format.money(
         transaction.amount,
         transaction.currency,

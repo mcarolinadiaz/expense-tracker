@@ -98,7 +98,10 @@ describe('Overview', () => {
 
     await settleUntil(() => expect(element.querySelector('.category-bar')).toBeTruthy());
     const bar = element.querySelector<HTMLAnchorElement>('.category-bar')!;
-    expect(bar.getAttribute('aria-label')).toBe('View transactions in Comida: $24.00');
+    expect(bar.querySelector('.category-bar-name')?.textContent?.trim()).toBe(
+      `${en.summary.viewCategory} Comida`,
+    );
+    expect(bar.querySelector('.amount')?.textContent?.trim()).toBe('$24.00');
     expect(bar.getAttribute('href')).toBe(`/transactions?currency=USD&category=${food}`);
     expect(element.querySelector('.view-all')!.getAttribute('href')).toBe(
       '/transactions?currency=USD',
@@ -117,7 +120,7 @@ describe('Overview', () => {
             .map((part) => part.textContent?.trim())
             .join(' '),
         ),
-      ).toEqual(['Comida Nov 5 · Comida − $24.00', 'Freelance Nov 1 · Sueldo + $1,000.00']),
+      ).toEqual(['Comida Nov 5 – Comida − $24.00', 'Freelance Nov 1 – Sueldo + $1,000.00']),
     );
   });
 

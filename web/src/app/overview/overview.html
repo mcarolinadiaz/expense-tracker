@@ -13,21 +13,12 @@
     }
   </div>
 
-  <button type="button" class="btn btn-primary" (click)="addTransaction()">
-    {{ 'actions.addTransaction' | text }}
-  </button>
+  <app-add-button [label]="'actions.addTransaction' | text" (click)="addTransaction()" />
 </ng-template>
 
 <div class="overview">
-  <section class="stat-cards" [attr.aria-label]="'summary.title' | text">
-    @for (card of cards(); track card.label) {
-      <app-stat-card
-        [label]="card.label"
-        [amount]="card.amount"
-        [currency]="currency()"
-        [tone]="card.tone"
-      />
-    }
+  <section [attr.aria-label]="'summary.title' | text">
+    <app-summary-cards [figures]="cards()" [currency]="currency()" />
   </section>
 
   @if (hasData()) {
@@ -44,10 +35,12 @@
                   class="category-bar"
                   [routerLink]="activityPath"
                   [queryParams]="activityParams(bar.categoryId)"
-                  [attr.aria-label]="bar.label"
                 >
                   <span class="category-bar-heading">
-                    <span class="category-bar-name">{{ bar.name }}</span>
+                    <span class="category-bar-name"
+                      ><span class="sr-only">{{ 'summary.viewCategory' | text }} </span
+                      >{{ bar.name }}</span
+                    >
                     <span class="amount">{{ bar.total }}</span>
                   </span>
                   <span class="category-bar-track">
@@ -94,6 +87,7 @@
     </div>
   } @else if (isEmpty()) {
     <section class="card empty-state" aria-labelledby="overview-empty">
+      <img class="empty-mascot" ngSrc="icons/sloth-mascot.svg" alt="" width="116" height="110" />
       <h2 id="overview-empty" class="section-title">{{ 'summary.emptyTitle' | text }}</h2>
       <p class="empty-body">{{ 'summary.emptyBody' | text }}</p>
       <button type="button" class="btn btn-primary" (click)="addTransaction()">

@@ -42,7 +42,7 @@
     "balance": "Balance",
     "byCategory": "Gastos por categoría",
     "noExpenses": "No hay gastos este mes.",
-    "viewCategory": "Ver movimientos de {{ name }}: {{ total }}",
+    "viewCategory": "Ver movimientos de",
     "recent": "Últimos movimientos",
     "viewAll": "Ver todos",
     "emptyTitle": "Todavía no hay movimientos este mes",
