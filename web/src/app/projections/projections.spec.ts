@@ -4,10 +4,12 @@ import { AXE_TEST_TIMEOUT_MS, expectNoAxeViolations } from '../core/axe.testing'
 import { provideFixedClock } from '../core/clock.testing';
 import en from '../core/i18n/en.json';
 import { provideTestTranslations } from '../core/i18n/translations.testing';
+import { providePhoneScreen } from '../core/screen-size.testing';
 import { shiftMonth } from '../core/dates';
 import { AppDb } from '../core/db/app-db';
 import { CURRENCY } from '../core/money';
 import { INCREASE_RULE, NewFixedCost } from './fixed-cost';
+import { FIXED_COST_PANEL_IDS } from './fixed-cost-panel/fixed-cost-panel';
 import { FixedCostService } from './fixed-cost.service';
 import { IPC_ESTIMATE, IpcFactors, IpcFactorsQuery } from './ipc-factors';
 import { IpcFactorsService } from './ipc-factors.service';
@@ -134,8 +136,8 @@ describe('Projections', () => {
       await settleUntil(() => expect(rowTexts()).toHaveLength(2));
 
       expect(rowTexts()).toEqual([
-        'Alquiler IPC every 4 months · last: Aug 26',
-        'Internet + 10% every month · last: Nov 26',
+        'Alquiler IPC every 4 months – last: Aug 26',
+        'Internet + 10% every month – last: Nov 26',
       ]);
       const headers = Array.from(element.querySelectorAll('thead th')).map((cell) =>
         cell.textContent?.trim(),
@@ -214,6 +216,21 @@ describe('Projections', () => {
     );
   });
 
+  it('should open the saved cost to edit it', async () => {
+    await addCost();
+    await render();
+    await settleUntil(() => expect(rowTexts()).toHaveLength(1));
+
+    element.querySelector<HTMLButtonElement>(`[aria-label="Edit Alquiler"]`)!.click();
+    await settleUntil(() => expect(document.querySelector('app-fixed-cost-panel')).not.toBeNull());
+
+    const panel = document.querySelector('app-fixed-cost-panel')!;
+    expect(panel.textContent).toContain(en.fixedCost.editTitle);
+    expect(panel.querySelector<HTMLInputElement>(`#${FIXED_COST_PANEL_IDS.name}`)!.value).toBe(
+      'Alquiler',
+    );
+  });
+
   it(
     'should warn while the IPC is unavailable and try again on request',
     async () => {
@@ -235,6 +252,7 @@ describe('Projections', () => {
   it(
     'should start a custom estimate from the current one and only send valid rates',
     async () => {
+      await addCost();
       await render();
       await settleUntil(() => expect(element.textContent).toContain('2.11%'));
 
@@ -263,4 +281,110 @@ describe('Projections', () => {
     },
     AXE_TEST_TIMEOUT_MS,
   );
+
+  it('should show the estimated rate, but no estimate settings, without IPC costs', async () => {
+    await addCost({ name: 'Internet', increase: { rule: INCREASE_RULE.percent, percent: '10' } });
+    await render();
+    await settleUntil(() => expect(rowTexts()).toHaveLength(1));
+
+    expect(element.textContent).toContain('2.11%');
+    expect(button(en.projections.estimates[IPC_ESTIMATE.custom])).toBeUndefined();
+  });
+
+  it('should not warn about the IPC without IPC costs', async () => {
+    factors.mockReturnValue(throwError(() => new Error('offline')));
+    await addCost({ name: 'Internet', increase: { rule: INCREASE_RULE.percent, percent: '10' } });
+    await render();
+    await settleUntil(() => expect(rowTexts()).toHaveLength(1));
+
+    expect(element.textContent).not.toContain(en.projections.ipcDown);
+  });
+
+  describe('on a phone', () => {
+    beforeEach(() => {
+      TestBed.configureTestingModule({ providers: [providePhoneScreen()] });
+    });
+
+    function monthCosts(): string[] {
+      return Array.from(element.querySelectorAll('.month-cost')).map((item) =>
+        Array.from(item.querySelectorAll('.cost-name, .cost-rule, .amount, .increase-badge'))
+          .map((line) => line.textContent!.replace(/\s+/g, ' ').trim())
+          .join(' '),
+      );
+    }
+
+    it(
+      'should sum up the projection in one card and list the costs of the chosen month',
+      async () => {
+        await addCost({
+          name: 'Internet',
+          amount: 50000,
+          every: 1,
+          lastIncrease: '2026-11',
+          increase: { rule: INCREASE_RULE.percent, percent: '10' },
+        });
+        await render();
+        await settleUntil(() => expect(monthCosts()).toHaveLength(1));
+
+        expect(element.querySelector(`#${PROJECTIONS_IDS.tableTitle}`)?.textContent?.trim()).toBe(
+          en.projections.interactive,
+        );
+        const summary = element.querySelector('.summary-compact')!;
+        expect(summary.textContent).toContain(en.projections.inTwelveMonths);
+        expect(summary.textContent).toContain(en.projections.now);
+        expect(element.querySelector('app-stat-card')).toBeNull();
+        expect(element.querySelector('table')).toBeNull();
+        expect(monthCosts()[0]).toBe('Internet + 10% every month – last: Nov 26 ARS 500.00');
+        await expectNoAxeViolations(element);
+
+        element.querySelector<HTMLButtonElement>('button[aria-label^="December 2026"]')!.click();
+        await fixture.whenStable();
+
+        expect(element.querySelector('.month-stepper-name')?.textContent).toBe('December 2026');
+        expect(monthCosts()[0]).toContain('ARS 550.00 Increases + ARS 50.00');
+        expect(
+          element
+            .querySelector('button[aria-label^="December 2026"]')!
+            .getAttribute('aria-pressed'),
+        ).toBe('true');
+        await expectNoAxeViolations(element);
+      },
+      AXE_TEST_TIMEOUT_MS,
+    );
+
+    it('should move between months and delete a cost from the list', async () => {
+      await addCost();
+      await render();
+      await settleUntil(() => expect(monthCosts()).toHaveLength(1));
+
+      const previous = element.querySelector<HTMLButtonElement>(
+        `button[aria-label="${en.month.previous}"]`,
+      )!;
+      expect(previous.disabled).toBe(true);
+      element.querySelector<HTMLButtonElement>(`button[aria-label="${en.month.next}"]`)!.click();
+      await fixture.whenStable();
+      expect(element.querySelector('.month-stepper-name')?.textContent).toBe('December 2026');
+      expect(previous.disabled).toBe(false);
+
+      element.querySelector<HTMLButtonElement>(`[aria-label="Delete Alquiler"]`)!.click();
+
+      await settleUntil(() =>
+        expect(element.textContent).toContain('You have no fixed costs in ARS.'),
+      );
+    });
+
+    it('should open a cost to edit it from the list', async () => {
+      await addCost();
+      await render();
+      await settleUntil(() => expect(monthCosts()).toHaveLength(1));
+
+      element.querySelector<HTMLButtonElement>(`[aria-label="Edit Alquiler"]`)!.click();
+
+      await settleUntil(() =>
+        expect(document.querySelector('app-fixed-cost-panel')?.textContent).toContain(
+          en.fixedCost.editTitle,
+        ),
+      );
+    });
+  });
 });

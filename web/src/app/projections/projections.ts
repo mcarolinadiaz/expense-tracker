@@ -3,17 +3,21 @@ import { Component, computed, inject, linkedSignal, signal } from '@angular/core
 import { rxResource } from '@angular/core/rxjs-interop';
 import { form, FormField, validate } from '@angular/forms/signals';
 import { firstValueFrom, map } from 'rxjs';
+import { TEXT_SEPARATOR } from '../core/constants/text-separator';
 import { YearMonth } from '../core/dates';
 import { TextKey } from '../core/i18n/translations';
 import { Translator } from '../core/i18n/translator.service';
 import { percentChange } from '../core/decimal';
 import { LocaleFormat } from '../core/locale-format.service';
-import { AMOUNT_SIGN, Cents, CURRENCIES, CURRENCY, Currency } from '../core/money';
+import { ScreenSize } from '../core/screen-size.service';
+import { AMOUNT_SIGN, CURRENCIES, CURRENCY, Currency } from '../core/money';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
+import { AddButton } from '../shared/add-button/add-button';
 import { TextPipe } from '../shared/pipes/text.pipe';
 import { Select, SelectOption } from '../shared/select/select';
 import { Spinner } from '../shared/spinner/spinner';
-import { STAT_CARD_TONE, StatCard } from '../shared/stat-card/stat-card';
+import { STAT_CARD_TONE } from '../shared/stat-card/stat-card';
+import { SummaryBadge, SummaryCards, SummaryFigure } from '../shared/summary-cards/summary-cards';
 import { FixedCost, INCREASE_RULE } from './fixed-cost';
 import { FixedCostPanelService } from './fixed-cost-panel/fixed-cost-panel.service';
 import { FixedCostService } from './fixed-cost.service';
@@ -26,6 +30,12 @@ import {
   IpcEstimateSettings,
 } from './ipc-factors';
 import { IPC_STATUS, Projection, PROJECTION_MONTHS } from './projection';
+import {
+  ChartBar,
+  MonthCost,
+  MonthView,
+  ProjectionMonths,
+} from './projection-months/projection-months';
 import { ProjectionService } from './projection.service';
 
 export const PROJECTIONS_IDS = {
@@ -42,7 +52,6 @@ export const PROJECTIONS_IDS = {
 const SUMMARY_OFFSET = { now: 0, half: 6, year: PROJECTION_MONTHS - 1 } as const;
 const INCREASE_DECIMALS = 1;
 const FULL_BAR_PERCENT = 100;
-const RULE_SEPARATOR = ' · ';
 const INVALID_RATE = 'invalidRate';
 
 const DEFAULT_SETTINGS: IpcEstimateSettings = {
@@ -61,11 +70,6 @@ interface ShownProjection {
   projection: Projection;
 }
 
-interface SummaryCard {
-  label: string;
-  amount: Cents;
-}
-
 interface TableCell {
   month: YearMonth;
   amount: string;
@@ -76,18 +80,22 @@ interface TableRow {
   id: number;
   name: string;
   rule: string;
+  editLabel: string;
   deleteLabel: string;
   cells: TableCell[];
 }
 
-interface ChartBar {
-  month: YearMonth;
-  label: string;
-  height: number;
-}
-
 @Component({
-  imports: [FormField, NavbarActions, Select, Spinner, StatCard, TextPipe],
+  imports: [
+    AddButton,
+    FormField,
+    NavbarActions,
+    ProjectionMonths,
+    Select,
+    Spinner,
+    SummaryCards,
+    TextPipe,
+  ],
   selector: 'app-projections',
   styleUrl: './projections.css',
   templateUrl: './projections.html',
@@ -99,12 +107,11 @@ export class Projections {
   private readonly format = inject(LocaleFormat);
   private readonly announcer = inject(LiveAnnouncer);
   private readonly translator = inject(Translator);
-
+  protected readonly isBelowDesktop = inject(ScreenSize).isBelowDesktop;
   protected readonly ids = PROJECTIONS_IDS;
   protected readonly currencies = CURRENCIES;
   protected readonly estimates = Object.values(IPC_ESTIMATE);
   protected readonly estimateOf = IPC_ESTIMATE;
-  protected readonly neutralTone = STAT_CARD_TONE.neutral;
   protected readonly averageMonthsOptions = computed((): SelectOption<number>[] =>
     IPC_AVERAGE_MONTHS_OPTIONS.map((months) => ({
       value: months,
@@ -173,8 +180,12 @@ export class Projections {
   protected readonly loading = this.projection.isLoading;
   protected readonly firstLoad = computed(() => this.loading() && !this.current());
 
+  /** Whether any cost of the currency increases by IPC, the only costs the estimate changes. */
+  protected readonly hasIpcCosts = computed(() =>
+    (this.current()?.rows ?? []).some(({ cost }) => cost.increase.rule === INCREASE_RULE.ipc),
+  );
   protected readonly ipcDown = computed(
-    () => this.current()?.ipc.status === IPC_STATUS.unavailable,
+    () => this.hasIpcCosts() && this.current()?.ipc.status === IPC_STATUS.unavailable,
   );
   protected readonly hasRows = computed(() => (this.current()?.rows.length ?? 0) > 0);
   protected readonly isEmpty = computed(() => this.current()?.rows.length === 0);
@@ -182,17 +193,26 @@ export class Projections {
     this.translator.translate('projections.emptyTitle', { currency: this.currency() }),
   );
 
-  protected readonly cards = computed((): SummaryCard[] => {
+  protected readonly cards = computed((): SummaryFigure[] => {
     const totals = this.current()?.totals ?? [];
-    const label = (key: TextKey) => this.translator.translate(key);
+    const figure = (key: TextKey, offset: number): SummaryFigure => ({
+      label: this.translator.translate(key),
+      amount: totals[offset],
+      tone: STAT_CARD_TONE.neutral,
+    });
     return [
-      { label: label('projections.now'), amount: totals[SUMMARY_OFFSET.now] },
-      { label: label('projections.inSixMonths'), amount: totals[SUMMARY_OFFSET.half] },
-      { label: label('projections.inTwelveMonths'), amount: totals[SUMMARY_OFFSET.year] },
+      figure('projections.now', SUMMARY_OFFSET.now),
+      figure('projections.inSixMonths', SUMMARY_OFFSET.half),
+      figure('projections.inTwelveMonths', SUMMARY_OFFSET.year),
     ];
   });
 
-  protected readonly increase = computed(() => {
+  protected readonly increaseBadge = computed((): SummaryBadge => ({
+    label: this.translator.translate('projections.increase'),
+    value: this.increase(),
+  }));
+
+  private readonly increase = computed(() => {
     const totals = this.current()?.totals ?? [];
     const change = percentChange(
       totals[SUMMARY_OFFSET.now],
@@ -240,6 +260,7 @@ export class Projections {
       id: cost.id,
       name: cost.name,
       rule: this.ruleLabel(cost, ipcDown),
+      editLabel: this.translator.translate('projections.editCost', { name: cost.name }),
       deleteLabel: this.translator.translate('projections.deleteCost', { name: cost.name }),
       cells: cells.map((cell) => ({
         month: cell.month,
@@ -259,11 +280,41 @@ export class Projections {
 
   protected readonly bars = computed((): ChartBar[] => {
     const totals = this.current()?.totals ?? [];
+    const amounts = this.totals();
     const largest = Math.max(...totals, 1);
     return this.monthLabels().map(({ month, label }, index) => ({
       month,
       label,
+      description: this.translator.translate('projections.monthTotalLabel', {
+        month: this.format.monthName(month),
+        amount: amounts[index]?.amount ?? '',
+      }),
       height: (totals[index] / largest) * FULL_BAR_PERCENT,
+    }));
+  });
+
+  /** Each projected month with its costs, for the month-by-month view below desktop. */
+  protected readonly monthViews = computed((): MonthView[] => {
+    const projection = this.current();
+    const rows = this.rows();
+    const totals = this.totals();
+    return (projection?.months ?? []).map((month, index) => ({
+      name: this.format.monthName(month),
+      total: totals[index]?.amount ?? '',
+      costs: projection!.rows.map(({ cost, cells }, position): MonthCost => {
+        const cell = cells[index];
+        const previous = cells[index - 1];
+        const rise = cell.increases && previous ? cell.amount - previous.amount : 0;
+        return {
+          id: cost.id,
+          name: rows[position].name,
+          rule: rows[position].rule,
+          editLabel: rows[position].editLabel,
+          deleteLabel: rows[position].deleteLabel,
+          amount: this.format.money(cell.amount, cost.currency),
+          increase: rise > 0 ? this.format.money(rise, cost.currency, AMOUNT_SIGN.plus) : null,
+        };
+      }),
     }));
   });
 
@@ -284,6 +335,13 @@ export class Projections {
     this.panel.open(this.currency());
   }
 
+  protected edit(id: number): void {
+    const cost = this.current()?.rows.find((row) => row.cost.id === id)?.cost;
+    if (cost) {
+      this.panel.open(cost.currency, cost);
+    }
+  }
+
   protected async remove(id: number): Promise<void> {
     await firstValueFrom(this.fixedCostService.remove(id));
     void this.announcer.announce(this.translator.translate('projections.deleted'));
@@ -299,7 +357,7 @@ export class Projections {
     return ipc?.status === IPC_STATUS.available ? this.format.decimal(ipc.monthlyEstimate) : '';
   }
 
-  /** How a cost increases, such as "IPC every 4 months · last: Aug 26". */
+  /** How a cost increases, such as "IPC every 4 months – last: Aug 26". */
   private ruleLabel(cost: FixedCost, ipcDown: boolean): string {
     const { increase } = cost;
     let head: string;
@@ -320,7 +378,7 @@ export class Projections {
             month: this.format.shortMonth(cost.lastIncrease),
           });
     const every = this.translator.plural('projections.every', cost.every);
-    return [`${head} ${every}`, last].join(RULE_SEPARATOR);
+    return [`${head} ${every}`, last].join(TEXT_SEPARATOR);
   }
 
   protected estimateLabel(estimate: IpcEstimate): TextKey {

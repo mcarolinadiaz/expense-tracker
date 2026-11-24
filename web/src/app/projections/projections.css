@@ -21,7 +21,7 @@
 }
 
 .projection-panel {
-  @apply min-w-0 p-6;
+  @apply @container min-w-0 p-6;
 }
 
 .projection-loading {
@@ -41,11 +41,11 @@
 }
 
 .ipc-header {
-  @apply flex flex-wrap items-start justify-between gap-4;
+  @apply flex flex-col gap-4 @md:flex-row @md:items-start @md:justify-between;
 }
 
 .ipc-rate {
-  @apply text-right;
+  @apply @md:text-right;
 }
 
 .ipc-rate-value {
@@ -53,19 +53,19 @@
 }
 
 .ipc-controls {
-  @apply mt-4 flex flex-wrap items-end gap-3;
+  @apply mt-4 flex flex-col items-start gap-4 @md:flex-row @md:items-end @md:gap-3;
 }
 
 .ipc-average {
-  @apply w-40;
+  @apply w-40 @md:ml-auto;
 }
 
 .ipc-custom {
-  @apply w-32;
+  @apply w-32 @md:ml-auto;
 }
 
 .projection-chart {
-  @apply mt-4 flex h-40 items-end gap-1.5;
+  @apply @container mt-4 flex h-40 items-end gap-1.5;
 }
 
 .chart-column {
@@ -78,6 +78,14 @@
 
 .chart-label {
   @apply text-xs whitespace-nowrap text-muted;
+}
+
+.chart-column:nth-child(even) .chart-label {
+  @apply @max-2xl:invisible;
+}
+
+.chart-column:not(:nth-child(4n + 1)) .chart-label {
+  @apply @max-sm:invisible;
 }
 
 .projection-scroll {
@@ -114,6 +122,10 @@
 
 .cell-sticky {
   @apply sticky left-0 bg-surface;
+}
+
+.cell-actions {
+  @apply sticky right-0 bg-surface;
 }
 
 .cell-cost {

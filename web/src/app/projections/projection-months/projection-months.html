@@ -1,0 +1,122 @@
+<p class="month-hint">{{ 'projections.pickMonthHint' | text }}</p>
+<div class="month-bars" role="group" [attr.aria-label]="'projections.chooseMonth' | text">
+  @for (bar of bars(); track bar.month; let position = $index) {
+    <button
+      type="button"
+      class="month-bar"
+      [attr.aria-label]="bar.description"
+      [attr.aria-pressed]="position === index()"
+      (click)="pick(position)"
+    >
+      <span class="month-bar-fill" [style.height.%]="bar.height"></span>
+    </button>
+  }
+</div>
+<div class="month-axis" aria-hidden="true">
+  @for (label of axisLabels(); track label.month) {
+    <span>{{ label.label }}</span>
+  }
+</div>
+
+<div class="month-stepper">
+  <button
+    type="button"
+    class="btn btn-ghost btn-icon month-step"
+    [attr.aria-label]="'month.previous' | text"
+    [disabled]="index() === 0"
+    (click)="pick(index() - 1)"
+  >
+    <svg
+      class="month-icon"
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  </button>
+  <p class="month-stepper-text" aria-live="polite">
+    <span class="month-stepper-name">{{ selected()?.name }}</span>
+    <span class="month-stepper-total">{{
+      'projections.monthTotal' | text: { amount: selected()?.total ?? '' }
+    }}</span>
+  </p>
+  <button
+    type="button"
+    class="btn btn-ghost btn-icon month-step"
+    [attr.aria-label]="'month.next' | text"
+    [disabled]="index() === lastIndex()"
+    (click)="pick(index() + 1)"
+  >
+    <svg
+      class="month-icon"
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  </button>
+</div>
+
+<ul class="month-costs">
+  @for (cost of selected()?.costs; track cost.id) {
+    <li class="month-cost">
+      <div class="month-cost-text">
+        <p class="cost-name">{{ cost.name }}</p>
+        <p class="cost-rule">{{ cost.rule }}</p>
+        <p class="month-cost-amount">
+          <span class="amount">{{ cost.amount }}</span>
+          @if (cost.increase) {
+            <span class="increase-badge">{{
+              'projections.increasesBy' | text: { amount: cost.increase }
+            }}</span>
+          }
+        </p>
+      </div>
+      <button
+        type="button"
+        class="btn btn-ghost btn-icon"
+        [attr.aria-label]="cost.editLabel"
+        (click)="edit.emit(cost.id)"
+      >
+        <svg
+          class="month-icon"
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost btn-icon"
+        [attr.aria-label]="cost.deleteLabel"
+        (click)="remove.emit(cost.id)"
+      >
+        <svg
+          class="month-icon"
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+        </svg>
+      </button>
+    </li>
+  }
+</ul>
+<p class="month-total">
+  <span>{{ 'projections.monthlyTotal' | text }}</span>
+  <span class="amount">{{ selected()?.total }}</span>
+</p>
