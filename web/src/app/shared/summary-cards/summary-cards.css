@@ -1,0 +1,33 @@
+@reference '../../../styles.css';
+
+.summary-compact {
+  @apply block;
+}
+
+.summary-main {
+  @apply flex items-start justify-between gap-3;
+}
+
+.summary-total {
+  @apply min-w-0;
+}
+
+.summary-value {
+  @apply mt-1 text-figure font-semibold whitespace-nowrap tabular-nums;
+}
+
+.summary-badge {
+  @apply flex-none rounded-full bg-surface/15 px-2.5 py-1 font-semibold whitespace-nowrap tabular-nums;
+}
+
+.summary-details {
+  @apply mt-4 grid grid-cols-2 gap-3 border-t border-surface/25 pt-4;
+}
+
+.summary-label {
+  @apply text-sm text-inverse-muted;
+}
+
+.summary-amount {
+  @apply font-semibold whitespace-nowrap tabular-nums;
+}

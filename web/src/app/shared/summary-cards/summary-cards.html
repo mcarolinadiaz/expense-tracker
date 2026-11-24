@@ -1,0 +1,45 @@
+@if (isPhone()) {
+  @if (mainFigure(); as main) {
+    <article class="card-inverse summary-compact">
+      <div class="summary-main">
+        <div class="summary-total">
+          <h2 class="stat-label">{{ main.label }}</h2>
+          <p class="summary-value">{{ main.amount | money: currency() }}</p>
+        </div>
+        @if (badge(); as badge) {
+          <p class="summary-badge">
+            <span class="sr-only">{{ badge.label }}:</span>
+            {{ badge.value }}
+          </p>
+        }
+      </div>
+      @if (details().length > 0) {
+        <dl class="summary-details">
+          @for (detail of details(); track detail.label) {
+            <div>
+              <dt class="summary-label">{{ detail.label }}</dt>
+              <dd class="summary-amount">{{ detail.amount | money: currency() }}</dd>
+            </div>
+          }
+        </dl>
+      }
+    </article>
+  }
+} @else {
+  @for (figure of figures(); track figure.label) {
+    <app-stat-card
+      [label]="figure.label"
+      [amount]="figure.amount"
+      [currency]="currency()"
+      [tone]="figure.tone"
+    />
+  }
+  @if (badge(); as badge) {
+    <div class="stat-card">
+      <article class="card-inverse">
+        <h2 class="stat-label">{{ badge.label }}</h2>
+        <p class="stat-value">{{ badge.value }}</p>
+      </article>
+    </div>
+  }
+}

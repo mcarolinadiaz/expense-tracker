@@ -82,8 +82,12 @@
     @apply text-inverse-muted;
   }
 
+  .stat-card {
+    @apply @container block min-w-0;
+  }
+
   .stat-value {
-    @apply mt-2 text-figure font-semibold tabular-nums;
+    @apply mt-2 text-[clamp(1.25rem,calc((100cqi-2.5rem)/10.5),1.625rem)] leading-tight font-semibold whitespace-nowrap tabular-nums;
   }
 
   .amount {
@@ -207,6 +211,14 @@
   }
 
   .stat-cards {
-    @apply grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4;
+    @apply grid gap-4 @lg:grid-cols-2 @3xl:grid-flow-col @3xl:grid-cols-none @3xl:auto-cols-fr;
+  }
+
+  .stat-cards:has(> :nth-child(4)) {
+    @apply @3xl:grid-flow-row @3xl:grid-cols-2 @5xl:grid-flow-col @5xl:grid-cols-none;
+  }
+
+  .stat-cards > :last-child:nth-child(odd) {
+    @apply @lg:col-span-2 @3xl:col-auto;
   }
 }

@@ -18,6 +18,7 @@ export type StatCardTone = (typeof STAT_CARD_TONE)[keyof typeof STAT_CARD_TONE];
 @Component({
   imports: [MoneyPipe],
   selector: 'app-stat-card',
+  host: { class: 'stat-card' },
   templateUrl: './stat-card.html',
 })
 export class StatCard {
