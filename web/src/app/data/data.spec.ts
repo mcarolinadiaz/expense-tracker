@@ -11,6 +11,7 @@ import { BACKUP_ERROR, BACKUP_FILE_TYPE, parseBackup } from './backup';
 import { CONFIRM_DIALOG_IDS } from '../shared/confirm-dialog/confirm-dialog';
 import { BackupService } from './backup.service';
 import { Data, DATA_IDS } from './data';
+import { STORAGE_MANAGER } from './storage-persistence.service';
 
 describe('Data', () => {
   let fixture: ComponentFixture<Data>;
@@ -86,6 +87,26 @@ describe('Data', () => {
         'http://127.0.0.1:8000/docs/api',
       );
       await expectNoAxeViolations(element);
+    },
+    AXE_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    'should ask the browser to keep the data and say whether it will',
+    async () => {
+      const persist = vi.fn(() => Promise.resolve(true));
+      TestBed.overrideProvider(STORAGE_MANAGER, {
+        useValue: { persisted: () => Promise.resolve(false), persist },
+      });
+      await render();
+      await settleUntil(() => expect(element.textContent).toContain(en.data.storageNotPersisted));
+      await expectNoAxeViolations(element);
+
+      button(en.data.keepData).click();
+
+      await settleUntil(() => expect(element.textContent).toContain(en.data.storagePersisted));
+      expect(persist).toHaveBeenCalledTimes(1);
+      expect(button(en.data.keepData)).toBeUndefined();
     },
     AXE_TEST_TIMEOUT_MS,
   );

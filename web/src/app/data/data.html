@@ -10,6 +10,22 @@
         </div>
       }
     </dl>
+    <div class="data-storage" aria-live="polite">
+      @switch (storageStatus()) {
+        @case (storageStatuses.persisted) {
+          <p>{{ 'data.storagePersisted' | text }}</p>
+        }
+        @case (storageStatuses.notPersisted) {
+          <p>{{ 'data.storageNotPersisted' | text }}</p>
+          <button type="button" class="btn btn-secondary" (click)="keepData()">
+            {{ 'data.keepData' | text }}
+          </button>
+        }
+        @case (storageStatuses.denied) {
+          <p>{{ 'data.storageDenied' | text }}</p>
+        }
+      }
+    </div>
   </section>
 
   <section class="card data-section" aria-labelledby="data-backup-title">

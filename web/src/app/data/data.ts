@@ -29,6 +29,7 @@ import { CONFIRM_DIALOG_TONE } from '../shared/confirm-dialog/confirm-dialog';
 import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
 import { TextPipe } from '../shared/pipes/text.pipe';
 import { BackupService } from './backup.service';
+import { STORAGE_STATUS, StoragePersistence } from './storage-persistence.service';
 
 export const DATA_IDS = {
   exportButton: 'data-export',
@@ -92,9 +93,17 @@ export class Data {
       : this.format.longDate(day);
   });
 
+  private readonly storagePersistence = inject(StoragePersistence);
+  protected readonly storageStatus = this.storagePersistence.status;
+  protected readonly storageStatuses = STORAGE_STATUS;
+
   protected readonly confirmingImport = signal(false);
   protected readonly importError = signal<BackupErrorCode | null>(null);
   protected readonly busy = signal(false);
+
+  protected keepData(): void {
+    void this.storagePersistence.request();
+  }
 
   protected async exportBackup(): Promise<void> {
     const backup = await firstValueFrom(this.backupService.export());

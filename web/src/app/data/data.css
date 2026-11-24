@@ -28,6 +28,10 @@
   @apply text-[1.375rem] font-semibold tabular-nums;
 }
 
+.data-storage {
+  @apply mt-4 flex flex-wrap items-center justify-between gap-3 text-sm empty:hidden;
+}
+
 .data-last-backup {
   @apply mt-3 text-sm;
 }
