@@ -1,7 +1,7 @@
 @reference '../../styles.css';
 
 .categories-card {
-  @apply max-w-180 p-6;
+  @apply mx-auto max-w-narrow-page p-6;
 }
 
 .category-create {

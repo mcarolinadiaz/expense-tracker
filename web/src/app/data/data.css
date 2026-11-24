@@ -1,7 +1,7 @@
 @reference '../../styles.css';
 
 .data-page {
-  @apply flex max-w-180 flex-col gap-6;
+  @apply mx-auto flex max-w-narrow-page flex-col gap-6;
 }
 
 .data-section {
