@@ -42,9 +42,9 @@ expense-tracker/
 │   ├── styles.css              # Theme tokens and shared component classes
 │   ├── environments/           # apiUrl per build (environment.development.ts for ng serve)
 │   └── app/
-│       ├── core/               # App-wide code: AppDb, Clock, AppUpdate, dates, money, decimal, API_URL, i18n (translations, LanguageService, Translator), page routes
-│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, spinner, confirm-dialog, pipes (money, text, plural)
-│       ├── layout/             # side-bar, navbar and update-banner
+│       ├── core/               # App-wide code: AppDb, Clock, AppUpdate, ScreenSize, dates, money, decimal, API_URL, i18n (translations, LanguageService, Translator), page routes
+│       ├── shared/             # Reusable UI: select, month-picker (with SelectedMonthService), stat-card, summary-cards, add-button, spinner, confirm-dialog, pipes (money, text, plural)
+│       ├── layout/             # side-bar, top-bar, navbar and update-banner
 │       ├── overview/           # Overview page and its summary service
 │       ├── transactions/       # Activity page, transaction model and service, side panel
 │       ├── categories/         # Categories page, category model and service
@@ -151,7 +151,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 
 - Use the theme tokens in `web/src/styles.css`, such as `bg-accent`, `text-muted` and `border-line`, rather than hex values or Tailwind's default colors. To change the look, change the token.
 - Income and expense amounts also need a `+` or `−` sign, so they don't rely on color alone.
-- Don't put lists of Tailwind utilities in templates. A template can use one specific class, such as `card`, `container` or `app-content`, plus a shared class's modifier, such as `btn btn-primary`.
+- Don't put lists of Tailwind utilities in templates. A template can use one specific class, such as `card`, `container` or `app-page`, plus a shared class's modifier, such as `btn btn-primary`.
 - When an element needs several styles, give it one descriptive class and build that class from Tailwind utilities with `@apply` in a CSS file. Only write plain CSS when no utility covers the style.
 - Define a class in the component's own CSS file by default, starting that file with `@reference` to `web/src/styles.css`.
 - Move a class to the `components` layer of `web/src/styles.css` only once more than one component needs it. That layer already has shared classes such as `card`, `btn`, `field` and `amount`.
@@ -180,10 +180,15 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 
 **App shell**
 
-- From `md` up, the shell is exactly as tall as the window: the side bar stays whole and only the content area scrolls. On narrower screens the side bar stacks above the content and the whole page scrolls.
+- From `lg` up, the shell is exactly as tall as the window: the side bar stays whole and only the content area scrolls. On narrower screens the side bar is hidden and `TopBar` (`layout/top-bar/`) sticks to the top with a menu button that opens `SideBar` as a drawer in a CDK `Dialog`, which traps the focus, closes with Escape and gives the focus back to the button. The whole page scrolls there.
+- `TopBar` imports `menu-drawer.ts` on demand, so the CDK dialog and overlay load only when the menu opens. A static import added about 80 kB to the initial bundle, over the budget.
+- `SideBar` injects `SIDE_BAR_DRAWER` as optional, its own token rather than CDK's `DialogRef`, which would pull the dialog into the initial bundle. Inside the drawer it shows a close button and closes when a link is chosen.
+- Every page puts its title and its controls on one line, as in the mockup's option C. The main action is `AddButton` (`shared/add-button/`): below `xl` it shows only a plus, with its text kept as `sr-only` and as the tooltip, so its accessible name and tests don't change. Below `sm` it floats at the bottom right of the window, and `app-content` leaves room at the bottom so it never covers the end of a page.
+- A `position: fixed` element inside a size container is placed against the container rather than the window, because containment makes it a containing block. So the size container is `app-page`, around the router outlet, and the navbar, which holds the floating `AddButton`, stays outside it.
 - The content area scrolls on its own, and the router only resets the window's scroll, so `App` sets the content area's `scrollTop` to `0` after each navigation.
 - The content area has `cdkScrollable`, so overlays such as an open dropdown follow it when it scrolls.
 - The side bar shows the sloth mascot, `public/icons/sloth-mascot.svg`, with an empty `alt` because the app name sits next to it.
+- The side bar ends with the author credit from `APP_AUTHOR` (`core/constants/app-author.ts`). Its name is never translated. The link opens LinkedIn in a new tab, and `sr-only` text says so.
 
 **PWA**
 
@@ -197,7 +202,13 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 **Shared styles (`styles.css`)**
 
 - `@theme` holds the design tokens from the mockup. Each token creates Tailwind utilities, such as `bg-accent` and `text-muted`.
+- Pages made of forms and short lists, such as Categories and Data, are one column of `max-w-narrow-page`, centered with `mx-auto`. The page title stays on the left, in the navbar. Pages with figures, charts or tables, such as Overview, Activity and Projections, use the whole width.
 - Classes in the `components` layer can still be overridden by a utility, as in `class="card p-8"`.
+- A page's totals use `SummaryCards` (`shared/summary-cards/`), as Overview and Projections do. From `sm` up its host is `stat-cards`, with one `StatCard` per figure and a dark card for the optional badge. On phones it's one dark card: the main figure, the last one unless `mainIndex` says otherwise, with the badge beside it and the other figures below.
+- `app-page` is a size container, so layouts follow the content width rather than the window. When a page needs different markup, not only different styles, it reads `ScreenSize` (`core/`), whose `isPhone` and `isBelowDesktop` signals follow Tailwind's `sm` and `lg`. Tests render the phone markup with `providePhoneScreen()`, since jsdom has no media queries. `stat-cards` puts every card in one row from `@3xl`, or `@5xl` with four cards; from `@lg`, two columns, where an odd last card, such as Balance, takes the whole row; below `@lg`, one card under the other. Each breakpoint is where a 17-character amount still fits at the minimum size of 20 px, so cards stack before the figures shrink.
+- The month picker shows `LocaleFormat.abbreviatedMonth()`, such as "Nov 2026", and keeps the full name in `sr-only` text for screen readers.
+- `stat-card` is a size container. Container units measure its content box, so it must have no padding: a card that isn't `app-stat-card`, such as the Projections increase, wraps its `card-inverse` in a `div.stat-card`. `stat-value` never wraps and takes its font size from the card's width (`cqi`), so cards of the same width show figures of the same size, whatever the amounts.
+- The Projections chart is a size container too: on narrow widths it keeps every bar but shows every second month's label, or every fourth, so they don't overlap.
 - Buttons combine `btn` with one variant, such as `btn btn-primary`. `btn-icon` makes a square button for a single icon, which needs an `aria-label`.
 - The segmented control (`segmented` and `segmented-item`) is a group of buttons where `aria-pressed` marks the active one.
 - `panel-backdrop` is global because the CDK adds the backdrop behind side panels outside any component.
@@ -248,7 +259,8 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 **Overview (`overview/`)**
 
 - `SummaryService` combines the month's transactions with the categories, keeps one currency and adds up in integer cents. Each category's `share` is its percentage of the largest category, used only for the width of its bar.
-- Overview and Activity share the month through `SelectedMonthService`, but each page keeps its own currency. The category bars and "View all" are links to Activity with the same currency, and the bar's category.
+- Overview and Activity share the month through `SelectedMonthService`, but each page keeps its own currency. The category bars and "View all" are links to Activity with the same currency, and the bar's category. A bar's link has no `aria-label`: its name is its visible text, with "View transactions in" before it in `sr-only` text, because WCAG 2.5.3 asks for a name that contains the visible text, so people using voice control can say what they see. The end-to-end axe tests check it, since jsdom gives no space between the name and the amount.
+- The empty state shows the sloth mascot (`empty-mascot` in `styles.css`), as in the mockup, with an empty `alt` because the title already says what the section is. Activity shows it too, both when the month is empty and when the filters find nothing.
 
 **Categories (`categories/`)**
 
@@ -266,7 +278,12 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - On the first load, a spinner takes the place of the cards and the table. After that, a new estimate keeps the current figures dimmed and `aria-busy`, with a spinner by the table title, until the new ones arrive. A new currency starts empty. A hidden `role="status"` text announces the loading.
 - "Try again" calls `reload()` on the projection resource. Since the service forgot the failed request, it asks the API again.
 - Deleting a fixed cost asks for no confirmation, as in the mockup. The page announces it with `LiveAnnouncer`.
-- The table scrolls sideways in a focusable `region`, so it can be scrolled with the keyboard, and its first column stays in place. The region is `relative`: `sr-only` text is `position: absolute`, and without a positioned ancestor it is placed against the whole page, so the cells of the last months would widen the page. Increase months are tinted and bold, and say "increase" to screen readers, so they don't rely on color. The bar chart is `aria-hidden` because the table holds the same totals.
+- `FixedCostPanel` adds a cost, or edits the one `FixedCostPanelService.open()` receives: it fills the form with its amounts as text in the active language and saves it with `FixedCostService.update()`, keeping its id. Changing its currency moves it to the other currency's list.
+- The table scrolls sideways in a focusable `region`, so it can be scrolled with the keyboard, and its first column stays in place. The region is `relative`: `sr-only` text is `position: absolute`, and without a positioned ancestor it is placed against the whole page, so the cells of the last months would widen the page. Increase months are tinted and bold, and say "increase" to screen readers, so they don't rely on color. The bar chart is `aria-hidden` because the table holds the same totals. The actions column also stays in place, on the right, so the edit and delete buttons are always visible. On desktop they also show their name as a tooltip (`title`).
+- Below desktop the table becomes `ProjectionMonths` (`projection-months/`): one month at a time, chosen by tapping its bar, which is a button with `aria-pressed`, or with the arrows. It lists every cost with its amount that month, an "Increases" badge with the rise, and its edit and delete buttons. Its axis labels every fourth month.
+- The summary uses `SummaryCards` with the increase as its badge: on phones, the total in 12 months is the main figure, and today and in 6 months are details.
+- The IPC panel always shows the estimated monthly rate. Its estimate controls, and the "IPC unavailable" alert, only appear when the currency has a cost that increases by IPC, the only costs they affect. The "Months without official data" label is `sr-only`.
+- Each `projection-panel` is a size container. From `@md`, the IPC panel puts the monthly rate and the "Months to average" or custom rate control on the right; below it, everything stacks on the left, so a wrapped control never hangs on the right by itself.
 - The fixed cost panel asks for `lastIncrease` with `type="month"` for every rule, and rejects a month after the current one, which the API also rejects.
 - The currency selector only shows the costs stored in that currency. Projections never convert between USD and ARS, as the product decisions say.
 
@@ -278,6 +295,7 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - Exporting saves the day in `settings`, shown as "Last backup". `FileDownload` (`core/`) saves the file, so tests replace it instead of the browser download.
 - Importing asks first in an inline alert, as in the mockup, then opens the file picker of a hidden `input`. Deleting everything asks in a modal (`ConfirmDialogService`, `shared/confirm-dialog/`), which starts on Cancel so Enter never deletes by mistake, and gives the focus back to the button.
 - The API docs link comes from `API_DOCS_URL`, built from `API_URL`.
+- `StoragePersistence` asks the browser to keep the data with `navigator.storage.persist()` only when the user presses the button, since some browsers show their own prompt. Each browser decides: Chrome grants it to installed or frequently used apps without asking, so a refusal suggests installing the app and exporting backups. It reads the storage manager through `STORAGE_MANAGER`, which is `null` in jsdom, so the row stays hidden in tests unless a test provides a fake.
 
 **Tests**
 
@@ -285,6 +303,8 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 - `fixture.whenStable()` waits for resources that are loading. To check a loading state, refresh the view with `fixture.detectChanges()` instead, as `projections.spec.ts` does.
 - Components that show text need `provideTestTranslations()` (`core/i18n/translations.testing.ts`), which loads both languages before the test, in English. Compare with texts from `en.json`, or with a literal string when the text has placeholders, such as `'3 transactions'`.
 - A page that reads several `liveQuery()` results, or writes and then reads, may need more than one macrotask. Wait for the expected result with `vi.waitFor()` instead of a fixed number of waits, as `categories.spec.ts` does.
+- End-to-end tests import `test` from `e2e/fixtures.ts`, which fixes the clock at `NOW` and answers `GET /api/ipc/factors` with a fake 2% a month, so they never need the API. Each test gets a new browser context, so IndexedDB starts empty. To start with data, `importBackup()` imports `SAMPLE_BACKUP` through the Data page, as a person would.
+- The tests run in the `desktop` and `phone` projects (`playwright.config.ts`). A test that only applies to one of them skips the other with `isMobile`.
 
 ### TypeScript
 
@@ -304,6 +324,8 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 **Components**
 
 - Keep components small, with one responsibility, and only presentation logic. Business rules and data access go in services.
+- When more than one screen shows a similar visual pattern, build it once as a shared component in `shared/` and use it on every screen, as Overview and Projections do with `SummaryCards`. Prefer modularizing to copying markup, as long as the shared component stays simple: if sharing would need many inputs or branches for each screen, keep separate components that share classes from `styles.css` instead.
+- When designing a new screen in the mockup, check first whether an existing component already covers the pattern, and reuse it.
 - Components are `OnPush` and zoneless by default. Don't write `changeDetection: ChangeDetectionStrategy.OnPush`.
 - Use `input()`, `output()` and `model()`, never `@Input()` or `@Output()`. Use `model()` for two-way binding with `[(prop)]`, rather than an `input()` and `output()` pair.
 - Use `viewChild()` and `contentChild()` rather than their decorators.
@@ -349,6 +371,8 @@ Tests never call the real INDEC API: each one fakes it with `Http::fake()`, and 
 **Tests**
 
 - Write unit tests with Vitest, the default runner.
+- Write end-to-end tests with Playwright in `web/e2e/`, named `*.e2e.ts` so `ng test` never picks them up. Run them with `npm run e2e`, which starts `ng serve` if it isn't running.
+- Every page has an end-to-end test that runs axe with color contrast, empty and with data, on a desktop and a phone, and checks that the page never scrolls sideways.
 
 ### Laravel conventions
 
@@ -390,6 +414,8 @@ These development defaults are not yet handled:
 | 3 | API | Remove users, authentication, the CRUD endpoints and MariaDB. Switch to the file cache and restrict CORS | Done |
 | 4 | API | Add API docs, serve the last known IPC data when INDEC is down, and deploy a container | Pending |
 | 5 | Web | Store transactions, categories and fixed costs in IndexedDB behind the existing services, with money in cents, and add backup export and import | Done |
-| 6 | Web | Build the Projections and Data pages from the mockup, make the app a PWA, add translations and deploy it | Pending |
+| 6 | Web | Build the Projections and Data pages from the mockup, make the app a PWA, add translations, add end-to-end tests with Playwright and deploy it | Pending |
+| 7 | Web | Scheduled fixed costs: each fixed cost can add itself to Activity on its payment day, asking for confirmation or automatically, as in the mockup. Needs a new `version()`, a higher `BACKUP_VERSION`, and creating the due transactions when the app opens, without duplicates. Test the migration with a backup from the published version | After the first release |
+| 8 | API + Web | ICL increases for rents: `GET /api/icl/factors` reads the BCRA's ICL (statistics API v4.0, `Monetarias/40`, a daily index), caches it, and returns factors as strings, estimating the days without an official value as the IPC factors do. The BCRA sends `valor` as a JSON number, so convert it to a 2-decimal string before using `bcmath`. In the frontend, add an ICL rule for fixed costs. Confirm in the BCRA manual whether the values for future days are final | After the first release |
 
 The REM series on datos.gob.ar appear to stop in 2025, so the REM estimate option is postponed until a current source is found.
