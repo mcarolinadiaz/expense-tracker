@@ -112,6 +112,38 @@ describe('FixedCostPanel', () => {
     expect(cost.increase).toEqual({ rule: INCREASE_RULE.amount, amount: 150050 });
   });
 
+  it('should fill the form with a saved cost and replace it on save', async () => {
+    const service = TestBed.inject(FixedCostService);
+    const id = await firstValueFrom(
+      service.add({
+        name: 'Gimnasio',
+        currency: CURRENCY.ARS,
+        amount: 4500050,
+        every: 3,
+        lastIncrease: '2026-09',
+        increase: { rule: INCREASE_RULE.percent, percent: '8.5' },
+      }),
+    );
+    const [cost] = await saved();
+    TestBed.inject(FixedCostPanelService).open(CURRENCY.ARS, cost);
+    await settle();
+
+    const value = (fieldId: string) =>
+      panel().querySelector<HTMLInputElement>(`#${fieldId}`)!.value;
+    expect(panel().textContent).toContain(en.fixedCost.editTitle);
+    expect(value(FIXED_COST_PANEL_IDS.name)).toBe('Gimnasio');
+    expect(value(FIXED_COST_PANEL_IDS.amount)).toBe('45,000.50');
+    expect(value(FIXED_COST_PANEL_IDS.value)).toBe('8.5');
+    expect(value(FIXED_COST_PANEL_IDS.lastIncrease)).toBe('2026-09');
+
+    type(FIXED_COST_PANEL_IDS.amount, '50,000');
+    button(en.actions.save).click();
+    await settle();
+
+    expect(await saved()).toEqual([{ ...cost, id, amount: 5000000 }]);
+    expect(panel()).toBeNull();
+  });
+
   it('should show each broken rule and save nothing', async () => {
     await open();
 

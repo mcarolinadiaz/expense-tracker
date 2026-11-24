@@ -51,6 +51,18 @@ describe('FixedCostService', () => {
     expect(names).toEqual(['Gimnasio', 'Prepaga']);
   });
 
+  it('should replace a saved fixed cost with its name trimmed', async () => {
+    const id = await firstValueFrom(service.add(rent));
+
+    await firstValueFrom(
+      service.update({ ...rent, id, name: ' Alquiler depto ', amount: 70000000 }),
+    );
+
+    expect(await firstValueFrom(service.list(CURRENCY.ARS))).toEqual([
+      { ...rent, id, name: 'Alquiler depto', amount: 70000000 },
+    ]);
+  });
+
   it('should emit again after deleting a fixed cost', async () => {
     const id = await firstValueFrom(service.add(rent));
     const emptied = firstValueFrom(

@@ -160,6 +160,7 @@
     "emptyBody": "Agregá tu alquiler, servicios o suscripciones para ver cuánto van a costar en los próximos meses."
   },
   "fixedCost": {
+    "editTitle": "Editar gasto fijo",
     "name": "Nombre",
     "currentAmount": "Monto actual",
     "currency": "Moneda",

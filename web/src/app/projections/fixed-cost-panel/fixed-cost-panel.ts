@@ -14,6 +14,7 @@ import {
   FIXED_COST_ERROR,
   FIXED_COST_MAX_PERCENT,
   FIXED_COST_NAME_MAX_LENGTH,
+  FixedCost,
   FixedCostErrorCode,
   FixedCostIncrease,
   INCREASE_EVERY_OPTIONS,
@@ -46,6 +47,8 @@ const PERCENT_HINT = '8.5';
 
 export interface FixedCostPanelData {
   currency: Currency;
+  /** The fixed cost to edit. Without it, the panel adds a new one. */
+  cost?: FixedCost;
   currentMonth: YearMonth;
 }
 
@@ -61,7 +64,7 @@ interface FixedCostFormModel {
   lastIncrease: YearMonth;
 }
 
-/** The side panel to add a fixed cost. Open it with `FixedCostPanelService`. */
+/** The side panel to add or edit a fixed cost. Open it with `FixedCostPanelService`. */
 @Component({
   imports: [FormField, Select, TextPipe],
   selector: 'app-fixed-cost-panel',
@@ -81,6 +84,7 @@ export class FixedCostPanel {
   protected readonly ruleOf = INCREASE_RULE;
   protected readonly currencies = CURRENCIES;
   protected readonly currentMonth = this.data.currentMonth;
+  protected readonly editing = this.data.cost !== undefined;
   protected readonly everyOptions = computed((): SelectOption<number>[] =>
     INCREASE_EVERY_OPTIONS.map((every) => ({
       value: every,
@@ -90,16 +94,9 @@ export class FixedCostPanel {
   protected readonly amountHint = computed(() => this.format.formatAmount(AMOUNT_HINT_CENTS));
   protected readonly percentHint = computed(() => this.format.decimal(PERCENT_HINT));
 
-  protected readonly model = signal<FixedCostFormModel>({
-    name: '',
-    amount: '',
-    currency: this.data.currency,
-    rule: INCREASE_RULE.ipc,
-    percent: '',
-    increaseAmount: '',
-    every: DEFAULT_INCREASE_EVERY,
-    lastIncrease: this.data.currentMonth,
-  });
+  protected readonly model = signal<FixedCostFormModel>(
+    this.data.cost ? this.modelOf(this.data.cost) : this.emptyModel(),
+  );
 
   protected readonly form = form(this.model, (path) => {
     validate(path.name, ({ value }) =>
@@ -156,19 +153,51 @@ export class FixedCostPanel {
     );
   }
 
+  private emptyModel(): FixedCostFormModel {
+    return {
+      name: '',
+      amount: '',
+      currency: this.data.currency,
+      rule: INCREASE_RULE.ipc,
+      percent: '',
+      increaseAmount: '',
+      every: DEFAULT_INCREASE_EVERY,
+      lastIncrease: this.data.currentMonth,
+    };
+  }
+
+  /** The form filled with a saved fixed cost, with its amounts as text in the active language. */
+  private modelOf(cost: FixedCost): FixedCostFormModel {
+    const { increase } = cost;
+    return {
+      name: cost.name,
+      amount: this.format.formatAmount(cost.amount),
+      currency: cost.currency,
+      rule: increase.rule,
+      percent: increase.rule === INCREASE_RULE.percent ? this.format.decimal(increase.percent) : '',
+      increaseAmount:
+        increase.rule === INCREASE_RULE.amount ? this.format.formatAmount(increase.amount) : '',
+      every: cost.every,
+      lastIncrease: cost.lastIncrease,
+    };
+  }
+
   /** Saves the valid form. The validators already checked that every number parses. */
   private async persist(): Promise<void> {
     const value = this.model();
-    await firstValueFrom(
-      this.fixedCostService.add({
-        name: value.name,
-        currency: value.currency,
-        amount: this.format.parseAmount(value.amount)!,
-        every: value.every,
-        lastIncrease: value.lastIncrease,
-        increase: this.increase(value),
-      }),
-    );
+    const record = {
+      name: value.name,
+      currency: value.currency,
+      amount: this.format.parseAmount(value.amount)!,
+      every: value.every,
+      lastIncrease: value.lastIncrease,
+      increase: this.increase(value),
+    };
+    if (this.data.cost) {
+      await firstValueFrom(this.fixedCostService.update({ ...record, id: this.data.cost.id }));
+    } else {
+      await firstValueFrom(this.fixedCostService.add(record));
+    }
     void this.announcer.announce(this.translator.translate('fixedCost.saved'));
     this.close();
   }

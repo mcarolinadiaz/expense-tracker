@@ -160,6 +160,7 @@
     "emptyBody": "Add your rent, utilities or subscriptions to see what they will cost in the coming months."
   },
   "fixedCost": {
+    "editTitle": "Edit fixed cost",
     "name": "Name",
     "currentAmount": "Current amount",
     "currency": "Currency",

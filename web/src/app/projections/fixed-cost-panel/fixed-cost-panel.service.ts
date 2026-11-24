@@ -3,6 +3,7 @@ import { createGlobalPositionStrategy } from '@angular/cdk/overlay';
 import { inject, Injector, Service } from '@angular/core';
 import { Clock } from '../../core/clock.service';
 import { Currency } from '../../core/money';
+import { FixedCost } from '../fixed-cost';
 import { FIXED_COST_PANEL_IDS, FixedCostPanel, FixedCostPanelData } from './fixed-cost-panel';
 
 const PANEL_WIDTH = '28rem';
@@ -14,9 +15,9 @@ export class FixedCostPanelService {
   private readonly injector = inject(Injector);
   private readonly clock = inject(Clock);
 
-  /** Opens the side panel to add a fixed cost, starting in the given currency. */
-  open(currency: Currency): void {
-    const data: FixedCostPanelData = { currency, currentMonth: this.clock.currentMonth() };
+  /** Opens the side panel to add a fixed cost in the given currency, or to edit the one passed. */
+  open(currency: Currency, cost?: FixedCost): void {
+    const data: FixedCostPanelData = { currency, cost, currentMonth: this.clock.currentMonth() };
 
     this.dialog.open(FixedCostPanel, {
       data,

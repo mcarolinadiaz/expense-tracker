@@ -24,6 +24,11 @@ export class FixedCostService {
     return from(this.db.fixedCosts.add({ ...cost, name: cost.name.trim() }));
   }
 
+  /** Replaces a saved fixed cost with its name trimmed. */
+  update(cost: FixedCost): Observable<void> {
+    return from(this.db.fixedCosts.put({ ...cost, name: cost.name.trim() }).then(() => undefined));
+  }
+
   remove(id: number): Observable<void> {
     return from(this.db.fixedCosts.delete(id));
   }
