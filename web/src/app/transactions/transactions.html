@@ -1,8 +1,6 @@
 <ng-template appNavbarActions>
   <app-month-picker />
-  <button type="button" class="btn btn-primary" (click)="add()">
-    {{ 'actions.addTransaction' | text }}
-  </button>
+  <app-add-button [label]="'actions.addTransaction' | text" (click)="add()" />
 </ng-template>
 
 <section class="card" [attr.aria-label]="'pages.activity' | text">
@@ -146,6 +144,7 @@
     </div>
   } @else if (monthIsEmpty()) {
     <div class="empty-state">
+      <img class="empty-mascot" ngSrc="icons/sloth-mascot.svg" alt="" width="116" height="110" />
       <h2 class="section-title">{{ 'activity.emptyTitle' | text }}</h2>
       <p class="empty-body">{{ 'activity.emptyBody' | text }}</p>
       <button type="button" class="btn btn-primary" (click)="add()">
@@ -154,6 +153,7 @@
     </div>
   } @else {
     <div class="empty-state">
+      <img class="empty-mascot" ngSrc="icons/sloth-mascot.svg" alt="" width="116" height="110" />
       <h2 class="section-title">{{ 'activity.noResultsTitle' | text }}</h2>
       <p class="empty-body">{{ 'activity.noResultsBody' | text }}</p>
       <button type="button" class="btn btn-secondary" (click)="clearFilters()">

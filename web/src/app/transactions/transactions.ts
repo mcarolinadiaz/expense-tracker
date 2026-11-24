@@ -1,4 +1,5 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { NgOptimizedImage } from '@angular/common';
 import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
@@ -9,6 +10,7 @@ import { Translator } from '../core/i18n/translator.service';
 import { LocaleFormat } from '../core/locale-format.service';
 import { CURRENCIES, Currency } from '../core/money';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
+import { AddButton } from '../shared/add-button/add-button';
 import { MonthPicker } from '../shared/month-picker/month-picker';
 import { SelectedMonthService } from '../shared/month-picker/selected-month.service';
 import { PluralPipe } from '../shared/pipes/plural.pipe';
@@ -61,7 +63,16 @@ interface TransactionRow {
 }
 
 @Component({
-  imports: [FormField, MonthPicker, NavbarActions, PluralPipe, Select, TextPipe],
+  imports: [
+    AddButton,
+    FormField,
+    MonthPicker,
+    NavbarActions,
+    NgOptimizedImage,
+    PluralPipe,
+    Select,
+    TextPipe,
+  ],
   selector: 'app-transactions',
   styleUrl: './transactions.css',
   templateUrl: './transactions.html',

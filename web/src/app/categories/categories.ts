@@ -24,6 +24,7 @@ import { APP_PAGE_PATH } from '../core/constants/app-page-routes';
 import { TextKey } from '../core/i18n/translations';
 import { Translator } from '../core/i18n/translator.service';
 import { NavbarActions } from '../layout/navbar/navbar-actions';
+import { AddButton } from '../shared/add-button/add-button';
 import { TextPipe } from '../shared/pipes/text.pipe';
 import { ACTIVITY_QUERY_PARAM } from '../transactions/transactions';
 import {
@@ -58,7 +59,7 @@ function categoryNameSchema(path: SchemaPathTree<CategoryNameModel>): void {
 }
 
 @Component({
-  imports: [FormField, NavbarActions, TextPipe],
+  imports: [AddButton, FormField, NavbarActions, TextPipe],
   selector: 'app-categories',
   styleUrl: './categories.css',
   templateUrl: './categories.html',

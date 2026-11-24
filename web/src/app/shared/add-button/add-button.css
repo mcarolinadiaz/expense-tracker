@@ -1,0 +1,13 @@
+@reference '../../../styles.css';
+
+.add-button {
+  @apply max-xl:w-11 max-xl:px-0 max-sm:fixed max-sm:right-4 max-sm:bottom-4 max-sm:z-10 max-sm:size-14 max-sm:rounded-2xl max-sm:shadow-lg;
+}
+
+.add-button-icon {
+  @apply size-5 flex-none max-sm:size-6;
+}
+
+.add-button-label {
+  @apply max-xl:sr-only;
+}

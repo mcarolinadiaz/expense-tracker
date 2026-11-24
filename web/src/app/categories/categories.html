@@ -1,7 +1,5 @@
 <ng-template appNavbarActions>
-  <button type="button" class="btn btn-primary" (click)="focusNewCategory()">
-    {{ 'actions.newCategory' | text }}
-  </button>
+  <app-add-button [label]="'actions.newCategory' | text" (click)="focusNewCategory()" />
 </ng-template>
 
 <section class="card categories-card" [attr.aria-label]="'pages.categories' | text">
