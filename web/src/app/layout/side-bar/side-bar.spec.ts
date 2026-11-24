@@ -32,9 +32,7 @@ describe('SideBar', () => {
   function labels(): (string | undefined)[] {
     return Array.from<HTMLElement>(
       fixture.nativeElement.querySelectorAll('.nav-link, .segmented-item'),
-    ).map(
-      (item) => item.textContent?.trim(),
-    );
+    ).map((item) => item.textContent?.trim());
   }
 
   it('should create', () => {
