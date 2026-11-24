@@ -1,13 +1,21 @@
 @reference '../styles.css';
 
 .app-shell {
-  @apply flex min-h-screen flex-wrap md:h-dvh md:min-h-0 md:flex-nowrap md:overflow-hidden;
+  @apply flex min-h-screen flex-col lg:h-dvh lg:min-h-0 lg:flex-row lg:overflow-hidden;
+}
+
+.app-top-bar {
+  @apply sticky top-0 z-10 lg:hidden;
 }
 
 .app-sidebar {
-  @apply max-w-full flex-[1_1_14.5rem] md:flex-[0_0_14.5rem] md:overflow-y-auto;
+  @apply hidden lg:block lg:flex-[0_0_14.5rem] lg:overflow-y-auto;
 }
 
 .app-content {
-  @apply min-w-0 flex-[999_1_35rem] p-4 sm:p-8 md:overflow-x-hidden md:overflow-y-auto;
+  @apply min-w-0 flex-1 p-4 pb-24 sm:p-8 lg:overflow-x-hidden lg:overflow-y-auto;
+}
+
+.app-page {
+  @apply @container block;
 }

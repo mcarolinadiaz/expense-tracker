@@ -1,7 +1,15 @@
 @reference '../../../styles.css';
 
 .side-bar {
-  @apply flex h-full flex-col gap-6 border-r border-line bg-surface px-4 py-6;
+  @apply relative flex h-full flex-col gap-6 overflow-y-auto border-r border-line bg-surface px-4 py-6;
+}
+
+.drawer-close {
+  @apply absolute top-4 right-3;
+}
+
+.drawer-close-icon {
+  @apply size-4.5;
 }
 
 .brand {
@@ -18,6 +26,14 @@
 
 .language-picker {
   @apply mt-auto;
+}
+
+.author-credit {
+  @apply px-2 text-sm text-muted;
+}
+
+.author-link {
+  @apply font-medium text-accent underline underline-offset-2 hover:text-accent-hover;
 }
 
 .nav-link-active {

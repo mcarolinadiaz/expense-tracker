@@ -1,8 +1,11 @@
 <div class="app-shell">
+  <app-top-bar class="app-top-bar" />
   <app-side-bar class="app-sidebar" />
   <main #content cdkScrollable class="app-content">
     <app-navbar />
-    <router-outlet />
+    <div class="app-page">
+      <router-outlet />
+    </div>
   </main>
 </div>
 <app-update-banner />

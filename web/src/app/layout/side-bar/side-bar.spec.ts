@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { APP_AUTHOR } from '../../core/constants/app-author';
 import { APP_PAGE_ROUTES } from '../../core/constants/app-page-routes';
 import { AppDb, SETTING_KEY } from '../../core/db/app-db';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -29,7 +30,9 @@ describe('SideBar', () => {
   });
 
   function labels(): (string | undefined)[] {
-    return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('a, button')).map(
+    return Array.from<HTMLElement>(
+      fixture.nativeElement.querySelectorAll('.nav-link, .segmented-item'),
+    ).map(
       (item) => item.textContent?.trim(),
     );
   }
@@ -39,7 +42,9 @@ describe('SideBar', () => {
   });
 
   it('should render one link per page route, using its title and path', () => {
-    const anchors = Array.from<HTMLAnchorElement>(fixture.nativeElement.querySelectorAll('a'));
+    const anchors = Array.from<HTMLAnchorElement>(
+      fixture.nativeElement.querySelectorAll('.nav-link'),
+    );
 
     const translator = TestBed.inject(Translator);
 
@@ -49,6 +54,18 @@ describe('SideBar', () => {
     expect(anchors.map((a) => a.getAttribute('href'))).toEqual(
       APP_PAGE_ROUTES.map((r) => `/${r.path}`),
     );
+  });
+
+  it('should credit the author with a link to their profile in a new tab', () => {
+    const credit: HTMLElement = fixture.nativeElement.querySelector('.author-credit');
+    const link: HTMLAnchorElement = credit.querySelector('a')!;
+
+    expect(credit.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Developed by Carolina Díaz (LinkedIn, opens in a new tab)',
+    );
+    expect(link.href).toBe(APP_AUTHOR.profileUrl);
+    expect(link.target).toBe('_blank');
+    expect(link.rel).toBe('noopener noreferrer');
   });
 
   it(

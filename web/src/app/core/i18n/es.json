@@ -2,6 +2,10 @@
   "appName": "Expense Tracker",
   "mainNavigation": "Navegación principal",
   "language": "Idioma",
+  "openMenu": "Abrir menú",
+  "closeMenu": "Cerrar menú",
+  "developedBy": "Desarrollado por",
+  "authorProfile": "(LinkedIn, se abre en una pestaña nueva)",
   "update": {
     "ready": "Hay una versión nueva de la app.",
     "reload": "Actualizar"

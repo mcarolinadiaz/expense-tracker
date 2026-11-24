@@ -1,0 +1,13 @@
+@reference '../../../styles.css';
+
+.top-bar {
+  @apply flex h-16 items-center gap-3 border-b border-line bg-surface px-4;
+}
+
+.top-bar-icon {
+  @apply size-5.5;
+}
+
+.top-bar-name {
+  @apply font-display text-lg font-semibold;
+}

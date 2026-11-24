@@ -3,11 +3,31 @@
     <img ngSrc="icons/sloth-mascot.svg" alt="" width="63" height="60" priority />
     <span>{{ 'appName' | text }}</span>
   </p>
+  @if (drawer) {
+    <button
+      type="button"
+      class="btn btn-ghost btn-icon drawer-close"
+      [attr.aria-label]="'closeMenu' | text"
+      (click)="drawer.close()"
+    >
+      <svg
+        class="drawer-close-icon"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+  }
 
   <ul class="nav-list">
     @for (link of links; track link.path) {
       <li>
         <a
+          (click)="drawer?.close()"
           [routerLink]="link.path"
           routerLinkActive="nav-link-active"
           [routerLinkActiveOptions]="{ exact: link.exact }"
@@ -33,4 +53,11 @@
       </button>
     }
   </div>
+
+  <p class="author-credit">
+    {{ 'developedBy' | text }}
+    <a class="author-link" [href]="author.profileUrl" target="_blank" rel="noopener noreferrer"
+      >{{ author.name }}<span class="sr-only"> {{ 'authorProfile' | text }}</span></a
+    >
+  </p>
 </nav>
